@@ -1,0 +1,141 @@
+.edit-btn {
+  display: flex;
+  width: 100%;
+  justify-content: space-evenly;
+}
+
+.editBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 20px;
+  border: none;
+  background-color: rgb(93, 93, 116);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.123);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.editBtn:hover {
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.336);
+  background-color: rgb(119, 119, 138);
+}
+
+.editBtn svg {
+  height: 15px;
+  fill: white;
+  z-index: 3;
+  transition: all 0.2s;
+  transform-origin: bottom;
+}
+
+.bin-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  background-color: rgb(255, 95, 95);
+  cursor: pointer;
+  border: 3px solid rgb(255, 95, 95);
+  transition-duration: 0.3s;
+}
+.bin-button:hover {
+  background-color: rgb(255, 95, 95);
+}
+.bin-bottom {
+  width: 8px;
+}
+.bin-bottom:hover {
+  box-shadow: rgba(0, 0, 0, 0.336);
+  background-color: rgb(255, 95, 95);
+}
+.bin-top {
+  width: 11px;
+  transform-origin: right;
+  transition-duration: 0.3s;
+}
+
+/* Define the button style */
+button.copy {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Define the SVG dimensions */
+button.copy svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Optional: Remove any focus outline */
+button.copy:focus {
+  outline: none;
+}
+
+.edit-svg {
+  width: 20px;
+  height: 20px;
+}
+
+/*------ Settings ------*/
+.container {
+  --color: #a5a5b0;
+  --size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  font-size: var(--size);
+  user-select: none;
+  fill: var(--color);
+  width: var(--size);
+  height: var(--size);
+}
+
+.container .clipboard {
+  position: absolute;
+  animation: keyframes-fill 0.5s;
+  width: var(--size);
+  height: var(--size);
+}
+
+/* .container .clipboard-check {
+  position: absolute;
+  display: none;
+  animation: keyframes-fill 0.5s;
+  width: var(--size);
+  height: var(--size);
+} */
+
+/* ------ On check event ------ */
+.container input:checked ~ .clipboard {
+  display: none;
+}
+
+.container input:checked ~ .clipboard-check {
+  display: block;
+}
+
+/* ------ Hide the default checkbox ------ */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
