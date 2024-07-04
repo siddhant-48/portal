@@ -35,7 +35,7 @@ const initialState = {
   initialQuestionsValue: constInitialQuestionsValue,
   totalScoreWeightage: 0,
   endDate: null,
-  addedSections: [],
+  addedSections: ['Add_MCQs', 'Add_Programs'],
 }
 
 const reducer = (state, action) => {
@@ -155,7 +155,7 @@ const EditTest = ({
       }
       triggerFetchData('create_update_test/', apiPayload)
         .then(() => {
-          message.success('Test created')
+          message.success('Test updated!')
           fetchData()
         })
         .catch((reason) => message.error(reason))
@@ -245,7 +245,13 @@ const EditTest = ({
       type: ACTION.SET_ADDED_SECTIONS,
       payload: { addedSections: value },
     })
+    setSelectedSections(value)
   }
+
+  const [selectedSections, setSelectedSections] = useState([
+    'Add_MCQs',
+    'Add_Programs',
+  ])
 
   return (
     <Modal
@@ -270,7 +276,6 @@ const EditTest = ({
             maxWidth: 'none',
           }}
           layout="inline"
-          // initialValues={{ name: testRecord.name, ...rec }}
           initialValues={testRecord.question_details}
           onFinish={handleEditTest}
           onFinishFailed={onFinishFailed}
@@ -278,83 +283,79 @@ const EditTest = ({
         >
           {testRecord?.question_details?.map((rec, idx) => (
             <Col span={24}>
-              <Collapse
-                accordion
-                key={`collapse-index-${idx}`}
-                onChange={onCollapseChange}
-              >
+              <Collapse accordion key={`collapse-index-${idx}`} onChange={() => {}}>
                 <Panel header={rec.language} key={rec.language}>
                   <Col span={24}>
                     <Row>
                       {CreateTestForm_1.map((item, index) => (
-                        <>
-                          <Col span={12}>
-                            <Form.Item
-                              key={`form-item-${index}`}
-                              label={item.title}
-                              name={[idx, item.dataIndex]}
-                              rules={[
-                                {
-                                  required: item.dataIndex !== 'end_date',
-                                  message: `Please input your ${item.title}`,
-                                },
-                              ]}
-                            >
-                              <Space.Compact>
-                                {item.dataIndex == 'language' ? (
-                                  <Select
-                                    showSearch
-                                    placeholder="Select a language"
-                                    optionFilterProp="children"
-                                    defaultValue={rec[item.dataIndex]}
-                                    filterOption={(input, option) =>
-                                      (option?.label ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
-                                    }
-                                    options={languageOptions}
-                                    onChange={handleChange}
-                                  />
-                                ) : item.dataIndex == 'add_sections' ? (
-                                  <Select
-                                    mode="multiple"
-                                    allowClear
-                                    style={{ width: '100%' }}
-                                    placeholder="Please select"
-                                    defaultValue={rec[item.dataIndex]}
-                                    onChange={handleAddSection}
-                                    options={testSectionOption}
-                                  />
-                                ) : item.dataIndex == 'end_date' ? (
-                                  <DatePicker
-                                    style={{ width: 100 + '%' }}
-                                    onChange={onDateChange}
-                                    defaultValue={moment(rec[item.dataIndex])}
-                                    disabled
-                                  />
-                                ) : item.dataIndex == 'name' ? (
-                                  <Input
-                                    disabled={true}
-                                    defaultValue={rec[item.dataIndex]}
-                                  />
-                                ) : null}
-                              </Space.Compact>
-                            </Form.Item>
-                            <br></br>
-                          </Col>
-                        </>
+                        <Col span={12} key={`form-item-${index}`}>
+                          <Form.Item
+                            label={item.title}
+                            name={[idx, item.dataIndex]}
+                            rules={[
+                              {
+                                required: item.dataIndex !== 'end_date',
+                                message: `Please input your ${item.title}`,
+                              },
+                            ]}
+                          >
+                            <Space.Compact>
+                              {item.dataIndex === 'language' ? (
+                                <Select
+                                  showSearch
+                                  placeholder="Select a language"
+                                  optionFilterProp="children"
+                                  defaultValue={rec[item.dataIndex]}
+                                  filterOption={(input, option) =>
+                                    (option?.label ?? '')
+                                      .toLowerCase()
+                                      .includes(input.toLowerCase())
+                                  }
+                                  options={languageOptions}
+                                  onChange={handleChange}
+                                  style={{ width: 200 }}
+                                />
+                              ) : item.dataIndex === 'add_sections' ? (
+                                <Select
+                                  mode="multiple"
+                                  allowClear
+                                  style={{ width: 200 }}
+                                  placeholder="Please select"
+                                  defaultValue={rec[item.dataIndex]}
+                                  onChange={(value) => {
+                                    handleAddSection(value)
+                                    form.setFieldsValue({
+                                      [idx]: {
+                                        add_sections: value,
+                                      },
+                                    })
+                                  }}
+                                  options={testSectionOption}
+                                />
+                              ) : item.dataIndex === 'end_date' ? (
+                                <DatePicker
+                                  style={{ width: '100%' }}
+                                  onChange={onDateChange}
+                                  defaultValue={moment(rec[item.dataIndex])}
+                                  disabled
+                                />
+                              ) : item.dataIndex === 'name' ? (
+                                <Input disabled defaultValue={rec[item.dataIndex]} />
+                              ) : null}
+                            </Space.Compact>
+                          </Form.Item>
+                          <br></br>
+                        </Col>
                       ))}
                     </Row>
-                    {/* MCQ Fields */}
-                    {rec?.add_sections?.includes('Add_MCQs') && (
+                    {selectedSections.includes('Add_MCQs') && (
                       <Row justify="start">
                         <Col span={24}>
                           <h4>MCQ Count</h4>
                         </Col>
                         {CreateTestForm_2.map((item, index) => (
-                          <Col span={12}>
+                          <Col span={12} key={`form-item-${index}`}>
                             <Form.Item
-                              key={`form-item-${index}`}
                               label={item.title}
                               name={[idx, item.dataIndex]}
                               rules={[
@@ -384,16 +385,14 @@ const EditTest = ({
                         ))}
                       </Row>
                     )}
-                    {/* Program Fields */}
-                    {rec?.add_sections?.includes('Add_Programs') && (
+                    {selectedSections.includes('Add_Programs') && (
                       <Row justify="start">
                         <Col span={24}>
                           <h4>Program Count</h4>
                         </Col>
                         {CreateTestForm_3.map((item, index) => (
-                          <Col span={12}>
+                          <Col span={12} key={`form-item-${index}`}>
                             <Form.Item
-                              key={`form-item-${index}`}
                               label={item.title}
                               name={[idx, item.dataIndex]}
                               rules={[
@@ -417,7 +416,7 @@ const EditTest = ({
                                   )
                                 }
                               />
-                            </Form.Item>{' '}
+                            </Form.Item>
                           </Col>
                         ))}
                       </Row>
