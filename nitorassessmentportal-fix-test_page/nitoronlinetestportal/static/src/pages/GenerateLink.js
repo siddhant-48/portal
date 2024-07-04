@@ -295,20 +295,16 @@ const GenerateLink = (props) => {
 
   // Function to submit the Generate Test Link Form
   const submitGeneratedLinkForm = async (values) => {
-    // Debug: log the values to see what test contains
-    console.log('Form Values:', values)
+    // fetch the testname
+    const selectedTest = filter_test_data.find((test) => test.value === values.test)
+    const testName = selectedTest ? selectedTest.label : ''
 
-    // Concatenate test name with name
-    values.name = values.test + values.name
-
-    // Format end_date properly
+    values.name = testName + '_' + values.name
     let end_date = endDate + ' 00:00:00'
     values.end_date = end_date
-
-    // Convert email_list to a string
     values.email_list = tags.toString()
 
-    // Trigger the API call
+    // api call
     triggerFetchData('generate_test_link/', values)
       .then((data) => {
         message.success('Test Link Generated')
@@ -340,7 +336,7 @@ const GenerateLink = (props) => {
           }}
         >
           <Button type="primary" onClick={showGeneratedTestLinkModal}>
-            Generate Test Link
+            Generate Test
           </Button>
         </div>
         <Table

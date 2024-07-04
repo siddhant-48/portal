@@ -265,44 +265,70 @@ const Question = (props) => {
 
   const onFinish = async (values) => {
     var multiple_options = Object.keys(form2.getFieldValue()).length
-      ? form2.getFieldValue()
-      : questionDetail
+        ? form2.getFieldValue()
+        : questionDetail;
     var program_test_cases = Object.keys(form3.getFieldValue()).length
-      ? form3.getFieldValue()
-      : testDetails
+        ? form3.getFieldValue()
+        : testDetails;
 
     if (multiple_options) {
-      delete multiple_options['question_details']
-      values['multiple_options'] = multiple_options
+        delete multiple_options['question_details'];
+        values['multiple_options'] = multiple_options;
     }
     if (program_test_cases) {
-      delete program_test_cases['question_details']
-      values['program_test_cases'] = program_test_cases
+        delete program_test_cases['question_details'];
+        values['program_test_cases'] = program_test_cases;
     }
-    values['difficulty'] = record.difficulty
-    const new_values = {
-      ...values,
-      multiple_options: questionDetail ? values['multiple_options'] : null,
-      program_test_cases: testDetails ? values['program_test_cases'] : null,
-    }
-    if (questionDetail) {
-      delete new_values['program_test_cases']
-      delete new_values['multiple_options']['candidate_answers']
-    }
-    if (testDetails) {
-      delete new_values['multiple_options']
-      delete new_values['program_test_cases']['candidate_answers']
-    }
-    triggerFetchData('add_question/', { id: record.id, values: new_values })
-      .then((data) => {
-        console.log(data)
-        message.success('Question Updated Successfully')
-        fetchData()
-      })
-      .catch((reason) => message.error(reason))
+    values['difficulty'] = record.difficulty;
 
-    setIsEditModalOpen(false)
-  }
+    //manual date 
+    const formatDateToISO = (date) => {
+        const d = new Date(date);
+        return d.toISOString();
+    };
+
+    values['created_at'] = formatDateToISO(record.created_at);
+    values['updated_at'] = formatDateToISO(new Date());
+    
+    const new_values = {
+        ...values,
+        multiple_options: questionDetail ? values['multiple_options'] : null,
+        program_test_cases: testDetails ? values['program_test_cases'] : null,
+    };
+
+    // Ensure unwanted fields are not in the nested objects
+    if (new_values['multiple_options']) {
+        delete new_values['multiple_options']['created_at'];
+        delete new_values['multiple_options']['updated_at'];
+    }
+    if (new_values['program_test_cases']) {
+        delete new_values['program_test_cases']['created_at'];
+        delete new_values['program_test_cases']['updated_at'];
+    }
+
+    if (questionDetail) {
+        delete new_values['program_test_cases'];
+        delete new_values['multiple_options']['candidate_answers'];
+    }
+
+    if (testDetails) {
+        delete new_values['multiple_options'];
+        delete new_values['program_test_cases']['candidate_answers'];
+    }
+
+    console.log('Payload being sent:', { id: record.id, values: new_values });  // Debugging line
+
+    triggerFetchData('add_question/', { id: record.id, values: new_values })
+        .then((data) => {
+            console.log(data);
+            message.success('Question Updated Successfully');
+            fetchData();
+        })
+        .catch((reason) => message.error(reason));
+
+    setIsEditModalOpen(false);
+};
+
 
   //asynchronous
   const handleBeforeUpload = async (file) => {

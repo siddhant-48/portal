@@ -38,7 +38,7 @@ const Header = (props) => {
       style={{
         position: 'sticky',
         top: 0,
-        zIndex: 1,
+        zIndex: 1000,
         width: '100%',
       }}
     >

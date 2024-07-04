@@ -377,7 +377,13 @@ const CreateTest = ({ setSelectedKey, history }) => {
   return (
     <>
       {/* Mutate Mode */}
-      <Layout.Content style={{ height: '100vh', padding: '1rem' }}>
+      <Layout.Content
+        style={{
+          minHeight: 'calc(100vh - 64px)',
+          padding: '1rem',
+          overflowX:'hidden',
+        }}
+      >
         <div
           style={{
             float: 'right',

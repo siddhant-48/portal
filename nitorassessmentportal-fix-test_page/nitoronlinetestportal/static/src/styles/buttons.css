@@ -18,6 +18,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.3s;
+  
 }
 
 .editBtn:hover {
@@ -28,7 +29,7 @@
 .editBtn svg {
   height: 15px;
   fill: white;
-  z-index: 3;
+  /* z-index: 1; */
   transition: all 0.2s;
   transform-origin: bottom;
 }
