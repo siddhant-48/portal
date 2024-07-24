@@ -14,11 +14,19 @@ import {
   Form,
   Input,
   Tooltip,
+  Select,
 } from 'antd'
+
+const { Option } = Select
 import { UploadOutlined } from '@ant-design/icons'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import { readExcel, generateExcelFromJson } from '../Utils/utilFunctions'
-import { templateJSONData, optionList, caseList } from '../Utils/constants'
+import {
+  templateJSONData,
+  optionList,
+  caseList,
+  languageOptions,
+} from '../Utils/constants'
 import { EditFilled, DeleteFilled } from '@ant-design/icons'
 import PropTypes from 'prop-types'
 
@@ -39,6 +47,7 @@ const Question = (props) => {
   const [form2] = Form.useForm()
   const [form3] = Form.useForm()
   const [questionDetail, setquestionDetail] = useState(null)
+  const [addQuestionDetail, setAddQuestionDetail] = useState(null)
   const [testDetails, setTestDetails] = useState(null)
   const [fetchUrl, setFetchUrl] = useState(
     'questions?language=' + lang + '&page=' + page,
@@ -313,6 +322,7 @@ const Question = (props) => {
   }
 
   const onFinish = async (values) => {
+    console.log("hi");
     var multiple_options = Object.keys(form2.getFieldValue()).length
       ? form2.getFieldValue()
       : questionDetail
@@ -412,6 +422,20 @@ const Question = (props) => {
       })
     }
     return false // default behavior
+  }
+  const testSectionOption = [
+    { id: 1, label: 'Add MCQ', name: 'Add MCQ', value: 'Add_MCQ' },
+    { id: 2, label: 'Add Program', name: 'Add Program', value: 'Add_Program' },
+  ]
+
+  const handleValuesChange = (_, allValues) => {
+    if (allValues.type === 'Add_MCQ') {
+      setAddQuestionDetail(optionList)
+    } else if (allValues.type === 'Add_Program') {
+      setAddQuestionDetail(caseList)
+    } else {
+      setAddQuestionDetail(null)
+    }
   }
 
   return (
@@ -659,194 +683,89 @@ const Question = (props) => {
           onOk={form.submit}
           onCancel={handleAddCancel}
           okText="Add"
-          style={{ width: '800px' }} // Increase the modal width
+          width={800} // Increase the modal width
         >
           <Divider />
           <Form
             form={form}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
-            style={{ maxWidth: 700 }} // Adjust form width
+            style={{ maxWidth: 600 }}
             initialValues={record}
             onFinish={onFinish}
+            onValuesChange={handleValuesChange}
             key="main_form"
             autoComplete="off"
           >
-            {columns.map((item, index) => (
-              <Form.Item
-                style={item.title === 'Action' ? { display: 'none' } : null}
-                key={`form-item-${index}`}
-                label={item.title}
-                name={item.dataIndex}
-                rules={[
-                  {
-                    required: true,
-                    message: `Please input your ${item.title}`,
-                  },
-                ]}
-              >
-                {item.title === 'Question Type' ? (
-                  <Form.Item
-                    noStyle
-                    shouldUpdate={(prevValues, currentValues) =>
-                      prevValues.type !== currentValues.type
-                    }
-                  >
-                    {() => {
-                      const type = form.getFieldValue('type')
-                      return (
-                        <Input
-                          disabled
-                          value={type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''}
-                        />
-                      )
-                    }}
-                  </Form.Item>
-                ) : (
-                  <Input />
-                )}
-              </Form.Item>
-            ))}
-
-            {/* New Select Inputs */}
-            {/* <Form.Item
-              label="Difficulty"
-              name="difficulty"
+            <Form.Item
+              label="Question Title"
+              name="questionTitle"
               rules={[
-                {
-                  required: true,
-                  message: 'Please select the difficulty level',
-                },
+                { required: true, message: 'Please input your Question Title' },
               ]}
             >
-              <Select>
-                <Select.Option value="easy">Easy</Select.Option>
-                <Select.Option value="medium">Medium</Select.Option>
-                <Select.Option value="hard">Hard</Select.Option>
+              <Input />
+            </Form.Item>
+
+            {/* Question Type */}
+            <Form.Item
+              label="Question Type"
+              name="type"
+              rules={[
+                { required: true, message: 'Please select your Question Type' },
+              ]}
+            >
+              <Select placeholder="Select Question Type">
+                {testSectionOption.map((option) => (
+                  <Option key={option.id} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
+
+            {/* Difficulty */}
+            <Form.Item
+              label="Difficulty"
+              name="difficulty"
+              rules={[{ required: true, message: 'Please input your Difficulty' }]}
+            >
+              <Input placeholder="1 = Easy, 2 = Medium, 3 = Hard" />
+            </Form.Item>
+
+            {/* Language */}
             <Form.Item
               label="Language"
               name="language"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please select the language',
-                },
-              ]}
+              rules={[{ required: true, message: 'Please input your Language' }]}
             >
-              <Select>
-                <Select.Option value="english">English</Select.Option>
-                <Select.Option value="spanish">Spanish</Select.Option>
-                <Select.Option value="french">French</Select.Option>
-                {/* Add more options as needed */}
-            {/* </Select>
-            </Form.Item>   */}
+              <Select placeholder="Select Language">
+                {languageOptions.map((option) => (
+                  <Option key={option.id} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-            {questionDetail ? (
-              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
-                <Panel header="Question Details" key={`panel-index`}>
-                  <Form
-                    form={form2}
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 700 }}
-                    key="panel_form"
-                    initialValues={questionDetail}
-                    onFinish={onFinish}
-                    autoComplete="off"
-                  >
-                    {optionList?.map((item, index) => (
-                      <Form.Item
-                        style={item.title === 'Action' ? { display: 'none' } : null}
-                        key={`form-item-${index}`}
-                        label={item.title}
-                        name={item.dataIndex}
-                        rules={[
-                          {
-                            required: true,
-                            message: `Please input your ${item.title}`,
-                          },
-                        ]}
-                      >
-                        {item.title === 'Question Type' ? (
-                          <Form.Item
-                            noStyle
-                            shouldUpdate={(prevValues, currentValues) =>
-                              prevValues.type !== currentValues.type
-                            }
-                          >
-                            {() => {
-                              const type = form2.getFieldValue('type')
-                              return (
-                                <Input
-                                  disabled
-                                  value={
-                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
-                                  }
-                                />
-                              )
-                            }}
-                          </Form.Item>
-                        ) : (
-                          <Input />
-                        )}
-                      </Form.Item>
-                    ))}
-                  </Form>
-                </Panel>
-              </Collapse>
-            ) : (
-              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
-                <Panel header="Test Details" key={`panel-index`}>
-                  <Form
-                    form={form3}
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 700 }}
-                    key="panel_form"
-                    initialValues={testDetails}
-                    onFinish={onFinish}
-                    autoComplete="off"
-                  >
-                    {caseList?.map((item, index) => (
-                      <Form.Item
-                        style={item.title === 'Action' ? { display: 'none' } : null}
-                        key={`form-item-${index}`}
-                        label={item.title}
-                        name={item.dataIndex}
-                        rules={[
-                          {
-                            required: true,
-                            message: `Please input your ${item.title}`,
-                          },
-                        ]}
-                      >
-                        {item.title === 'Question Type' ? (
-                          <Form.Item
-                            noStyle
-                            shouldUpdate={(prevValues, currentValues) =>
-                              prevValues.type !== currentValues.type
-                            }
-                          >
-                            {() => {
-                              const type = form3.getFieldValue('type')
-                              return (
-                                <Input
-                                  disabled
-                                  value={
-                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
-                                  }
-                                />
-                              )
-                            }}
-                          </Form.Item>
-                        ) : (
-                          <Input />
-                        )}
-                      </Form.Item>
-                    ))}
-                  </Form>
+            {addQuestionDetail && (
+              <Collapse key="collapse-question-detail" defaultActiveKey={['1']}>
+                <Panel header="Question Details" key="panel-question-detail">
+                  {addQuestionDetail.map((item, index) => (
+                    <Form.Item
+                      key={`form-item-${index}`}
+                      label={item.title}
+                      name={item.dataIndex}
+                      rules={[
+                        {
+                          required: true,
+                          message: `Please input your ${item.title}`,
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  ))}
                 </Panel>
               </Collapse>
             )}
