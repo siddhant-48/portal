@@ -300,48 +300,63 @@ const EditTest = ({
                             ]}
                           >
                             <Space.Compact>
-                              {item.dataIndex === 'language' ? (
-                                <Select
-                                  showSearch
-                                  placeholder="Select a language"
-                                  optionFilterProp="children"
-                                  defaultValue={rec[item.dataIndex]}
-                                  filterOption={(input, option) =>
-                                    (option?.label ?? '')
-                                      .toLowerCase()
-                                      .includes(input.toLowerCase())
-                                  }
-                                  options={languageOptions}
-                                  onChange={handleChange}
-                                  style={{ width: 200 }}
-                                />
-                              ) : item.dataIndex === 'add_sections' ? (
-                                <Select
-                                  mode="multiple"
-                                  allowClear
-                                  style={{ width: 200 }}
-                                  placeholder="Please select"
-                                  defaultValue={rec[item.dataIndex]}
-                                  onChange={(value) => {
-                                    handleAddSection(value)
-                                    form.setFieldsValue({
-                                      [idx]: {
-                                        add_sections: value,
-                                      },
-                                    })
-                                  }}
-                                  options={testSectionOption}
-                                />
-                              ) : item.dataIndex === 'end_date' ? (
-                                <DatePicker
-                                  style={{ width: '100%' }}
-                                  onChange={onDateChange}
-                                  defaultValue={moment(rec[item.dataIndex])}
-                                  disabled
-                                />
-                              ) : item.dataIndex === 'name' ? (
-                                <Input disabled defaultValue={rec[item.dataIndex]} />
-                              ) : null}
+                              {(() => {
+                                if (item.dataIndex === 'language') {
+                                  return (
+                                    <Select
+                                      showSearch
+                                      placeholder="Select a language"
+                                      optionFilterProp="children"
+                                      defaultValue={rec[item.dataIndex]}
+                                      filterOption={(input, option) =>
+                                        (option?.label ?? '')
+                                          .toLowerCase()
+                                          .includes(input.toLowerCase())
+                                      }
+                                      options={languageOptions}
+                                      onChange={handleChange}
+                                      style={{ width: 200 }}
+                                    />
+                                  )
+                                } else if (item.dataIndex === 'add_sections') {
+                                  return (
+                                    <Select
+                                      mode="multiple"
+                                      allowClear
+                                      style={{ width: 200 }}
+                                      placeholder="Please select"
+                                      defaultValue={rec[item.dataIndex]}
+                                      onChange={(value) => {
+                                        handleAddSection(value)
+                                        form.setFieldsValue({
+                                          [idx]: {
+                                            add_sections: value,
+                                          },
+                                        })
+                                      }}
+                                      options={testSectionOption}
+                                    />
+                                  )
+                                } else if (item.dataIndex === 'end_date') {
+                                  return (
+                                    <DatePicker
+                                      style={{ width: '100%' }}
+                                      onChange={onDateChange}
+                                      defaultValue={moment(rec[item.dataIndex])}
+                                      disabled
+                                    />
+                                  )
+                                } else if (item.dataIndex === 'name') {
+                                  return (
+                                    <Input
+                                      disabled
+                                      defaultValue={rec[item.dataIndex]}
+                                    />
+                                  )
+                                } else {
+                                  return null
+                                }
+                              })()}
                             </Space.Compact>
                           </Form.Item>
                           <br></br>

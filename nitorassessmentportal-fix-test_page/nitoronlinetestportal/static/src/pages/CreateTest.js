@@ -158,22 +158,9 @@ const CreateTest = ({ setSelectedKey, history }) => {
       title: 'Action',
       render: (_, testRecord) => (
         <>
-          <Space>
-            <Tooltip placement="topLeft" title="View Test">
-              <EyeFilled
-                onClick={() => {
-                  openDetailModal(testRecord)
-                }}
-              />
-            </Tooltip>
-            <Tooltip placement="topLeft" title="Edit Test">
-              <EditFilled
-                onClick={() => {
-                  openEditModal(testRecord)
-                }}
-              />
-            </Tooltip>
-            <Tooltip placement="topLeft" title="Generate Link">
+          <Space wrap>
+            {/* generate link */}
+            <Tooltip placement="top" title="Generate Link">
               <Button
                 size="small"
                 type="default"
@@ -184,8 +171,9 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 Generate Link
               </Button>
             </Tooltip>
+            {/* activate-deactivate */}
             <Tooltip
-              placement="topLeft"
+              placement="top"
               title={testRecord.is_active ? 'Deactivate' : 'Activate'}
             >
               <label className="toggle">
@@ -200,12 +188,66 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 <div className="toggle-switch"></div>
               </label>
             </Tooltip>
-            <Tooltip placement="topLeft" title="View Summary">
-              <UnorderedListOutlined
-                onClick={() => {
-                  openSummaryModal(testRecord)
-                }}
-              />
+
+            {/* view test */}
+            <Tooltip placement="top" title="View Test">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    openDetailModal(testRecord)
+                  }}
+                >
+                  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                </svg>
+              </label>
+            </Tooltip>
+
+            {/* edit test */}
+            <Tooltip placement="top" title="Edit Test">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    openEditModal(testRecord)
+                  }}
+                >
+                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                  />
+                </svg>
+              </label>
+            </Tooltip>
+            {/* view summary */}
+            <Tooltip placement="top" title="View Summary">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    openSummaryModal(testRecord)
+                  }}
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"
+                  />
+                </svg>
+              </label>
             </Tooltip>
           </Space>
         </>
@@ -381,7 +423,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
         style={{
           minHeight: 'calc(100vh - 64px)',
           padding: '1rem',
-          overflowX:'hidden',
+          overflowX: 'hidden',
         }}
       >
         <div
@@ -458,24 +500,31 @@ const CreateTest = ({ setSelectedKey, history }) => {
           open={state.isViewTestModalOpen}
           onCancel={closeDetailModal}
           footer={null}
+          className="custom-modal"
         >
           {state.rowRecord?.question_details?.map((item, index) => (
-            <>
-              <Collapse key={`collapse-index-${index}`} defaultActiveKey={['1']}>
-                <Panel header={item.language}>
-                  {
-                    <ul>
-                      <li> Easy MCQ: {item.easy_mcq_count}</li>
-                      <li>Medium MCQ: {item.medium_mcq_count}</li>
-                      <li> Hard MCQ: {item.hard_mcq_count}</li>
-                      <li> Easy Program: {item.easy_program_count}</li>
-                      <li>Medium Count: {item.medium_program_count}</li>
-                      <li> Hard Program: {item.hard_program_count}</li>
-                    </ul>
-                  }
+            <div key={`collapse-index-${index}`} className="collapse-container">
+              <Collapse defaultActiveKey={['1']} className="custom-collapse">
+                <Panel
+                  header={<span className="panel-header">{item.language}</span>}
+                >
+                  <div className="details-container">
+                    <div className="details-column">
+                      <h3>MCQ</h3>
+                      <p>Easy: {item.easy_mcq_count}</p>
+                      <p>Medium: {item.medium_mcq_count}</p>
+                      <p>Hard: {item.hard_mcq_count}</p>
+                    </div>
+                    <div className="details-column">
+                      <h3>Program</h3>
+                      <p>Easy: {item.easy_program_count}</p>
+                      <p>Medium: {item.medium_program_count}</p>
+                      <p>Hard: {item.hard_program_count}</p>
+                    </div>
+                  </div>
                 </Panel>
               </Collapse>
-            </>
+            </div>
           ))}
         </Modal>
       )}

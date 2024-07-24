@@ -461,10 +461,12 @@ def save_candidate_answer(request):
     data = user_test.generated_question
 
     # Find the variable key dynamically
+    language = "Python"
     variable_key = next(key for key in data.keys() if isinstance(data[key], list))
     if "question_details" in user_details:
         q_type = user_details["question_details"]["type"]
         question_id = user_details["question_details"]["id"]
+        language = user_details["question_details"]["language"]
     else:
         q_type = user_details['q_type']
 
@@ -476,7 +478,7 @@ def save_candidate_answer(request):
                 score = 0
                 if user_details["question_details"]["id"] == question_id:
                     if "candidate_answers" in  user_details:
-                        user_test.generated_question["Python"][0]["candidate_answers"] = user_details["candidate_answers"]
+                        user_test.generated_question[language][0]["candidate_answers"] = user_details["candidate_answers"]
                     
                     if user_details["score"]:
                         user_score, user_test.correct_answers, user_test.wrong_answer = user_details["score"].values()
@@ -539,61 +541,62 @@ def verify_coding_answer(request, q_type):
     #     'duration': 1800,
     #     'weightage': None
     # }
+    try :
+        import requests
+        if not q_type:
+            return 0
+        weightage_map = {1: 5, 2: 10, 3: 15}
+        total_score = 0
+        user_test_id = request.data.get('userTestId')
+        if not user_test_id:
+            return standard_json_response(message='User Test Id required', status_code=status.HTTP_400_BAD_REQUEST)
 
-    import requests
-    if not q_type:
+        try:
+            user_test = UserTests.objects.get(id=user_test_id)
+        except UserTests.DoesNotExist:
+            return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
+
+        data = user_test.generated_question
+
+
+        variable_key = next(key for key in data.keys() if isinstance(data[key], list))
+
+        cases = []
+
+        for item in data[variable_key]:
+            # Check if the dictionary contains 'case1', 'case2', 'case3', and 'case4' keys
+            if all(f'case{i}' in item for i in range(1, 5)):
+                cases.append(item)
+
+        parsed_cases = {}
+        difficulty = 0
+        for key, value in cases[0].items():
+            if key.startswith('question_details'):
+                difficulty = value["difficulty"]
+        
+            if key.startswith('case'):
+                parsed_cases[key] = eval(value)
+        non_blank_case_count = sum(1 for case_data in parsed_cases.values() if any(case_data.values()))
+        print("Number of non-blank cases:", non_blank_case_count)
+        weightage_per_question = weightage_map[difficulty] / non_blank_case_count
+
+        for case_name, case_data in parsed_cases.items():
+            args = {key: value for key, value in case_data.items() if key.startswith('arg')}
+            result = case_data['res']
+            
+            values_str = ' '.join(str(value) for value in args.values())
+
+            code = request.data["data"]["Program"].replace("\n", ";")
+            request.data["data"]["Program"] = code
+            request.data["data"]["Input"] = values_str
+            payload = request.data["data"]
+            url = request.data["url"]
+            headers = request.data["headers"]
+            response = requests.post(url, data=payload, headers=headers)
+            
+            res = response.json()
+            if res["Result"] and res["Result"].replace("\n", "") == str(result):
+                total_score += weightage_per_question
+    except :
         return 0
-    weightage_map = {1: 5, 2: 10, 3: 15}
-    total_score = 0
-    user_test_id = request.data.get('userTestId')
-    if not user_test_id:
-        return standard_json_response(message='User Test Id required', status_code=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        user_test = UserTests.objects.get(id=user_test_id)
-    except UserTests.DoesNotExist:
-        return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
-
-    data = user_test.generated_question
-
-
-    variable_key = next(key for key in data.keys() if isinstance(data[key], list))
-
-    cases = []
-
-    for item in data[variable_key]:
-        # Check if the dictionary contains 'case1', 'case2', 'case3', and 'case4' keys
-        if all(f'case{i}' in item for i in range(1, 5)):
-            cases.append(item)
-
-    parsed_cases = {}
-    difficulty = 0
-    for key, value in cases[0].items():
-        if key.startswith('question_details'):
-            difficulty = value["difficulty"]
-    
-        if key.startswith('case'):
-            parsed_cases[key] = eval(value)
-    non_blank_case_count = sum(1 for case_data in parsed_cases.values() if any(case_data.values()))
-    print("Number of non-blank cases:", non_blank_case_count)
-    weightage_per_question = weightage_map[difficulty] / non_blank_case_count
-
-    for case_name, case_data in parsed_cases.items():
-        args = {key: value for key, value in case_data.items() if key.startswith('arg')}
-        result = case_data['res']
-        
-        values_str = ' '.join(str(value) for value in args.values())
-
-        code = request.data["data"]["Program"].replace("\n", ";")
-        request.data["data"]["Program"] = code
-        request.data["data"]["Input"] = values_str
-        payload = request.data["data"]
-        url = request.data["url"]
-        headers = request.data["headers"]
-        response = requests.post(url, data=payload, headers=headers)
-        
-        res = response.json()
-        if res["Result"] and res["Result"].replace("\n", "") == str(result):
-            total_score += weightage_per_question
-    
     return total_score

@@ -151,91 +151,36 @@ const GenerateLink = (props) => {
       render: (_, record) => (
         <>
           <Space>
-            <div>
-              {/* copy link */}
-              {/* <Tooltip
-                placement="top"
-                title="Copy Link"
-                copyText={`${baseURL}#/screening/user-details/${record.test}/${record.key}`}
-              >
-                <label
-                  className="container"
-                  copyText={`${baseURL}#/screening/user-details/${record.test}/${record.key}`}
+            <Tooltip placement="top" title="Copy Link">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() =>
+                    handleCopyText(
+                      `${baseURL}#/screening/user-details/${record.test}/${record.key}`,
+                    )
+                  }
                 >
-                  <input checked="checked" type="checkbox" />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    class="bi bi-copy"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
-                    />
-                  </svg>
-                </label>
-              </Tooltip> */}
-              <Tooltip placement="top" title="Copy Link">
-                <label className="container">
-                  <input checked="checked" type="checkbox" readOnly />
-                  {/* <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    className="bi bi-copy"
-                    viewBox="0 0 16 16"
-                    onClick={() =>
-                      handleCopyText(
-                        `${baseURL}#/screening/user-details/${record.test}/${record.key}`,
-                      )
-                    }
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
-                    />
-                  </svg> */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    class="bi bi-clipboard"
-                    viewBox="0 0 16 16"
-                    className="edit-svg"
-                    onClick={() =>
-                      handleCopyText(
-                        `${baseURL}#/screening/user-details/${record.test}/${record.key}`,
-                      )
-                    }
-                  >
-                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z" />
-                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z" />
-                  </svg>
-                </label>
-              </Tooltip>
-            </div>
+                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z" />
+                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z" />
+                </svg>
+              </label>
+            </Tooltip>
 
             {/* open link */}
             <Tooltip placement="top" title="Open Link">
-              {/* <OpenLinkIcon
-                style={{
-                  fontSize: '32px',
-                }}
-                onClick={() => goToScreeningTest(record)}
-              /> */}
-              <button className="copy" onClick={() => goToScreeningTest(record)}>
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
                   fill="currentColor"
-                  class="bi bi-box-arrow-up-right"
+                  class="size-6"
                   viewBox="0 0 16 16"
+                  onClick={() => goToScreeningTest(record)}
                 >
                   <path
                     fill-rule="evenodd"
@@ -246,7 +191,8 @@ const GenerateLink = (props) => {
                     d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"
                   />
                 </svg>
-              </button>
+              </label>
+              {/* </button> */}
             </Tooltip>
           </Space>
         </>
@@ -422,6 +368,9 @@ const GenerateLink = (props) => {
                   {
                     <ul>
                       <li> MCQ Count: {item.mcq_count}</li>
+                      <li>Easy MCQ Count: {item.easy_mcq_count}</li>
+                      <li>Medium MCQ Count: {item.medium_mcq_count}</li>
+                      <li>Hard MCQ Count: {item.hard_mcq_count}</li>
                       <li> Easy Program: {item.easy_program_count}</li>
                       <li>Medium Count: {item.medium_program_count}</li>
                       <li> Hard Program: {item.hard_program_count}</li>

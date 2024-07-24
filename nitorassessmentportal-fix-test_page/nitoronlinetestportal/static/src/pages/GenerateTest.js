@@ -302,13 +302,13 @@ const GenerateTest = () => {
 
   // Function to save answer
   const saveAnswer = (question_details, selectedAnswerIndex, score, finish) => {
+    let candidateAnswers = selectedAnswerIndex !== undefined ? selectedAnswerIndex : candidate_answers;
+
     let request_data = {
       userTestId: JSON.parse(localStorage.getItem('user_details'))['id'],
       question_details: question_details,
-      candidate_answers: selectedAnswerIndex
-        ? selectedAnswerIndex
-        : candidate_answers,
-      completed: !finish ? false : true,
+      candidate_answers: candidateAnswers,
+      completed: finish ? true : false,
       score: score,
     }
 
@@ -326,7 +326,7 @@ const GenerateTest = () => {
           }
           localStorage.setItem(
             'user_score_details',
-            JSON.stringify({ score: { candidateScore }, textFinished: true }),
+            JSON.stringify({ score: candidateScore, textFinished: true }),
           )
           setShowResult(true)
         }
@@ -349,6 +349,7 @@ const GenerateTest = () => {
     window.open('', '_self')
     window.close()
   }
+
 
   return (
     <>

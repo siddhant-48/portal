@@ -43,6 +43,15 @@ const Question = (props) => {
   const [fetchUrl, setFetchUrl] = useState(
     'questions?language=' + lang + '&page=' + page,
   )
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const handleOpenModal = () => {
+    setIsAddModalOpen(true)
+  }
+
+  const handleAddCancel = () => {
+    setIsAddModalOpen(false)
+  }
   const [fileName, setFilename] = useState('') //fetching uploaded filename
   // const [filterLanguageData, setFilterLanguageData] = useState([]) //language filter
 
@@ -73,13 +82,6 @@ const Question = (props) => {
     fetchData()
   }, [lang, page, pageSize])
 
-  const fetchRecordType = (record, type, difficulty, color, tagText) => {
-    return (
-      record.type == type &&
-      record.difficulty == difficulty && <Tag color={color}>{tagText}</Tag>
-    )
-  }
-
   //filter questions
   const filter_language = () => {
     const filter_language_data = []
@@ -102,11 +104,65 @@ const Question = (props) => {
     return filter_language_data
   }
 
+  const renderQuestions = (text) => {
+    const words = text.split(' ')
+    const isLong = words.length > 20
+
+    if (isLong) {
+      const shortText = words.slice(0, 15).join(' ') + '...'
+      const fullText = text
+
+      return (
+        <Collapse
+          className="custom-collapse"
+          bordered={false}
+          defaultActiveKey={['0']}
+        >
+          <Panel header={shortText} key="1">
+            <p>{fullText}</p>
+          </Panel>
+        </Collapse>
+      )
+    }
+
+    return <p>{text}</p>
+  }
+
+  const fetchRecordType = (record, type, difficulty, color, tagText) => {
+    return (
+      record.type === type &&
+      record.difficulty === difficulty && <Tag color={color}>{tagText}</Tag>
+    )
+  }
+
+  const filterQuestions = () => [
+    { text: 'Easy MCQ Question', value: 'Easy MCQ Question' },
+    { text: 'Medium MCQ Question', value: 'Medium MCQ Question' },
+    { text: 'Hard MCQ Question', value: 'Hard MCQ Question' },
+    { text: 'Easy Program', value: 'Easy Program' },
+    { text: 'Medium Program', value: 'Medium Program' },
+    { text: 'Hard Program', value: 'Hard Program' },
+  ]
+
+  const mapQuestionType = (type, difficulty) => {
+    if (type === 1) {
+      if (difficulty === 1) return 'Easy MCQ Question'
+      if (difficulty === 2) return 'Medium MCQ Question'
+      if (difficulty === 3) return 'Hard MCQ Question'
+    } else if (type === 2) {
+      if (difficulty === 1) return 'Easy Program'
+      if (difficulty === 2) return 'Medium Program'
+      if (difficulty === 3) return 'Hard Program'
+    }
+    return ''
+  }
+
   const columns = [
     {
       title: 'Language Name',
       dataIndex: 'language',
       key: 'language',
+      // width: 200,
       filters: filter_language(),
       filterSearch: true,
       sorter: (a, b) => a.language.localeCompare(b.language),
@@ -116,24 +172,43 @@ const Question = (props) => {
       title: 'Questions',
       dataIndex: 'name',
       key: 'name',
+      width: 550,
+      render: renderQuestions,
     },
     {
       title: 'Question Type',
       dataIndex: 'type',
+      filters: filterQuestions(),
+      filterSearch: true,
       key: 'type',
-      render: (_, record) => (
-        <>
-          {fetchRecordType(record, 1, 1, 'green', 'Easy MCQ Question')}
-          {fetchRecordType(record, 1, 2, 'blue', 'Medium MCQ Question')}
-          {fetchRecordType(record, 1, 3, 'red', 'Hard MCQ Question')}
-          {fetchRecordType(record, 2, 1, 'green', 'Easy Program')}
-          {fetchRecordType(record, 2, 2, 'blue', 'Medium Program')}
-          {fetchRecordType(record, 2, 3, 'red', 'Hard Program')}
-        </>
-      ),
+      width: 230,
+      onFilter: (value, record) => {
+        const typeLabel = mapQuestionType(record.type, record.difficulty)
+        return typeLabel === value
+      },
+      render: (_, record) => {
+        const typeLabel = mapQuestionType(record.type, record.difficulty)
+        return (
+          <>
+            {typeLabel && (
+              <Tag
+                color={
+                  typeLabel.includes('Easy')
+                    ? 'green'
+                    : typeLabel.includes('Medium')
+                      ? 'blue'
+                      : 'red'
+                }
+              >
+                {typeLabel}
+              </Tag>
+            )}
+          </>
+        )
+      },
     },
     {
-      title: 'Duration',
+      title: 'Duration (sec)',
       dataIndex: 'duration',
       key: 'duration',
     },
@@ -142,71 +217,44 @@ const Question = (props) => {
       render: (_, record) => (
         <>
           <Space>
-            <Tooltip placement="topLeft" title="Edit Test">
-              {/* <EditFilled
-                onClick={() => {
-                  showEditlModal(record)
-                }}
-              /> */}
-              {/* added button for style */}
-              <button
-                className="editBtn"
-                onClick={() => {
-                  showEditlModal(record)
-                }}
-              >
-                <svg height="1em" viewBox="0 0 512 512">
-                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
-                </svg>
-              </button>
-            </Tooltip>
-            <Tooltip placement="topLeft" title="Delete Test">
-              {/* <DeleteFilled
-                onClick={() => {
-                  showDeletelModal(record)
-                }}
-              /> */}
-              {/* added button for style */}
-              <button
-                className="bin-button"
-                onClick={() => {
-                  showDeletelModal(record)
-                }}
-              >
+            <Tooltip placement="top" title="Edit Question">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
                 <svg
-                  className="bin-top"
-                  viewBox="0 0 39 7"
-                  fill="none"
                   xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    showEditlModal(record)
+                  }}
                 >
-                  <line y1="5" x2="39" y2="5" stroke="white" strokeWidth="4"></line>
-                  <line
-                    x1="12"
-                    y1="1.5"
-                    x2="26.0357"
-                    y2="1.5"
-                    stroke="white"
-                    strokeWidth="3"
-                  ></line>
-                </svg>
-                <svg
-                  className="bin-bottom"
-                  viewBox="0 0 33 39"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <mask id="path-1-inside-1_8_19" fill="white">
-                    <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"></path>
-                  </mask>
+                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                   <path
-                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                    fill="white"
-                    mask="url(#path-1-inside-1_8_19)"
-                  ></path>
-                  <path d="M12 6L12 29" stroke="white" strokeWidth="4"></path>
-                  <path d="M21 6V29" stroke="white" strokeWidth="4"></path>
+                    fill-rule="evenodd"
+                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                  />
                 </svg>
-              </button>
+              </label>
+
+              {/* </button> */}
+            </Tooltip>
+            <Tooltip placement="top" title="Delete Question">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  class="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    showDeletelModal(record)
+                  }}
+                >
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                </svg>
+              </label>
             </Tooltip>
           </Space>
         </>
@@ -249,6 +297,7 @@ const Question = (props) => {
   const handleCancel = () => {
     setIsModalOpen(false)
     setIsEditModalOpen(false)
+    form.resetFields()
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -265,70 +314,69 @@ const Question = (props) => {
 
   const onFinish = async (values) => {
     var multiple_options = Object.keys(form2.getFieldValue()).length
-        ? form2.getFieldValue()
-        : questionDetail;
+      ? form2.getFieldValue()
+      : questionDetail
     var program_test_cases = Object.keys(form3.getFieldValue()).length
-        ? form3.getFieldValue()
-        : testDetails;
+      ? form3.getFieldValue()
+      : testDetails
 
     if (multiple_options) {
-        delete multiple_options['question_details'];
-        values['multiple_options'] = multiple_options;
+      delete multiple_options['question_details']
+      values['multiple_options'] = multiple_options
     }
     if (program_test_cases) {
-        delete program_test_cases['question_details'];
-        values['program_test_cases'] = program_test_cases;
+      delete program_test_cases['question_details']
+      values['program_test_cases'] = program_test_cases
     }
-    values['difficulty'] = record.difficulty;
+    values['difficulty'] = record.difficulty
 
-    //manual date 
+    //manual date
     const formatDateToISO = (date) => {
-        const d = new Date(date);
-        return d.toISOString();
-    };
+      const d = new Date(date)
+      return d.toISOString()
+    }
 
-    values['created_at'] = formatDateToISO(record.created_at);
-    values['updated_at'] = formatDateToISO(new Date());
-    
+    values['created_at'] = formatDateToISO(record.created_at)
+    values['updated_at'] = formatDateToISO(new Date())
+
     const new_values = {
-        ...values,
-        multiple_options: questionDetail ? values['multiple_options'] : null,
-        program_test_cases: testDetails ? values['program_test_cases'] : null,
-    };
+      ...values,
+      multiple_options: questionDetail ? values['multiple_options'] : null,
+      program_test_cases: testDetails ? values['program_test_cases'] : null,
+    }
 
     // Ensure unwanted fields are not in the nested objects
     if (new_values['multiple_options']) {
-        delete new_values['multiple_options']['created_at'];
-        delete new_values['multiple_options']['updated_at'];
+      delete new_values['multiple_options']['created_at']
+      delete new_values['multiple_options']['updated_at']
     }
     if (new_values['program_test_cases']) {
-        delete new_values['program_test_cases']['created_at'];
-        delete new_values['program_test_cases']['updated_at'];
+      delete new_values['program_test_cases']['created_at']
+      delete new_values['program_test_cases']['updated_at']
     }
 
     if (questionDetail) {
-        delete new_values['program_test_cases'];
-        delete new_values['multiple_options']['candidate_answers'];
+      delete new_values['program_test_cases']
+      delete new_values['multiple_options']['candidate_answers']
     }
 
     if (testDetails) {
-        delete new_values['multiple_options'];
-        delete new_values['program_test_cases']['candidate_answers'];
+      delete new_values['multiple_options']
+      delete new_values['program_test_cases']['candidate_answers']
     }
 
-    console.log('Payload being sent:', { id: record.id, values: new_values });  // Debugging line
+    console.log('Payload being sent:', { id: record.id, values: new_values }) // Debugging line
 
     triggerFetchData('add_question/', { id: record.id, values: new_values })
-        .then((data) => {
-            console.log(data);
-            message.success('Question Updated Successfully');
-            fetchData();
-        })
-        .catch((reason) => message.error(reason));
+      .then((data) => {
+        console.log(data)
+        message.success('Question Updated Successfully')
+        fetchData()
+      })
+      .catch((reason) => message.error(reason))
 
-    setIsEditModalOpen(false);
-};
-
+    setIsEditModalOpen(false)
+  }
 
   //asynchronous
   const handleBeforeUpload = async (file) => {
@@ -338,8 +386,19 @@ const Question = (props) => {
         key: 'uploadStatus',
         duration: 0,
       })
+
       const excelObj = await readExcel(file)
-      await triggerFetchData('bulk_questions/', excelObj)
+
+      // uppercase to lowercase
+      const modifiedExcelObj = {
+        ...excelObj,
+        mcq: excelObj.mcq.map((question) => ({
+          ...question,
+          language: question.language.toLowerCase(),
+        })),
+      }
+
+      await triggerFetchData('bulk_questions/', modifiedExcelObj)
       await fetchData()
       setFilename(file.name)
       message.success({
@@ -352,7 +411,7 @@ const Question = (props) => {
         key: 'uploadStatus',
       })
     }
-    return false //default behavior
+    return false // default behavior
   }
 
   return (
@@ -361,6 +420,7 @@ const Question = (props) => {
       <Layout.Content
         style={{ height: '100vh', padding: '1rem', textAlign: 'center' }}
       >
+        {/* download excel */}
         <div
           style={{
             float: 'right',
@@ -373,23 +433,9 @@ const Question = (props) => {
             Download Excel Template
           </Button>
         </div>
+
+        {/* bulk upload */}
         <div style={{ float: 'right', marginBottom: '10px' }}>
-          {/* <Upload
-            type="file"
-            accept=".xlsx"
-            showUploadList={false}
-            beforeUpload={(file) => {
-              const excelObj = readExcel(file)
-              excelObj.then((data) => {
-                triggerFetchData('bulk_questions/', data).then((data) => fetchData())
-                setFilename(file.name)
-                message.success(`File ${file.name} uploaded successfully`)
-              })
-              return false
-            }}
-          >
-            <Button icon={<UploadOutlined />}> Bulk Upload (.xlsx)</Button>
-          </Upload> */}
           <Upload
             type="file"
             accept=".xlsx"
@@ -398,6 +444,18 @@ const Question = (props) => {
           >
             <Button icon={<UploadOutlined />}> Bulk Upload (.xlsx)</Button>
           </Upload>
+        </div>
+
+        {/* add question */}
+        <div
+          style={{
+            float: 'right',
+            marginBottom: '10px',
+            marginLeft: '10px',
+            marginRight: '10px',
+          }}
+        >
+          <Button onClick={handleOpenModal}>Add Question</Button>
         </div>
 
         <Table
@@ -417,15 +475,16 @@ const Question = (props) => {
             },
           }}
         />
+
         {/* Delete Modal */}
         <Modal
-          title={isModalOpen.name}
+          // title={isModalOpen.name}
           open={isModalOpen}
           onOk={() => handleOk()}
           onCancel={handleCancel}
           okText="Yes"
         >
-          <Divider></Divider>
+          {/* <Divider></Divider> */}
           <p>Are you sure you want to permanently remove this question?</p>
         </Modal>
 
@@ -437,28 +496,20 @@ const Question = (props) => {
           onCancel={handleCancel}
           okText="Update"
         >
-          <Divider></Divider>
+          <Divider />
           <Form
             form={form}
-            // name="basic"
-            labelCol={{
-              span: 8,
-            }}
-            wrapperCol={{
-              span: 16,
-            }}
-            style={{
-              maxWidth: 600,
-            }}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{ maxWidth: 600 }}
             initialValues={record}
             onFinish={onFinish}
             key="main_form"
-            // onFinishFailed={onFinishFailed}
             autoComplete="off"
           >
             {columns.map((item, index) => (
               <Form.Item
-                style={item.title == 'Action' ? { display: 'none' } : null}
+                style={item.title === 'Action' ? { display: 'none' } : null}
                 key={`form-item-${index}`}
                 label={item.title}
                 name={item.dataIndex}
@@ -469,79 +520,44 @@ const Question = (props) => {
                   },
                 ]}
               >
-                {item.title == 'Question Type' ? <Input disabled /> : <Input />}
+                {item.title === 'Question Type' ? (
+                  <Form.Item
+                    noStyle
+                    shouldUpdate={(prevValues, currentValues) =>
+                      prevValues.type !== currentValues.type
+                    }
+                  >
+                    {() => {
+                      const type = form.getFieldValue('type')
+                      return (
+                        <Input
+                          disabled
+                          value={type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''}
+                        />
+                      )
+                    }}
+                  </Form.Item>
+                ) : (
+                  <Input />
+                )}
               </Form.Item>
             ))}
             {questionDetail ? (
-              <>
-                <Collapse key={`collapse-index}`} defaultActiveKey={['1']}>
-                  <Panel header="Question Details" key={`panel-index`}>
-                    <Form
-                      form={form2}
-                      // name="basic"
-                      labelCol={{
-                        span: 8,
-                      }}
-                      wrapperCol={{
-                        span: 16,
-                      }}
-                      style={{
-                        maxWidth: 600,
-                      }}
-                      key="panel_form"
-                      initialValues={questionDetail}
-                      onFinish={onFinish}
-                      // onFinishFailed={onFinishFailed}
-                      autoComplete="off"
-                    >
-                      {optionList?.map((item, index) => (
-                        <Form.Item
-                          style={item.title == 'Action' ? { display: 'none' } : null}
-                          key={`form-item-${index}`}
-                          label={item.title}
-                          name={item.dataIndex}
-                          rules={[
-                            {
-                              required: true,
-                              message: `Please input your ${item.title}`,
-                            },
-                          ]}
-                        >
-                          {item.title == 'Question Type' ? (
-                            <Input disabled />
-                          ) : (
-                            <Input />
-                          )}
-                        </Form.Item>
-                      ))}
-                    </Form>
-                  </Panel>
-                </Collapse>
-              </>
-            ) : (
-              <Collapse key={`collapse-index}`} defaultActiveKey={['1']}>
-                <Panel header="Test Details" key={`panel-index`}>
+              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
+                <Panel header="Question Details" key={`panel-index`}>
                   <Form
-                    form={form3}
-                    // name="basic"
-                    labelCol={{
-                      span: 8,
-                    }}
-                    wrapperCol={{
-                      span: 16,
-                    }}
-                    style={{
-                      maxWidth: 600,
-                    }}
+                    form={form2}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ maxWidth: 600 }}
                     key="panel_form"
-                    initialValues={testDetails}
+                    initialValues={questionDetail}
                     onFinish={onFinish}
-                    // onFinishFailed={onFinishFailed}
                     autoComplete="off"
                   >
-                    {caseList?.map((item, index) => (
+                    {optionList?.map((item, index) => (
                       <Form.Item
-                        style={item.title == 'Action' ? { display: 'none' } : null}
+                        style={item.title === 'Action' ? { display: 'none' } : null}
                         key={`form-item-${index}`}
                         label={item.title}
                         name={item.dataIndex}
@@ -552,8 +568,279 @@ const Question = (props) => {
                           },
                         ]}
                       >
-                        {item.title == 'Question Type' ? (
-                          <Input disabled />
+                        {item.title === 'Question Type' ? (
+                          <Form.Item
+                            noStyle
+                            shouldUpdate={(prevValues, currentValues) =>
+                              prevValues.type !== currentValues.type
+                            }
+                          >
+                            {() => {
+                              const type = form2.getFieldValue('type')
+                              return (
+                                <Input
+                                  disabled
+                                  value={
+                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
+                                  }
+                                />
+                              )
+                            }}
+                          </Form.Item>
+                        ) : (
+                          <Input />
+                        )}
+                      </Form.Item>
+                    ))}
+                  </Form>
+                </Panel>
+              </Collapse>
+            ) : (
+              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
+                <Panel header="Test Details" key={`panel-index`}>
+                  <Form
+                    form={form3}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ maxWidth: 600 }}
+                    key="panel_form"
+                    initialValues={testDetails}
+                    onFinish={onFinish}
+                    autoComplete="off"
+                  >
+                    {caseList?.map((item, index) => (
+                      <Form.Item
+                        style={item.title === 'Action' ? { display: 'none' } : null}
+                        key={`form-item-${index}`}
+                        label={item.title}
+                        name={item.dataIndex}
+                        rules={[
+                          {
+                            required: true,
+                            message: `Please input your ${item.title}`,
+                          },
+                        ]}
+                      >
+                        {item.title === 'Question Type' ? (
+                          <Form.Item
+                            noStyle
+                            shouldUpdate={(prevValues, currentValues) =>
+                              prevValues.type !== currentValues.type
+                            }
+                          >
+                            {() => {
+                              const type = form3.getFieldValue('type')
+                              return (
+                                <Input
+                                  disabled
+                                  value={
+                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
+                                  }
+                                />
+                              )
+                            }}
+                          </Form.Item>
+                        ) : (
+                          <Input />
+                        )}
+                      </Form.Item>
+                    ))}
+                  </Form>
+                </Panel>
+              </Collapse>
+            )}
+          </Form>
+        </Modal>
+
+        {/* add question */}
+        <Modal
+          title="Add Question"
+          open={isAddModalOpen}
+          onOk={form.submit}
+          onCancel={handleAddCancel}
+          okText="Add"
+          style={{ width: '800px' }} // Increase the modal width
+        >
+          <Divider />
+          <Form
+            form={form}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            style={{ maxWidth: 700 }} // Adjust form width
+            initialValues={record}
+            onFinish={onFinish}
+            key="main_form"
+            autoComplete="off"
+          >
+            {columns.map((item, index) => (
+              <Form.Item
+                style={item.title === 'Action' ? { display: 'none' } : null}
+                key={`form-item-${index}`}
+                label={item.title}
+                name={item.dataIndex}
+                rules={[
+                  {
+                    required: true,
+                    message: `Please input your ${item.title}`,
+                  },
+                ]}
+              >
+                {item.title === 'Question Type' ? (
+                  <Form.Item
+                    noStyle
+                    shouldUpdate={(prevValues, currentValues) =>
+                      prevValues.type !== currentValues.type
+                    }
+                  >
+                    {() => {
+                      const type = form.getFieldValue('type')
+                      return (
+                        <Input
+                          disabled
+                          value={type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''}
+                        />
+                      )
+                    }}
+                  </Form.Item>
+                ) : (
+                  <Input />
+                )}
+              </Form.Item>
+            ))}
+
+            {/* New Select Inputs */}
+            {/* <Form.Item
+              label="Difficulty"
+              name="difficulty"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select the difficulty level',
+                },
+              ]}
+            >
+              <Select>
+                <Select.Option value="easy">Easy</Select.Option>
+                <Select.Option value="medium">Medium</Select.Option>
+                <Select.Option value="hard">Hard</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Language"
+              name="language"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select the language',
+                },
+              ]}
+            >
+              <Select>
+                <Select.Option value="english">English</Select.Option>
+                <Select.Option value="spanish">Spanish</Select.Option>
+                <Select.Option value="french">French</Select.Option>
+                {/* Add more options as needed */}
+            {/* </Select>
+            </Form.Item>   */}
+
+            {questionDetail ? (
+              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
+                <Panel header="Question Details" key={`panel-index`}>
+                  <Form
+                    form={form2}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ maxWidth: 700 }}
+                    key="panel_form"
+                    initialValues={questionDetail}
+                    onFinish={onFinish}
+                    autoComplete="off"
+                  >
+                    {optionList?.map((item, index) => (
+                      <Form.Item
+                        style={item.title === 'Action' ? { display: 'none' } : null}
+                        key={`form-item-${index}`}
+                        label={item.title}
+                        name={item.dataIndex}
+                        rules={[
+                          {
+                            required: true,
+                            message: `Please input your ${item.title}`,
+                          },
+                        ]}
+                      >
+                        {item.title === 'Question Type' ? (
+                          <Form.Item
+                            noStyle
+                            shouldUpdate={(prevValues, currentValues) =>
+                              prevValues.type !== currentValues.type
+                            }
+                          >
+                            {() => {
+                              const type = form2.getFieldValue('type')
+                              return (
+                                <Input
+                                  disabled
+                                  value={
+                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
+                                  }
+                                />
+                              )
+                            }}
+                          </Form.Item>
+                        ) : (
+                          <Input />
+                        )}
+                      </Form.Item>
+                    ))}
+                  </Form>
+                </Panel>
+              </Collapse>
+            ) : (
+              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
+                <Panel header="Test Details" key={`panel-index`}>
+                  <Form
+                    form={form3}
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    style={{ maxWidth: 700 }}
+                    key="panel_form"
+                    initialValues={testDetails}
+                    onFinish={onFinish}
+                    autoComplete="off"
+                  >
+                    {caseList?.map((item, index) => (
+                      <Form.Item
+                        style={item.title === 'Action' ? { display: 'none' } : null}
+                        key={`form-item-${index}`}
+                        label={item.title}
+                        name={item.dataIndex}
+                        rules={[
+                          {
+                            required: true,
+                            message: `Please input your ${item.title}`,
+                          },
+                        ]}
+                      >
+                        {item.title === 'Question Type' ? (
+                          <Form.Item
+                            noStyle
+                            shouldUpdate={(prevValues, currentValues) =>
+                              prevValues.type !== currentValues.type
+                            }
+                          >
+                            {() => {
+                              const type = form3.getFieldValue('type')
+                              return (
+                                <Input
+                                  disabled
+                                  value={
+                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
+                                  }
+                                />
+                              )
+                            }}
+                          </Form.Item>
                         ) : (
                           <Input />
                         )}

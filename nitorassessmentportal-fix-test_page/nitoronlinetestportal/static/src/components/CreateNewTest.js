@@ -379,15 +379,19 @@ const CreateNewTest = ({
                     >
                       {item.dataIndex == 'language' ? (
                         <Select
-                          showSearch
+                          // showSearch
+                          mode="multiple"
                           placeholder="Select a language"
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            (option?.label ?? '')
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
+                          // optionFilterProp="children"
+                          // filterOption={(input, option) =>
+                          //   (option?.label ?? '')
+                          //     .toLowerCase()
+                          //     .includes(input.toLowerCase())
+                          // }
                           options={languageOptions}
+                          onChange={handleAddSection}
+                          defaultValue={["java"]}
+                          allowClear
                         />
                       ) : item.dataIndex === 'add_sections' ? (
                         <Select

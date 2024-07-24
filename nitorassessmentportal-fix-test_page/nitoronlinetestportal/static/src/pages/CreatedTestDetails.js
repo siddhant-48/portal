@@ -89,9 +89,12 @@ const CreatedTestDetails = (props) => {
                   {
                     <ul>
                       <li>MCQ Count: {item.mcq_count}</li>
-                      <li>Easy Program: {item.easy_program_count}</li>
-                      <li>Medium Count: {item.medium_program_count}</li>
-                      <li>Hard Program: {item.hard_program_count}</li>
+                      <li>Easy MCQ Count: {item.easy_mcq_count}</li>
+                      <li>Medium MCQ Count: {item.medium_mcq_count}</li>
+                      <li>Hard MCQ Count: {item.hard_mcq_count}</li>
+                      <li>Easy Program Count: {item.easy_program_count}</li>
+                      <li>Medium Program Count: {item.medium_program_count}</li>
+                      <li>Hard Program Count: {item.hard_program_count}</li>
                     </ul>
                   }
                 </Panel>

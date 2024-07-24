@@ -240,7 +240,7 @@ const CreateTestForm_1 = [
     title: 'Language Name',
     dataIndex: 'language',
     key: 'language',
-    sorter: (a, b) => a.language - b.language,
+    // sorter: (a, b) => a.language - b.language,
   },
   {
     title: 'End Date',
