@@ -342,7 +342,8 @@ const EditTest = ({
                                     <DatePicker
                                       style={{ width: '100%' }}
                                       onChange={onDateChange}
-                                      defaultValue={moment(rec[item.dataIndex])}
+                                      // defaultValue={"null"}
+                                      placeholder=''
                                       disabled
                                     />
                                   )

@@ -17,6 +17,7 @@ import {
   Select,
 } from 'antd'
 
+import RenderQuestions from './RenderQuestions'
 const { Option } = Select
 import { UploadOutlined } from '@ant-design/icons'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
@@ -44,7 +45,9 @@ const Question = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [form] = Form.useForm()
+
   const [form2] = Form.useForm()
+
   const [form3] = Form.useForm()
   const [questionDetail, setquestionDetail] = useState(null)
   const [addQuestionDetail, setAddQuestionDetail] = useState(null)
@@ -56,10 +59,16 @@ const Question = (props) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const handleOpenModal = () => {
     setIsAddModalOpen(true)
+    form.resetFields()
+    form2.resetFields()
+    form3.resetFields()
   }
 
   const handleAddCancel = () => {
     setIsAddModalOpen(false)
+    form.resetFields()
+    form2.resetFields()
+    form3.resetFields()
   }
   const [fileName, setFilename] = useState('') //fetching uploaded filename
   // const [filterLanguageData, setFilterLanguageData] = useState([]) //language filter
@@ -182,7 +191,7 @@ const Question = (props) => {
       dataIndex: 'name',
       key: 'name',
       width: 550,
-      render: renderQuestions,
+      render: (text) => <RenderQuestions text={text} />,
     },
     {
       title: 'Question Type',
@@ -306,6 +315,7 @@ const Question = (props) => {
   const handleCancel = () => {
     setIsModalOpen(false)
     setIsEditModalOpen(false)
+    form2.resetFields()
     form.resetFields()
   }
 
@@ -321,8 +331,63 @@ const Question = (props) => {
     generateExcelFromJson(templateJSONData, 'question_template.xlsx')
   }
 
+  //asynchronous
+  const handleBeforeUpload = async (file) => {
+    try {
+      message.loading({
+        content: `Uploading ${file.name} with questions...`,
+        key: 'uploadStatus',
+        duration: 0,
+      })
+
+      const excelObj = await readExcel(file)
+
+      // uppercase to lowercase
+      const modifiedExcelObj = {
+        ...excelObj,
+        mcq: excelObj.mcq.map((question) => ({
+          ...question,
+          language: question.language.toLowerCase(),
+        })),
+      }
+
+      await triggerFetchData('bulk_questions/', modifiedExcelObj)
+      await fetchData()
+      setFilename(file.name)
+      message.success({
+        content: `File ${file.name} uploaded successfully`,
+        key: 'uploadStatus',
+      })
+    } catch (error) {
+      message.error({
+        content: `Upload failed: ${error.message}`,
+        key: 'uploadStatus',
+      })
+    }
+    return false // default behavior
+  }
+  const testSectionOption = [
+    { id: 1, label: 'Add MCQ', name: 'Add MCQ', value: 1 },
+    { id: 2, label: 'Add Program', name: 'Add Program', value: 2 },
+  ]
+  const difficultOption = [
+    { id: 1, label: 'Easy', name: 'Easy', value: 1 },
+    { id: 2, label: 'Medium', name: 'Medium', value: 2 },
+    { id: 3, label: 'Hard', name: 'Hard', value: 3 },
+  ]
+
+  const handleValuesChange = (_, allValues) => {
+    if (allValues.type === 1) {
+      setAddQuestionDetail(optionList)
+    } else if (allValues.type === 2) {
+      setAddQuestionDetail(caseList)
+    } else {
+      setAddQuestionDetail(null)
+    }
+  }
+
   const onFinish = async (values) => {
-    console.log("hi");
+    console.log('hi')
     var multiple_options = Object.keys(form2.getFieldValue()).length
       ? form2.getFieldValue()
       : questionDetail
@@ -338,6 +403,7 @@ const Question = (props) => {
       delete program_test_cases['question_details']
       values['program_test_cases'] = program_test_cases
     }
+    console.log(record)
     values['difficulty'] = record.difficulty
 
     //manual date
@@ -385,57 +451,109 @@ const Question = (props) => {
       })
       .catch((reason) => message.error(reason))
 
-    setIsEditModalOpen(false)
+    setIsAddModalOpen(false)
+    handleOpenModal()
   }
 
-  //asynchronous
-  const handleBeforeUpload = async (file) => {
+  const onAddFinish = async (values) => {
+    console.log('onAddFinish called')
+    console.log('Form values:', values)
+
+    let multiple_options = Object.keys(form2.getFieldValue()).length
+      ? form2.getFieldValue()
+      : questionDetail
+    let program_test_cases = Object.keys(form3.getFieldValue()).length
+      ? form3.getFieldValue()
+      : testDetails
+
+    //
+
+    let temp = {
+      option1: values.option1,
+      option2: values.option2,
+      option3: values.option3,
+      option4: values.option4,
+      correct_value: values.correct_value,
+    }
+    console.log('temp', temp)
+
+    values['multiple_options'] = temp
+
+    // if (values.multiple_options) {
+    //   delete multiple_options['question_details']
+    //   values['multiple_options'] = values.multiple_options
+    // }
+    // if (values.program_test_cases) {
+    //   delete program_test_cases['question_details']
+    //   values['program_test_cases'] = values.program_test_cases
+    // }
+
+    // Ensure 'record' is defined and 'difficulty' property exists
+    // console.log(record)
+    console.log('difficulty', values.difficulty)
+    values['difficulty'] = values.difficulty
+
+    // Add the duration field
+    values['duration'] = values['duration'] || 0 // Default to 0 if not provided
+
+    // Manual date formatting
+    const formatDateToISO = (date) => {
+      const d = new Date(date)
+      return d.toISOString()
+    }
+
+    values['created_at'] =
+      record && record.created_at
+        ? formatDateToISO(record.created_at)
+        : formatDateToISO(new Date())
+    values['updated_at'] = formatDateToISO(new Date())
+
+    // values['id'] = 1666
+
+    //
+    console.log('values-505', values)
+    const new_values = {
+      ...values,
+      multiple_options: values['multiple_options'],
+      program_test_cases: values['program_test_cases'],
+    }
+
+    // Ensure unwanted fields are not in the nested objects
+    if (new_values['multiple_options']) {
+      delete new_values['multiple_options']['created_at']
+      delete new_values['multiple_options']['updated_at']
+    }
+    if (new_values['program_test_cases']) {
+      delete new_values['program_test_cases']['created_at']
+      delete new_values['program_test_cases']['updated_at']
+    }
+
+    if (questionDetail) {
+      delete new_values['program_test_cases']
+      delete new_values['multiple_options']['candidate_answers']
+    }
+
+    if (testDetails) {
+      delete new_values['multiple_options']
+      delete new_values['program_test_cases']['candidate_answers']
+    }
+
+    console.log('Payload being sent:', { id: values.id, values: new_values }) // Debugging line
+
     try {
-      message.loading({
-        content: `Uploading ${file.name} with questions...`,
-        key: 'uploadStatus',
-        duration: 0,
+      const data = await triggerFetchData('add_question/', {
+        id: values.id,
+        values: new_values,
       })
-
-      const excelObj = await readExcel(file)
-
-      // uppercase to lowercase
-      const modifiedExcelObj = {
-        ...excelObj,
-        mcq: excelObj.mcq.map((question) => ({
-          ...question,
-          language: question.language.toLowerCase(),
-        })),
-      }
-
-      await triggerFetchData('bulk_questions/', modifiedExcelObj)
-      await fetchData()
-      setFilename(file.name)
-      message.success({
-        content: `File ${file.name} uploaded successfully`,
-        key: 'uploadStatus',
-      })
-    } catch (error) {
-      message.error({
-        content: `Upload failed: ${error.message}`,
-        key: 'uploadStatus',
-      })
+      console.log(data)
+      message.success('Question Added Successfully')
+      fetchData()
+    } catch (reason) {
+      message.error(reason)
     }
-    return false // default behavior
-  }
-  const testSectionOption = [
-    { id: 1, label: 'Add MCQ', name: 'Add MCQ', value: 'Add_MCQ' },
-    { id: 2, label: 'Add Program', name: 'Add Program', value: 'Add_Program' },
-  ]
 
-  const handleValuesChange = (_, allValues) => {
-    if (allValues.type === 'Add_MCQ') {
-      setAddQuestionDetail(optionList)
-    } else if (allValues.type === 'Add_Program') {
-      setAddQuestionDetail(caseList)
-    } else {
-      setAddQuestionDetail(null)
-    }
+    setAddQuestionDetail(false)
+    handleAddCancel()
   }
 
   return (
@@ -473,13 +591,15 @@ const Question = (props) => {
         {/* add question */}
         <div
           style={{
-            float: 'right',
+            float: 'left',
             marginBottom: '10px',
             marginLeft: '10px',
             marginRight: '10px',
           }}
         >
-          <Button onClick={handleOpenModal}>Add Question</Button>
+          <Button type="primary" onClick={handleOpenModal}>
+            Add Question
+          </Button>
         </div>
 
         <Table
@@ -680,34 +800,36 @@ const Question = (props) => {
         <Modal
           title="Add Question"
           open={isAddModalOpen}
-          onOk={form.submit}
+          onOk={form.submit} // Ensure form submission is triggered
           onCancel={handleAddCancel}
           okText="Add"
-          width={800} // Increase the modal width
         >
           <Divider />
           <Form
             form={form}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
-            style={{ maxWidth: 600 }}
+            // style={{ maxWidth: 300 }}
             initialValues={record}
-            onFinish={onFinish}
+            onFinish={onAddFinish}
             onValuesChange={handleValuesChange}
             key="main_form"
             autoComplete="off"
           >
             <Form.Item
-              label="Question Title"
-              name="questionTitle"
-              rules={[
-                { required: true, message: 'Please input your Question Title' },
-              ]}
+              label="Language"
+              name="language"
+              rules={[{ required: true, message: 'Please input your Language' }]}
             >
-              <Input />
+              <Select placeholder="Select Language" style={{ width: '100%' }}>
+                {languageOptions.map((option) => (
+                  <Option key={option.id} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
 
-            {/* Question Type */}
             <Form.Item
               label="Question Type"
               name="type"
@@ -715,7 +837,7 @@ const Question = (props) => {
                 { required: true, message: 'Please select your Question Type' },
               ]}
             >
-              <Select placeholder="Select Question Type">
+              <Select placeholder="Select Question Type" style={{ width: '100%' }}>
                 {testSectionOption.map((option) => (
                   <Option key={option.id} value={option.value}>
                     {option.label}
@@ -724,28 +846,41 @@ const Question = (props) => {
               </Select>
             </Form.Item>
 
-            {/* Difficulty */}
+            <Form.Item
+              label="Question Title"
+              name="name"
+              placeholder="Enter the Question"
+              rules={[
+                { required: true, message: 'Please input your Question Title' },
+              ]}
+            >
+              <Input style={{ width: '100%' }} />
+            </Form.Item>
+
             <Form.Item
               label="Difficulty"
               name="difficulty"
               rules={[{ required: true, message: 'Please input your Difficulty' }]}
             >
-              <Input placeholder="1 = Easy, 2 = Medium, 3 = Hard" />
-            </Form.Item>
-
-            {/* Language */}
-            <Form.Item
-              label="Language"
-              name="language"
-              rules={[{ required: true, message: 'Please input your Language' }]}
-            >
-              <Select placeholder="Select Language">
-                {languageOptions.map((option) => (
+              <Select placeholder="Select Difficulty Type" style={{ width: '100%' }}>
+                {difficultOption.map((option) => (
                   <Option key={option.id} value={option.value}>
                     {option.label}
                   </Option>
                 ))}
               </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Duration (sec)"
+              name="duration"
+              rules={[{ required: true, message: 'Please input the Duration' }]}
+            >
+              <Input
+                type="number"
+                placeholder="Enter Duration in seconds"
+                style={{ width: '100%' }}
+              />
             </Form.Item>
 
             {addQuestionDetail && (
@@ -763,7 +898,7 @@ const Question = (props) => {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input style={{ width: '100%' }} />
                     </Form.Item>
                   ))}
                 </Panel>

@@ -11,6 +11,10 @@ import {
   Space,
   Tooltip,
   Tag,
+  Flex,
+  Slider,
+  Switch,
+  Typography,
 } from 'antd'
 import { ACTION } from '../Utils/constants'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'

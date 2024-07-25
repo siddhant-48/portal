@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react'
+import React, { useState, useEffect, useReducer } from 'react'
 import {
   Input,
   Button,
@@ -130,16 +130,15 @@ const CreateNewTest = ({
   // Table in Add New Test Modal
   const columns = [
     {
-      title: 'Test Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Language Name', // Updated title
+      dataIndex: 'language', // Updated dataIndex to match the field name for language
+      key: 'language', // Updated key
       width: '400px',
-      // colSpan: 16,
       render: (text, testRecord) => (
         <>
           <a
             onClick={() => {
-              openDetailModal(testRecord)
+              openDetailModal(testRecord) // Preserve the same functionality
             }}
           >
             {text}
@@ -152,12 +151,11 @@ const CreateNewTest = ({
       dataIndex: 'weightage',
       key: 'weightage',
       width: '400px',
-      // colSpan: 16,
       render: (text, testRecord) => (
         <>
           <a
             onClick={() => {
-              openDetailModal(testRecord)
+              openDetailModal(testRecord) // Preserve the same functionality
             }}
           >
             {text}
@@ -173,7 +171,7 @@ const CreateNewTest = ({
             <Tooltip placement="topLeft" title="Remove From List">
               <CloseOutlined
                 onClick={() => {
-                  removeDataList(testRecord)
+                  removeDataList(testRecord) // Preserve the same functionality
                 }}
               />
             </Tooltip>
@@ -242,10 +240,12 @@ const CreateNewTest = ({
   }
 
   const handleAddSection = (value) => {
+    // Dispatch to update the state
     dispatch({
       type: ACTION.SET_ADDED_SECTIONS,
       payload: { addedSections: value },
     })
+    form.resetFields(['language', 'add_sections'])
   }
 
   // Function to add new test
@@ -275,31 +275,37 @@ const CreateNewTest = ({
   }
 
   // Function to add form data to List with Score Weightage
+  const [testName, setTestName] = useState('')
   const handleCreateNewTest = (param) => {
     let values = { ...initialNewTestValues, ...param }
     let name = values['name']
     let end_date = values['end_date']
+    let language = values['language']
     let weightage = calculateWeightage(values)
+
     let form_data = {
       name: name,
       end_date: end_date,
+      language: language,
       weightage: weightage,
       question_details: [values],
     }
+    setTestName(name)
 
     triggerFetchData('validate_test/', form_data)
       .then((data) => {
         form_data['id'] = Math.floor(Math.random() * 10000)
-        if (dataList.length == 0) {
+        if (dataList.length === 0) {
           dispatch({
             type: ACTION.SET_COMPONENT_DISABLED,
             payload: { componentDisabled: false },
           })
           setDataList(form_data)
         } else {
-          let filterArray = dataList.filter((item) => item.name == name)
+          let filterArray = dataList.filter((item) => item.name === name)
           filterArray.map((item) => {
             form_data.question_details = [item.question_details[0], values]
+            form_data.language = language // Update language if needed
           })
           setDataList(form_data)
         }
@@ -331,6 +337,12 @@ const CreateNewTest = ({
       payload: { showEditSection: false },
     })
   }
+  const [isAddedToList, setIsAddedToList] = useState(false)
+
+  const handleAddToListClick = () => {
+    setIsAddedToList(true)
+    form.submit()
+  }
 
   return (
     <Modal
@@ -345,152 +357,140 @@ const CreateNewTest = ({
         <Form
           form={form}
           name="basic"
-          labelCol={{
-            span: 12,
-          }}
-          wrapperCol={{
-            span: 12,
-          }}
-          style={{
-            maxWidth: 'none',
-          }}
+          labelCol={{ span: 12 }}
+          wrapperCol={{ span: 12 }}
+          style={{ maxWidth: 'none' }}
           layout="inline"
           initialValues={initialNewTestValues}
           onFinish={handleCreateNewTest}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <>
-            <Col span={24}>
-              {/* Other Tops Fields */}
-              <Row>
-                {CreateTestForm_1.map((item, index) => (
-                  <Col span={12}>
+          <Col span={24}>
+            {/* Other Tops Fields */}
+            <Row>
+              {CreateTestForm_1.map((item, index) => (
+                <Col span={12} key={`form-item-${index}`}>
+                  <Form.Item
+                    label={item.title}
+                    name={item.dataIndex}
+                    rules={[
+                      {
+                        required: item.dataIndex !== 'end_date',
+                        message: `Please input your ${item.title}`,
+                      },
+                    ]}
+                  >
+                    {item.dataIndex === 'language' ? (
+                      <Select
+                        showSearch
+                        placeholder="Select a language"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          (option?.children ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={languageOptions}
+                        onChange={handleAddSection}
+                        allowClear
+                      />
+                    ) : item.dataIndex === 'add_sections' ? (
+                      <Select
+                        mode="multiple"
+                        allowClear
+                        style={{ width: '100%' }}
+                        placeholder="Please select"
+                        defaultValue={[]}
+                        onChange={handleAddSection}
+                        options={testSectionOption}
+                      />
+                    ) : item.dataIndex === 'end_date' ? (
+                      <DatePicker
+                        style={{ width: '100%' }}
+                        onChange={onDateChange}
+                        disabled={!state.componentDisabled}
+                      />
+                    ) : item.dataIndex === 'name' ? (
+                      <Input disabled={!state.componentDisabled} />
+                    ) : null}
+                  </Form.Item>
+                  <br />
+                </Col>
+              ))}
+            </Row>
+
+            {/* MCQ Fields */}
+            {state.addedSections.includes('Add_MCQs') && (
+              <Row justify="start">
+                <Col span={24}>
+                  <h4>MCQ Count</h4>
+                </Col>
+                {CreateTestForm_2.map((item, index) => (
+                  <Col span={12} key={`form-item-${index}`}>
                     <Form.Item
-                      key={`form-item-${index}`}
                       label={item.title}
                       name={item.dataIndex}
                       rules={[
                         {
-                          required: item.dataIndex !== 'end_date',
+                          required: true,
                           message: `Please input your ${item.title}`,
                         },
                       ]}
                     >
-                      {item.dataIndex == 'language' ? (
-                        <Select
-                          // showSearch
-                          mode="multiple"
-                          placeholder="Select a language"
-                          // optionFilterProp="children"
-                          // filterOption={(input, option) =>
-                          //   (option?.label ?? '')
-                          //     .toLowerCase()
-                          //     .includes(input.toLowerCase())
-                          // }
-                          options={languageOptions}
-                          onChange={handleAddSection}
-                          defaultValue={["java"]}
-                          allowClear
-                        />
-                      ) : item.dataIndex === 'add_sections' ? (
-                        <Select
-                          mode="multiple"
-                          allowClear
-                          style={{ width: '100%' }}
-                          placeholder="Please select"
-                          defaultValue={[]}
-                          onChange={handleAddSection}
-                          options={testSectionOption}
-                        />
-                      ) : item.dataIndex === 'end_date' ? (
-                        <DatePicker
-                          style={{ width: 100 + '%' }}
-                          onChange={onDateChange}
-                          disabled={!state.componentDisabled}
-                        />
-                      ) : item.dataIndex == 'name' ? (
-                        <Input disabled={!state.componentDisabled} />
-                      ) : null}
+                      <Input
+                        type="text"
+                        onKeyPress={(event) => {
+                          if (!/[0-9]/.test(event.key)) {
+                            event.preventDefault()
+                          }
+                        }}
+                        onChange={(e) =>
+                          handleCountInputChange(item.dataIndex, e.target.value)
+                        }
+                      />
                     </Form.Item>
-                    <br></br>
+                    <br />
                   </Col>
                 ))}
               </Row>
-              {/* MCQ Fields */}
-              {state.addedSections.includes('Add_MCQs') && (
-                <Row justify="start">
-                  <Col span={24}>
-                    <h4>MCQ Count</h4>
-                  </Col>
-                  {CreateTestForm_2.map((item, index) => (
-                    <Col span={12}>
-                      <Form.Item
-                        key={`form-item-${index}`}
-                        label={item.title}
-                        name={item.dataIndex}
-                        rules={[
-                          {
-                            required: true,
-                            message: `Please input your ${item.title}`,
-                          },
-                        ]}
-                      >
-                        <Input
-                          type="text"
-                          onKeyPress={(event) => {
-                            if (!/[0-9]/.test(event.key)) {
-                              event.preventDefault()
-                            }
-                          }}
-                          onChange={(e) =>
-                            handleCountInputChange(item.dataIndex, e.target.value)
+            )}
+
+            {state.addedSections.includes('Add_Programs') && (
+              <Row justify="start">
+                <Col span={24}>
+                  <h4>Program Count</h4>
+                </Col>
+                {CreateTestForm_3.map((item, index) => (
+                  <Col span={12} key={`form-item-${index}`}>
+                    <Form.Item
+                      label={item.title}
+                      name={item.dataIndex}
+                      rules={[
+                        {
+                          required: true,
+                          message: `Please input your ${item.title}`,
+                        },
+                      ]}
+                    >
+                      <Input
+                        type="text"
+                        onKeyPress={(event) => {
+                          if (!/[0-9]/.test(event.key)) {
+                            event.preventDefault()
                           }
-                        />
-                      </Form.Item>
-                      <br></br>
-                    </Col>
-                  ))}
-                </Row>
-              )}
-              {/* Program Fields */}
-              {state.addedSections.includes('Add_Programs') && (
-                <Row justify="start">
-                  <Col span={24}>
-                    <h4>Program Count</h4>
+                        }}
+                        onChange={(e) =>
+                          handleCountInputChange(item.dataIndex, e.target.value)
+                        }
+                      />
+                    </Form.Item>
+                    <br />
                   </Col>
-                  {CreateTestForm_3.map((item, index) => (
-                    <Col span={12}>
-                      <Form.Item
-                        key={`form-item-${index}`}
-                        label={item.title}
-                        name={item.dataIndex}
-                        rules={[
-                          {
-                            required: true,
-                            message: `Please input your ${item.title}`,
-                          },
-                        ]}
-                      >
-                        <Input
-                          type="text"
-                          onKeyPress={(event) => {
-                            if (!/[0-9]/.test(event.key)) {
-                              event.preventDefault()
-                            }
-                          }}
-                          onChange={(e) =>
-                            handleCountInputChange(item.dataIndex, e.target.value)
-                          }
-                        />
-                      </Form.Item>
-                      <br></br>
-                    </Col>
-                  ))}
-                </Row>
-              )}
-            </Col>
-          </>
+                ))}
+              </Row>
+            )}
+          </Col>
 
           <div
             style={{
@@ -500,7 +500,7 @@ const CreateNewTest = ({
               justifyContent: 'space-between',
             }}
           >
-            <Button type="primary" ghost onClick={form.submit}>
+            <Button type="primary" ghost onClick={handleAddToListClick}>
               Add To List
             </Button>
             {state.showNotEnoughQuesError && (
@@ -512,39 +512,55 @@ const CreateNewTest = ({
             </p>
           </div>
 
-          <Divider></Divider>
-        </Form>
-        <Table
-          columns={columns}
-          dataSource={dataList?.length ? dataList : []}
-          onChange={onChange}
-        />
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '8px',
-          }}
-        >
-          {state.showAddTestError && (
-            <p style={{ color: 'red' }}>Please add at least one Test!</p>
+          <Divider />
+
+          {/* Conditionally render the test name and other content */}
+          {isAddedToList && (
+            <>
+              <h3
+                style={{
+                  padding: '8px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  color: '#333',
+                }}
+              >
+                Test Name: {testName}
+              </h3>
+            </>
           )}
-        </div>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'end',
-            marginTop: '8px',
-          }}
-        >
-          <p>
-            <b>Total Score Weightage: </b> {state.totalScoreWeightage}
-          </p>
-        </div>
+          <Table
+            columns={columns}
+            dataSource={dataList?.length ? dataList : []}
+            onChange={onChange}
+          />
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '8px',
+            }}
+          >
+            {state.showAddTestError && (
+              <p style={{ color: 'red' }}>Please add at least one Test!</p>
+            )}
+          </div>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'end',
+              marginTop: '8px',
+            }}
+          >
+            <p>
+              <b>Total Score Weightage: </b> {state.totalScoreWeightage}
+            </p>
+          </div>
+        </Form>
       </Row>
     </Modal>
   )
