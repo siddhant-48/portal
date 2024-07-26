@@ -45,6 +45,7 @@ const Question = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [form] = Form.useForm()
+  const [addModal] = Form.useForm()
 
   const [form2] = Form.useForm()
 
@@ -59,16 +60,12 @@ const Question = (props) => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const handleAddOpenModal = () => {
-    form.resetFields()
-    form2.resetFields()
-    form3.resetFields()
+    addModal.resetFields()
     setIsAddModalOpen(true)
   }
 
   const handleAddCancel = () => {
-    form.resetFields()
-    form2.resetFields()
-    form3.resetFields()
+    addModal.resetFields()
     setIsAddModalOpen(false)
   }
 
@@ -807,13 +804,13 @@ const Question = (props) => {
         <Modal
           title="Add Ques"
           open={isAddModalOpen}
-          onOk={form.submit} // Ensure form submission is triggered
+          onOk={addModal.submit} // Ensure form submission is triggered
           onCancel={handleAddCancel}
           okText="Add"
         >
           <Divider />
           <Form
-            form={form}
+            form={addModal}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             // style={{ maxWidth: 300 }}
