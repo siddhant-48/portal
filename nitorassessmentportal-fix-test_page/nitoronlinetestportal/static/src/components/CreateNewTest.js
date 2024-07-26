@@ -285,6 +285,7 @@ const CreateNewTest = ({
 
     triggerFetchData('validate_test/', form_data)
       .then((data) => {
+        console.log(data)
         form_data['id'] = Math.floor(Math.random() * 10000)
         if (dataList.length === 0) {
           dispatch({
@@ -292,6 +293,7 @@ const CreateNewTest = ({
             payload: { componentDisabled: false },
           })
           setDataList(form_data)
+          console.log(dataList)
         } else {
           let filterArray = dataList.filter((item) => item.name === name)
           filterArray.map((item) => {

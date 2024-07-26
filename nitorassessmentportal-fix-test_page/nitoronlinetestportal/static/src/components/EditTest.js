@@ -23,7 +23,7 @@ import {
 } from '../Utils/constants'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 const { Panel } = Collapse
-import moment from 'moment'
+import '../styles/edit-test.css'
 
 // Initial state
 const initialState = {
@@ -253,6 +253,10 @@ const EditTest = ({
     'Add_Programs',
   ])
 
+  const handleSectionChange = (value) => {
+    setSelectedSections(value)
+  }
+
   return (
     <Modal
       title="Edit Test Modal"
@@ -262,19 +266,13 @@ const EditTest = ({
       width={900}
       okText="Submit"
     >
-      <>
+      <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
         <Form
           form={form}
           name="basic"
-          labelCol={{
-            span: 12,
-          }}
-          wrapperCol={{
-            span: 12,
-          }}
-          style={{
-            maxWidth: 'none',
-          }}
+          labelCol={{ span: 12 }}
+          wrapperCol={{ span: 12 }}
+          style={{ maxWidth: 'none' }}
           layout="inline"
           initialValues={testRecord.question_details}
           onFinish={handleEditTest}
@@ -282,9 +280,13 @@ const EditTest = ({
           autoComplete="off"
         >
           {testRecord?.question_details?.map((rec, idx) => (
-            <Col span={24}>
-              <Collapse accordion key={`collapse-index-${idx}`} onChange={() => {}}>
-                <Panel header={rec.language} key={rec.language}>
+            <Col span={24} key={`collapse-index-${idx}`}>
+              <Collapse
+                accordion
+                defaultActiveKey={[`${idx}-0`]}
+                className="custom-collapse"
+              >
+                <Panel header={rec.language} key={`${idx}-0`}>
                   <Col span={24}>
                     <Row>
                       {CreateTestForm_1.map((item, index) => (
@@ -325,9 +327,9 @@ const EditTest = ({
                                       allowClear
                                       style={{ width: 200 }}
                                       placeholder="Please select"
-                                      defaultValue={rec[item.dataIndex]}
+                                      defaultValue={selectedSections}
                                       onChange={(value) => {
-                                        handleAddSection(value)
+                                        handleSectionChange(value)
                                         form.setFieldsValue({
                                           [idx]: {
                                             add_sections: value,
@@ -342,8 +344,7 @@ const EditTest = ({
                                     <DatePicker
                                       style={{ width: '100%' }}
                                       onChange={onDateChange}
-                                      // defaultValue={"null"}
-                                      placeholder=''
+                                      placeholder=""
                                       disabled
                                     />
                                   )
@@ -360,7 +361,7 @@ const EditTest = ({
                               })()}
                             </Space.Compact>
                           </Form.Item>
-                          <br></br>
+                          <br />
                         </Col>
                       ))}
                     </Row>
@@ -446,8 +447,8 @@ const EditTest = ({
             </Col>
           ))}
         </Form>
-        <br></br>
-      </>
+        <br />
+      </div>
     </Modal>
   )
 }

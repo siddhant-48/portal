@@ -508,7 +508,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
         >
           {state.rowRecord?.question_details?.map((item, index) => (
             <div key={`collapse-index-${index}`} className="collapse-container">
-              <Collapse defaultActiveKey={['1']} className="custom-collapse">
+              <Collapse defaultActiveKey={['0']} className="custom-collapse">
                 <Panel
                   header={<span className="panel-header">{item.language}</span>}
                 >

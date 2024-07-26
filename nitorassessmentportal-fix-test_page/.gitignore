@@ -16,3 +16,6 @@ nitoronlinetestportal/static/node_modules
 .python-version
 .coverage
 nitoronlinetestportal/static/uploads/*
+
+#frontend
+nitoronlinetestportal/static/frontend
