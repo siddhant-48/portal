@@ -239,15 +239,6 @@ const CreateNewTest = ({
     })
   }
 
-  const handleAddSection = (value) => {
-    // Dispatch to update the state
-    dispatch({
-      type: ACTION.SET_ADDED_SECTIONS,
-      payload: { addedSections: value },
-    })
-    form.resetFields(['language', 'add_sections'])
-  }
-
   // Function to add new test
   const createTest = () => {
     if (testRecord) {
@@ -337,6 +328,15 @@ const CreateNewTest = ({
       payload: { showEditSection: false },
     })
   }
+
+  const [selectedSections, setSelectedSections] = useState([])
+  const handleAddSection = (value) => {
+    dispatch({
+      type: ACTION.SET_ADDED_SECTIONS,
+      payload: { addedSections: value },
+    })
+    setSelectedSections(value)
+  }
   const [isAddedToList, setIsAddedToList] = useState(false)
 
   const handleAddToListClick = () => {
@@ -352,14 +352,25 @@ const CreateNewTest = ({
       onCancel={closeAddNewTestModal}
       width={900}
       okText="Submit"
+      afterClose={() => {
+        // Reset form and state after the modal is closed
+        form.resetFields()
+        setSelectedSections([])
+      }}
     >
       <Row>
         <Form
           form={form}
           name="basic"
-          labelCol={{ span: 12 }}
-          wrapperCol={{ span: 12 }}
-          style={{ maxWidth: 'none' }}
+          labelCol={{
+            span: 12,
+          }}
+          wrapperCol={{
+            span: 12,
+          }}
+          style={{
+            maxWidth: 'none',
+          }}
           layout="inline"
           initialValues={initialNewTestValues}
           onFinish={handleCreateNewTest}
@@ -367,7 +378,6 @@ const CreateNewTest = ({
           autoComplete="off"
         >
           <Col span={24}>
-            {/* Other Tops Fields */}
             <Row>
               {CreateTestForm_1.map((item, index) => (
                 <Col span={12} key={`form-item-${index}`}>
@@ -383,16 +393,12 @@ const CreateNewTest = ({
                   >
                     {item.dataIndex === 'language' ? (
                       <Select
-                        showSearch
                         placeholder="Select a language"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          (option?.children ?? '')
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
                         options={languageOptions}
-                        onChange={handleAddSection}
+                        onChange={(value) => {
+                          handleAddSection([])
+                          form.resetFields(['add_sections'])
+                        }}
                         allowClear
                       />
                     ) : item.dataIndex === 'add_sections' ? (
@@ -401,7 +407,6 @@ const CreateNewTest = ({
                         allowClear
                         style={{ width: '100%' }}
                         placeholder="Please select"
-                        defaultValue={[]}
                         onChange={handleAddSection}
                         options={testSectionOption}
                       />
@@ -419,9 +424,7 @@ const CreateNewTest = ({
                 </Col>
               ))}
             </Row>
-
-            {/* MCQ Fields */}
-            {state.addedSections.includes('Add_MCQs') && (
+            {selectedSections.includes('Add_MCQs') && (
               <Row justify="start">
                 <Col span={24}>
                   <h4>MCQ Count</h4>
@@ -455,8 +458,7 @@ const CreateNewTest = ({
                 ))}
               </Row>
             )}
-
-            {state.addedSections.includes('Add_Programs') && (
+            {selectedSections.includes('Add_Programs') && (
               <Row justify="start">
                 <Col span={24}>
                   <h4>Program Count</h4>
@@ -513,7 +515,6 @@ const CreateNewTest = ({
           </div>
 
           <Divider />
-
           {/* Conditionally render the test name and other content */}
           {isAddedToList && (
             <>

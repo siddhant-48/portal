@@ -49,6 +49,7 @@ const Question = (props) => {
   const [form2] = Form.useForm()
 
   const [form3] = Form.useForm()
+
   const [questionDetail, setquestionDetail] = useState(null)
   const [addQuestionDetail, setAddQuestionDetail] = useState(null)
   const [testDetails, setTestDetails] = useState(null)
@@ -57,18 +58,30 @@ const Question = (props) => {
   )
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const handleOpenModal = () => {
-    setIsAddModalOpen(true)
+  const handleAddOpenModal = () => {
     form.resetFields()
     form2.resetFields()
     form3.resetFields()
+    setIsAddModalOpen(true)
   }
 
   const handleAddCancel = () => {
-    setIsAddModalOpen(false)
     form.resetFields()
     form2.resetFields()
     form3.resetFields()
+    setIsAddModalOpen(false)
+  }
+
+  const handleEditCancel = () => {
+    console.log(form.getFieldValue)
+    console.log(form)
+    setRecord(null)
+    form.resetFields()
+    form2.resetFields()
+    form3.resetFields()
+    setIsModalOpen(false)
+
+    setIsEditModalOpen(false)
   }
   const [fileName, setFilename] = useState('') //fetching uploaded filename
   // const [filterLanguageData, setFilterLanguageData] = useState([]) //language filter
@@ -312,13 +325,6 @@ const Question = (props) => {
     setIsModalOpen(false)
   }
 
-  const handleCancel = () => {
-    setIsModalOpen(false)
-    setIsEditModalOpen(false)
-    form2.resetFields()
-    form.resetFields()
-  }
-
   const onChange = (pagination, filters, sorter, extra) => {
     if (filters.language) {
       setLang(filters.language)
@@ -451,8 +457,9 @@ const Question = (props) => {
       })
       .catch((reason) => message.error(reason))
 
-    setIsAddModalOpen(false)
-    handleOpenModal()
+    // setIsAddModalOpen(false)
+    // handleAddOpenModal()
+    handleEditCancel()
   }
 
   const onAddFinish = async (values) => {
@@ -552,7 +559,7 @@ const Question = (props) => {
       message.error(reason)
     }
 
-    setAddQuestionDetail(false)
+    // setAddQuestionDetail(false)
     handleAddCancel()
   }
 
@@ -597,7 +604,7 @@ const Question = (props) => {
             marginRight: '10px',
           }}
         >
-          <Button type="primary" onClick={handleOpenModal}>
+          <Button type="primary" onClick={handleAddOpenModal}>
             Add Question
           </Button>
         </div>
@@ -625,7 +632,7 @@ const Question = (props) => {
           // title={isModalOpen.name}
           open={isModalOpen}
           onOk={() => handleOk()}
-          onCancel={handleCancel}
+          onCancel={handleEditCancel}
           okText="Yes"
         >
           {/* <Divider></Divider> */}
@@ -637,7 +644,7 @@ const Question = (props) => {
           title="Edit Question"
           open={isEditModalOpen}
           onOk={form.submit}
-          onCancel={handleCancel}
+          onCancel={handleEditCancel}
           okText="Update"
         >
           <Divider />
@@ -798,7 +805,7 @@ const Question = (props) => {
 
         {/* add question */}
         <Modal
-          title="Add Question"
+          title="Add Ques"
           open={isAddModalOpen}
           onOk={form.submit} // Ensure form submission is triggered
           onCancel={handleAddCancel}
@@ -810,7 +817,7 @@ const Question = (props) => {
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             // style={{ maxWidth: 300 }}
-            initialValues={record}
+            // initialValues={record}
             onFinish={onAddFinish}
             onValuesChange={handleValuesChange}
             key="main_form"
@@ -847,7 +854,7 @@ const Question = (props) => {
             </Form.Item>
 
             <Form.Item
-              label="Question Title"
+              label="Question"
               name="name"
               placeholder="Enter the Question"
               rules={[
