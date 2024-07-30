@@ -98,7 +98,7 @@ const formatData = (data) => {
             language: questionDetails.language,
             questionType:
               questionDetails.type === 1 ? 'MCQ' : type === 2 ? 'Program' : '',
-            score: question.score || 0,
+            score: question.question_score || 0,
             description: (
               <>
                 <div>{questionDetails.name}</div>
