@@ -30,6 +30,8 @@ const Header = (props) => {
     if (path.startsWith('/create-test')) return 'create-test'
     if (path.startsWith('/questions')) return 'questions'
     if (path.startsWith('/generate-link')) return 'generate-link'
+    if (path.startsWith('/user-submissions')) return 'user-submissions';
+    if (path.startsWith('/use-test-summary')) return 'use-test-summary'
     return 'dashboard'
   }
 
@@ -66,6 +68,14 @@ const Header = (props) => {
                   <span>Generate Link</span>
                   <Link to="/generate-link" />
                 </Menu.Item>
+                <Menu.Item key="user-submissions">
+                  <span>User Submissions</span>
+                  <Link to="/user-submissions" />
+                </Menu.Item>
+                {/* <Menu.Item key="use-test-summary">
+                  <span>User Test Summary</span>
+                  <Link to="/use-test-summary" />
+                </Menu.Item> */}
               </Menu>
             </Col>
             <Col span={1} flex="none">

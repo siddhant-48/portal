@@ -123,6 +123,11 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Example usage:
+SENDER_EMAIL = 'zalachhatrapalsinh999@gmail.com'
+EMAIL_PASSWORD = 'pxiu rurh iorv tvzd'
+
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

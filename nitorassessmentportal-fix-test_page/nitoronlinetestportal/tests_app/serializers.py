@@ -129,6 +129,33 @@ class UserTestsSerialiazer(serializers.ModelSerializer):
         return instance
 
 
+class SingleUserTestsSerialiazer(serializers.ModelSerializer):
+    test_allocation_detail = TestAllocationsSerialiazer(source='testallocations', read_only=True)
+    name = serializers.SerializerMethodField()
+    test_name = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
+    class Meta:
+        model = UserTests
+        fields = ('id', 'first_name','name', 'last_name', 'email', 'test_allocation', 'test_allocation_detail', 'test_name', 'end_date', 'correct_answers', 'completed', 'score', 'generated_question')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'test_allocation': {'required': True},
+        }
+
+    def validate_test_allocation(self, test_allocation):
+        return TestAllocations.objects.get(id=test_allocation.id)
+
+    def get_test_name(self, record):
+        return record.test_allocation.name
+
+    def get_name(self, record):
+        return record.first_name+" "+record.last_name
+    
+    def get_end_date(self, record):
+        return record.test_allocation.end_date
+
 class TestSummarySerialiazer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     class Meta:

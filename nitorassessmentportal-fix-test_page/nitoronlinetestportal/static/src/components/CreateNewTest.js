@@ -98,12 +98,10 @@ const CreateNewTest = ({
   openDetailModal,
   fetchData,
   testRecord,
-  dataList,
-  setDataList,
   resetDataList,
 }) => {
   const [form] = Form.useForm()
-
+  const [dataList, setDataList] = useState([])
   const [state, dispatch] = useReducer(reducer, initialState)
 
   // Updating the Score Weightage dynamically
@@ -268,68 +266,86 @@ const CreateNewTest = ({
   // Function to add form data to List with Score Weightage
   const [testName, setTestName] = useState('')
   const handleCreateNewTest = (param) => {
-    let values = { ...initialNewTestValues, ...param }
-    let name = values['name']
-    let end_date = values['end_date']
-    let language = values['language']
-    let weightage = calculateWeightage(values)
-
+    let values = { ...initialNewTestValues, ...param };
+    let name = values['name'];
+    let end_date = values['end_date'];
+    let language = values['language'];
+  
+    // Calculate new weightage
+    let newWeightage = calculateWeightage(values);
+  
     let form_data = {
       name: name,
       end_date: end_date,
       language: language,
-      weightage: weightage,
+      weightage: newWeightage,
       question_details: [values],
-    }
-    setTestName(name)
-
+    };
+  
+    setTestName(name);
+  
     triggerFetchData('validate_test/', form_data)
       .then((data) => {
-        console.log(data)
-        form_data['id'] = Math.floor(Math.random() * 10000)
-        if (dataList.length === 0) {
-          dispatch({
-            type: ACTION.SET_COMPONENT_DISABLED,
-            payload: { componentDisabled: false },
-          })
-          setDataList(form_data)
-          console.log(dataList)
-        } else {
-          let filterArray = dataList.filter((item) => item.name === name)
-          filterArray.map((item) => {
-            form_data.question_details = [item.question_details[0], values]
-            form_data.language = language // Update language if needed
-          })
-          setDataList(form_data)
+        form_data['id'] = Math.floor(Math.random() * 10000);
+  
+        console.log('Initial dataList:', dataList);
+  
+        let updatedDataList = [...dataList];
+        let languageExists = false;
+  
+        updatedDataList = updatedDataList.map((item) => {
+          if (item.language === language) {
+            languageExists = true;
+  
+            // Replace the question details and update weightage
+            return {
+              ...item,
+              question_details: [values],
+              weightage: newWeightage,
+            };
+          }
+          return item;
+        });
+  
+        if (!languageExists) {
+          updatedDataList.push(form_data);
         }
+  
+        console.log('Updated dataList:', updatedDataList);
+  
+        setDataList(updatedDataList);
+  
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
           payload: { showNotEnoughQuesErrorMessage: '' },
-        })
+        });
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
           payload: { showNotEnoughQuesError: false },
-        })
+        });
       })
       .catch((reason) => {
+        console.error('Error Response:', reason);
+  
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
           payload: {
             showNotEnoughQuesErrorMessage: reason && reason.error && reason.message,
           },
-        })
-
+        });
+  
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
           payload: { showNotEnoughQuesError: reason && reason.error },
-        })
-      })
-
+        });
+      });
+  
     dispatch({
       type: ACTION.SET_EDIT_SECTION,
       payload: { showEditSection: false },
-    })
-  }
+    });
+  };
+  
 
   const [selectedSections, setSelectedSections] = useState([])
   const handleAddSection = (value) => {

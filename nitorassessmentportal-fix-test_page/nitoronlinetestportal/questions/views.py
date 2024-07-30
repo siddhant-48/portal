@@ -28,7 +28,7 @@ def get_question_list(request):
     page = request.query_params.get('page', 1)
     page_size = request.query_params.get('page_size', 10)
 
-    questions = Question.objects.filter(**filter_params).order_by('updated_by', 'created_by')
+    questions = Question.objects.filter(**filter_params).order_by('-updated_by', '-created_by')
     if language_filter :
         questions = questions.filter(language__in=language_filter.split(","))
     

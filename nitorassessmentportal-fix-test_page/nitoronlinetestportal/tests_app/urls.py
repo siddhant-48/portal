@@ -28,5 +28,8 @@ urlpatterns = [
     path('add_user_test_details/', add_user_test_details),
     path('save_candidate_answer/', save_candidate_answer),
     path('upload_captured_image/', upload_captured_image),
-    path('test_summary/<test_id>/', test_summary)
+    path('test_summary/<test_id>/', test_summary),
+    path('get_submissions/', get_submissions),
+    path('get_submissions/<search_text>/', get_submissions),
+    path('candidate_test_summary/<test_id>/', candidate_test_summary)
 ]

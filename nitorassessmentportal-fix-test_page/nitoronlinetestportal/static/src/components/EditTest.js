@@ -344,7 +344,7 @@ const EditTest = ({
                                     <DatePicker
                                       style={{ width: '100%' }}
                                       onChange={onDateChange}
-                                      placeholder=""
+                                      placeholder={testRecord.end_date}
                                       disabled
                                     />
                                   )

@@ -302,7 +302,7 @@ const initialNewTestValues = {
   end_date: null,
   hard_mcq_count: '0',
   hard_program_count: '0',
-  language: '',
+  language: [],
   medium_mcq_count: '0',
   medium_program_count: '0',
   name: '',

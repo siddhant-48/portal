@@ -11,6 +11,8 @@ import GenerateTest from './GenerateTest'
 import Protected from '../components/Protected'
 import Question from './Question'
 import UserDetail from './UserDetails'
+import UserTestSummary from './UserTestSummary'
+import UserSubmissions from './UserSubmissions'
 import { Layout } from 'antd'
 import Header from '../components/Header'
 
@@ -53,6 +55,12 @@ const App = () => {
           </Route>
           <Route path="/generate-link">
             <GenerateLink setSelectedKey={setSelectedKey} />
+          </Route>
+          <Route path="/user-submissions">
+            <UserSubmissions setSelectedKey={setSelectedKey} />
+          </Route>
+          <Route path="/use-test-summary/:id">
+            <UserTestSummary setSelectedKey={setSelectedKey} />
           </Route>
         </Protected>
       </Switch>

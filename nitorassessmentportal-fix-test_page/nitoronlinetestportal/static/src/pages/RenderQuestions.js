@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Flex, Slider, Switch, Typography } from 'antd'
+import { Flex, Typography } from 'antd'
 
 const RenderQuestions = ({ text }) => {
   const [rows, setRows] = useState(2)
@@ -7,24 +7,6 @@ const RenderQuestions = ({ text }) => {
 
   return (
     <Flex gap={16} vertical>
-      {/* <Flex gap={16} align="center">
-        <Switch
-          checked={expanded}
-          onChange={() => setExpanded((c) => !c)}
-          style={{
-            flex: 'none',
-          }}
-        />
-        <Slider
-          min={1}
-          max={20}
-          value={rows}
-          onChange={setRows}
-          style={{
-            flex: 'auto',
-          }}
-        />
-      </Flex> */}
       <Typography.Paragraph
         ellipsis={{
           rows,

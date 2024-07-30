@@ -51,10 +51,11 @@ from rest_framework.permissions import IsAuthenticated
 
 from tests_app.models import TestAllocations, TestsDetails, UserTests
 from tests_app.serializers import (TestAllocationsSerialiazer,
-                                   TestDetailSerializer, TestSummarySerialiazer, UserTestsSerialiazer)
+                                   TestDetailSerializer, TestSummarySerialiazer, UserTestsSerialiazer, SingleUserTestsSerialiazer)
 from utils.response_handlers import standard_json_response
 from datetime import datetime
-from .utils import get_total_duration, validate_single_question_details
+import threading
+from .utils import get_total_duration, validate_single_question_details, send_email
 
 @api_view(('POST',))
 @permission_classes((IsAuthenticated, ))
@@ -195,7 +196,7 @@ def validate_test(request):
 @api_view(('GET',))
 @permission_classes((IsAuthenticated, ))
 def get_test_list(request):
-    tests_details_list = TestsDetails.objects.all().order_by('updated_by', 'created_by')
+    tests_details_list = TestsDetails.objects.all().order_by('-updated_by', '-created_by')
     test_details_json = TestDetailSerializer(tests_details_list, many=True).data
     return standard_json_response(data=test_details_json)
 
@@ -334,8 +335,22 @@ def generate_test_link(request):
     if not tas.is_valid():
         return standard_json_response(message=tas.errors["non_field_errors"], status_code=status.HTTP_400_BAD_REQUEST)
 
-    tas.save()
+    record = tas.save()
+    email_list = request.data['email_list'].split(",")
+    host = request.get_host()
+    protocol = request.scheme
+    base_url = f"{protocol}://{host}/"
 
+    if email_list :
+        subject = "Invitation to Assessment Test."
+        data = {
+            "deadline" : record.end_date.date(),
+            "assessment_link" : f"{base_url}#/screening/user-details/{record.test.id}/{record.key}"
+        }
+        template_path = "templates/mail_template.html"
+        for recipient in email_list :
+            # created a thread to send an email. 
+            threading.Thread(target = send_email, args=(recipient, subject, template_path, data)).start()
     return standard_json_response(data=tas.data, status_code=status.HTTP_201_CREATED)
 
 
@@ -586,7 +601,7 @@ def verify_coding_answer(request, q_type):
             
             values_str = ' '.join(str(value) for value in args.values())
 
-            code = request.data["data"]["Program"].replace("\n", ";")
+            code = request.data["data"]["Program"]
             request.data["data"]["Program"] = code
             request.data["data"]["Input"] = values_str
             payload = request.data["data"]
@@ -600,3 +615,28 @@ def verify_coding_answer(request, q_type):
     except :
         return 0
     return total_score
+
+
+@api_view(('GET',))
+@permission_classes((IsAuthenticated, ))
+def get_submissions(request, search_text=''):
+    user_tests_list = UserTests.objects.all()
+    if search_text :
+        user_tests_list = user_tests_list.filter(
+            first_name__icontains=search_text,
+            last_name__icontains=search_text,
+            email__icontains=search_text
+            ).order_by('-updated_by', '-created_by')
+    user_tests_json = SingleUserTestsSerialiazer(user_tests_list, many=True).data
+    return standard_json_response(data=user_tests_json)
+
+@api_view(('GET',))
+@permission_classes((IsAuthenticated, ))
+def candidate_test_summary(request, test_id):
+    summary = []
+    user_test = UserTests.objects.filter(id=test_id).last()
+    if not user_test:
+        return standard_json_response(message='Test record does not exist', status_code=status.HTTP_404_NOT_FOUND)
+    user_test_details = SingleUserTestsSerialiazer(instance = user_test)
+    return standard_json_response(data=user_test_details.data)
+

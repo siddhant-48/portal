@@ -3,6 +3,12 @@ from datetime import timedelta
 from questions.serializers import (MultipleChoicesAnswerSerializer,
                                    ProgramTestCaseSerializer)
 from questions.models import MultipleChoicesAnswer, ProgramTestCase, Question
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from jinja2 import Environment, FileSystemLoader
+from nitoronlinetestportal.settings import SENDER_EMAIL, EMAIL_PASSWORD
+
 
 def get_total_duration(question_details):
     duration = timedelta(minutes=0)
@@ -102,3 +108,27 @@ def validate_single_question_details(details):
     random_hard_program = get_random_program_testcases(language=language, difficulty=Question.HARD, limit=hard_program_count)
 
     return random_easy_mcq, random_medium_mcq, random_hard_mcq, random_easy_program, random_medium_program, random_hard_program
+
+
+
+def send_email(recipient, subject, template_path, data):
+    # Load the template
+    env = Environment(loader=FileSystemLoader('.'))
+    
+    template = env.get_template(template_path)
+
+    # Render the template with data
+    html_content = template.render(data)
+
+    # Create the email message
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = SENDER_EMAIL
+    msg.attach(MIMEText(html_content, 'html'))
+    
+    # Send the email
+    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+        smtp.starttls()
+        smtp.login(SENDER_EMAIL, EMAIL_PASSWORD)
+        msg['To'] = recipient
+        smtp.send_message(msg)

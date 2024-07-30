@@ -17,6 +17,7 @@ import {
   Select,
 } from 'antd'
 
+import * as XLSX from 'xlsx'
 import RenderQuestions from './RenderQuestions'
 const { Option } = Select
 import { UploadOutlined } from '@ant-design/icons'
@@ -70,8 +71,6 @@ const Question = (props) => {
   }
 
   const handleEditCancel = () => {
-    console.log(form.getFieldValue)
-    console.log(form)
     setRecord(null)
     form.resetFields()
     form2.resetFields()
@@ -345,15 +344,27 @@ const Question = (props) => {
 
       const excelObj = await readExcel(file)
 
-      // uppercase to lowercase
-      const modifiedExcelObj = {
-        ...excelObj,
-        mcq: excelObj.mcq.map((question) => ({
-          ...question,
-          language: question.language.toLowerCase(),
-        })),
+      //camel case
+      const capitalizeFirstLetter = (str) => {
+        if (!str) return str
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
       }
 
+      // process each sheet
+      const processSheet = (sheet) => {
+        return sheet.map((question) => ({
+          ...question,
+          language: capitalizeFirstLetter(question.language),
+        }))
+      }
+
+      // all sheets
+      const modifiedExcelObj = Object.keys(excelObj).reduce((acc, sheetName) => {
+        acc[sheetName] = processSheet(excelObj[sheetName])
+        return acc
+      }, {})
+
+      // Trigger fetch data and update state
       await triggerFetchData('bulk_questions/', modifiedExcelObj)
       await fetchData()
       setFilename(file.name)
@@ -369,6 +380,7 @@ const Question = (props) => {
     }
     return false // default behavior
   }
+
   const testSectionOption = [
     { id: 1, label: 'Add MCQ', name: 'Add MCQ', value: 1 },
     { id: 2, label: 'Add Program', name: 'Add Program', value: 2 },
@@ -390,7 +402,6 @@ const Question = (props) => {
   }
 
   const onFinish = async (values) => {
-    console.log('hi')
     var multiple_options = Object.keys(form2.getFieldValue()).length
       ? form2.getFieldValue()
       : questionDetail
@@ -448,7 +459,6 @@ const Question = (props) => {
 
     triggerFetchData('add_question/', { id: record.id, values: new_values })
       .then((data) => {
-        console.log(data)
         message.success('Question Updated Successfully')
         fetchData()
       })
@@ -460,9 +470,6 @@ const Question = (props) => {
   }
 
   const onAddFinish = async (values) => {
-    console.log('onAddFinish called')
-    console.log('Form values:', values)
-
     let multiple_options = Object.keys(form2.getFieldValue()).length
       ? form2.getFieldValue()
       : questionDetail
@@ -479,22 +486,9 @@ const Question = (props) => {
       option4: values.option4,
       correct_value: values.correct_value,
     }
-    console.log('temp', temp)
 
     values['multiple_options'] = temp
 
-    // if (values.multiple_options) {
-    //   delete multiple_options['question_details']
-    //   values['multiple_options'] = values.multiple_options
-    // }
-    // if (values.program_test_cases) {
-    //   delete program_test_cases['question_details']
-    //   values['program_test_cases'] = values.program_test_cases
-    // }
-
-    // Ensure 'record' is defined and 'difficulty' property exists
-    // console.log(record)
-    console.log('difficulty', values.difficulty)
     values['difficulty'] = values.difficulty
 
     // Add the duration field
@@ -711,7 +705,10 @@ const Question = (props) => {
                         name={item.dataIndex}
                         rules={[
                           {
-                            required: true,
+                            required: !(
+                              item.dataIndex === 'option3' ||
+                              item.dataIndex === 'option4'
+                            ),
                             message: `Please input your ${item.title}`,
                           },
                         ]}
@@ -764,7 +761,10 @@ const Question = (props) => {
                         name={item.dataIndex}
                         rules={[
                           {
-                            required: true,
+                            required: !(
+                              item.dataIndex === 'case3' ||
+                              item.dataIndex === 'case4'
+                            ),
                             message: `Please input your ${item.title}`,
                           },
                         ]}
@@ -897,7 +897,12 @@ const Question = (props) => {
                       name={item.dataIndex}
                       rules={[
                         {
-                          required: true,
+                          required: !(
+                            item.dataIndex === 'option3' ||
+                            item.dataIndex === 'option4' ||
+                            item.dataIndex === 'case3' ||
+                            item.dataIndex === 'case4'
+                          ),
                           message: `Please input your ${item.title}`,
                         },
                       ]}
