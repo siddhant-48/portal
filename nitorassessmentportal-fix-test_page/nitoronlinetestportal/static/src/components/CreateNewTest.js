@@ -164,17 +164,11 @@ const CreateNewTest = ({
     {
       title: 'Action',
       render: (_, testRecord) => (
-        <>
-          <Space>
-            <Tooltip placement="topLeft" title="Remove From List">
-              <CloseOutlined
-                onClick={() => {
-                  removeDataList(testRecord) // Preserve the same functionality
-                }}
-              />
-            </Tooltip>
-          </Space>
-        </>
+        <Space>
+          <Tooltip placement="topLeft" title="Remove From List">
+            <CloseOutlined onClick={() => removeDataList(testRecord)} />
+          </Tooltip>
+        </Space>
       ),
     },
   ]
@@ -186,9 +180,9 @@ const CreateNewTest = ({
   // Function to Calculate Weightage
   const calculateWeightage = (question) => {
     const weights = {
-      easy_program_count: 5,
-      medium_program_count: 10,
-      hard_program_count: 15,
+      // easy_program_count: 5,
+      // medium_program_count: 10,
+      // hard_program_count: 15,
       easy_mcq_count: 5,
       medium_mcq_count: 5,
       hard_mcq_count: 5,
@@ -198,10 +192,11 @@ const CreateNewTest = ({
 
     for (const key in weights) {
       const count = parseInt(question[key])
-      if (count !== 0) {
+      if (!isNaN(count) && count > 0) {
         score += weights[key] * count
       }
     }
+
     return score
   }
 
@@ -209,23 +204,22 @@ const CreateNewTest = ({
     console.log('Failed:', errorInfo)
   }
 
-  const removeDataList = (testRecord) => {
-    let filterArray = dataList.filter((item) => item.id !== testRecord.id)
-    resetDataList(filterArray)
+  const removeDataList = (record) => {
+    console.log('Removing record:', record)
+    setDataList((prevDataList) =>
+      prevDataList.filter((item) => item.id !== record.id),
+    )
   }
 
   // Function to Update the Score Weightage dynamically
   const handleCountInputChange = (index, value) => {
-    let questionVal = (pre) => {
-      let temp = Object.assign({}, pre)
-      value == '' ? (temp[index] = 0) : (temp[index] = value)
-      return temp
-    }
+    const updatedValues = form.getFieldsValue()
+    const updatedWeightage = calculateWeightage(updatedValues)
+
+    // Update the dynamic score in the state
     dispatch({
-      type: ACTION.SET_INITIAL_QUESTION_VALUE,
-      payload: {
-        initialQuestionsValue: questionVal(state.initialQuestionsValue),
-      },
+      type: ACTION.SET_DYNAMIC_SCORE,
+      payload: { dynamicScore: updatedWeightage },
     })
   }
 
@@ -237,8 +231,146 @@ const CreateNewTest = ({
     })
   }
 
-  // Function to add new test
+  // Function to add form data to List with Score Weightage
+  const [testName, setTestName] = useState('')
+  const [testPayload, setTestPayload] = useState(null) //for payloadn
+  const [fieldDisable, setFieldDisable] = useState(false)
+
+  //add to list function
+  const handleAddToList = (param) => {
+    let values = { ...initialNewTestValues, ...param }
+    let {
+      name,
+      end_date,
+      language,
+      easy_mcq_count,
+      medium_mcq_count,
+      hard_mcq_count,
+    } = values
+
+    // Calculate new weightage
+    let newWeightage = calculateWeightage(values)
+
+    // Check if there is at least one valid MCQ count
+    const hasValidMCQ =
+      parseInt(easy_mcq_count) > 0 ||
+      parseInt(medium_mcq_count) > 0 ||
+      parseInt(hard_mcq_count) > 0
+
+    if (!hasValidMCQ) {
+      console.error('No valid MCQs found. The entry will not be added to the table.')
+      dispatch({
+        type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+        payload: { showNotEnoughQuesErrorMessage: 'No valid MCQs found.' },
+      })
+      dispatch({
+        type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+        payload: { showNotEnoughQuesError: true },
+      })
+      return
+    }
+    setFieldDisable(true)
+    let form_data = {
+      name,
+      end_date,
+      language,
+      weightage: newWeightage,
+      question_details: [values],
+    }
+
+    setTestName(name)
+
+    // Prepare the updated data list without setting it directly
+    let tempUpdatedDataList = [...dataList]
+    let languageExists = false
+
+    tempUpdatedDataList = tempUpdatedDataList.map((item) => {
+      if (item.language === language) {
+        languageExists = true
+
+        // Update the question details and weightage for the existing language
+        return {
+          ...item,
+          question_details: [
+            {
+              ...item.question_details[0],
+              easy_mcq_count: parseInt(easy_mcq_count),
+              medium_mcq_count: parseInt(medium_mcq_count),
+              hard_mcq_count: parseInt(hard_mcq_count),
+            },
+          ],
+          weightage: newWeightage,
+        }
+      }
+      return item
+    })
+
+    if (!languageExists) {
+      tempUpdatedDataList.push(form_data)
+    }
+
+    // Create an array of all weightages
+    const weightageList = tempUpdatedDataList.map((item) => ({
+      language: item.language,
+      weightage: item.weightage,
+    }))
+
+    // Create payload
+    let payload = {
+      name,
+      end_date,
+      weightages: weightageList, // Passing weightages outside question_details
+      question_details: tempUpdatedDataList.flatMap((item) => item.question_details),
+    }
+
+    console.log('Payload from handleAddToList:', payload)
+
+    // Submit the payload
+    triggerFetchData('validate_test/', payload)
+      .then((data) => {
+        console.log('Response:', data)
+
+        // Update dataList and use updatedDataList as payload only if the submission is successful
+        setDataList(tempUpdatedDataList)
+
+        // Store the payload in state
+        setTestPayload(payload)
+
+        dispatch({
+          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+          payload: { showNotEnoughQuesErrorMessage: '' },
+        })
+        dispatch({
+          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+          payload: { showNotEnoughQuesError: false },
+        })
+      })
+      .catch((reason) => {
+        console.error('Error Response:', reason)
+
+        dispatch({
+          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+          payload: {
+            showNotEnoughQuesErrorMessage: reason?.error?.message || '',
+          },
+        })
+
+        dispatch({
+          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+          payload: { showNotEnoughQuesError: reason?.error || false },
+        })
+      })
+
+    dispatch({
+      type: ACTION.SET_EDIT_SECTION,
+      payload: { showEditSection: false },
+    })
+  }
+
+  // Create Test Function
   const createTest = () => {
+    console.log('hi')
+
     if (testRecord) {
       dataList[0]['id'] = testRecord.id
     }
@@ -251,101 +383,34 @@ const CreateNewTest = ({
       return
     }
 
-    let payload = dataList[dataList.length - 1]
+    console.log(testPayload)
+
+    if (!testPayload) {
+      console.error('No payload available to create the test.')
+      return
+    }
+
+    // Calculate the total weightage
+    const weightages = testPayload.weightages || []
+    const totalWeightage = weightages.reduce((sum, item) => sum + item.weightage, 0)
+
+    // Modify the payload
+    let payload = { ...testPayload }
     delete payload['id']
+    payload.weightage = totalWeightage // Include only the total weightage
+
+    console.log('Payload from createTest:', payload)
+
     triggerFetchData('create_update_test/', payload)
       .then((data) => {
         message.success('Test created')
         fetchData()
       })
       .catch((reason) => message.error(reason))
+
     closeAddNewTestModal()
     form.resetFields()
   }
-
-  // Function to add form data to List with Score Weightage
-  const [testName, setTestName] = useState('')
-  const handleCreateNewTest = (param) => {
-    let values = { ...initialNewTestValues, ...param };
-    let name = values['name'];
-    let end_date = values['end_date'];
-    let language = values['language'];
-  
-    // Calculate new weightage
-    let newWeightage = calculateWeightage(values);
-  
-    let form_data = {
-      name: name,
-      end_date: end_date,
-      language: language,
-      weightage: newWeightage,
-      question_details: [values],
-    };
-  
-    setTestName(name);
-  
-    triggerFetchData('validate_test/', form_data)
-      .then((data) => {
-        form_data['id'] = Math.floor(Math.random() * 10000);
-  
-        console.log('Initial dataList:', dataList);
-  
-        let updatedDataList = [...dataList];
-        let languageExists = false;
-  
-        updatedDataList = updatedDataList.map((item) => {
-          if (item.language === language) {
-            languageExists = true;
-  
-            // Replace the question details and update weightage
-            return {
-              ...item,
-              question_details: [values],
-              weightage: newWeightage,
-            };
-          }
-          return item;
-        });
-  
-        if (!languageExists) {
-          updatedDataList.push(form_data);
-        }
-  
-        console.log('Updated dataList:', updatedDataList);
-  
-        setDataList(updatedDataList);
-  
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
-          payload: { showNotEnoughQuesErrorMessage: '' },
-        });
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
-          payload: { showNotEnoughQuesError: false },
-        });
-      })
-      .catch((reason) => {
-        console.error('Error Response:', reason);
-  
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
-          payload: {
-            showNotEnoughQuesErrorMessage: reason && reason.error && reason.message,
-          },
-        });
-  
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
-          payload: { showNotEnoughQuesError: reason && reason.error },
-        });
-      });
-  
-    dispatch({
-      type: ACTION.SET_EDIT_SECTION,
-      payload: { showEditSection: false },
-    });
-  };
-  
 
   const [selectedSections, setSelectedSections] = useState([])
   const handleAddSection = (value) => {
@@ -373,7 +438,7 @@ const CreateNewTest = ({
       afterClose={() => {
         // Reset form and state after the modal is closed
         form.resetFields()
-        setSelectedSections([])
+        setSelectedSections([]) // Clear selected sections
       }}
     >
       <Row>
@@ -391,7 +456,7 @@ const CreateNewTest = ({
           }}
           layout="inline"
           initialValues={initialNewTestValues}
-          onFinish={handleCreateNewTest}
+          onFinish={handleAddToList}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
@@ -414,8 +479,18 @@ const CreateNewTest = ({
                         placeholder="Select a language"
                         options={languageOptions}
                         onChange={(value) => {
-                          handleAddSection([])
-                          form.resetFields(['add_sections'])
+                          // Reset the MCQ fields and clear sections when the language changes
+                          form.resetFields([
+                            'add_sections',
+                            'easy_mcq_count',
+                            'medium_mcq_count',
+                            'hard_mcq_count',
+                          ])
+                          dispatch({
+                            type: ACTION.SET_DYNAMIC_SCORE,
+                            payload: { dynamicScore: 0 },
+                          })
+                          setSelectedSections([]) // Clear the sections to hide "Add MCQ"
                         }}
                         allowClear
                       />
@@ -425,17 +500,27 @@ const CreateNewTest = ({
                         allowClear
                         style={{ width: '100%' }}
                         placeholder="Please select"
-                        onChange={handleAddSection}
+                        onChange={(value) => {
+                          handleAddSection(value)
+                          if (!value.includes('Add_MCQs')) {
+                            // Reset MCQ fields when "Add_MCQs" is removed from selected sections
+                            form.resetFields([
+                              'easy_mcq_count',
+                              'medium_mcq_count',
+                              'hard_mcq_count',
+                            ])
+                          }
+                        }}
                         options={testSectionOption}
                       />
                     ) : item.dataIndex === 'end_date' ? (
                       <DatePicker
                         style={{ width: '100%' }}
                         onChange={onDateChange}
-                        disabled={!state.componentDisabled}
+                        disabled={fieldDisable}
                       />
                     ) : item.dataIndex === 'name' ? (
-                      <Input disabled={!state.componentDisabled} />
+                      <Input disabled={fieldDisable} />
                     ) : null}
                   </Form.Item>
                   <br />
@@ -448,40 +533,6 @@ const CreateNewTest = ({
                   <h4>MCQ Count</h4>
                 </Col>
                 {CreateTestForm_2.map((item, index) => (
-                  <Col span={12} key={`form-item-${index}`}>
-                    <Form.Item
-                      label={item.title}
-                      name={item.dataIndex}
-                      rules={[
-                        {
-                          required: true,
-                          message: `Please input your ${item.title}`,
-                        },
-                      ]}
-                    >
-                      <Input
-                        type="text"
-                        onKeyPress={(event) => {
-                          if (!/[0-9]/.test(event.key)) {
-                            event.preventDefault()
-                          }
-                        }}
-                        onChange={(e) =>
-                          handleCountInputChange(item.dataIndex, e.target.value)
-                        }
-                      />
-                    </Form.Item>
-                    <br />
-                  </Col>
-                ))}
-              </Row>
-            )}
-            {selectedSections.includes('Add_Programs') && (
-              <Row justify="start">
-                <Col span={24}>
-                  <h4>Program Count</h4>
-                </Col>
-                {CreateTestForm_3.map((item, index) => (
                   <Col span={12} key={`form-item-${index}`}>
                     <Form.Item
                       label={item.title}
@@ -533,7 +584,6 @@ const CreateNewTest = ({
           </div>
 
           <Divider />
-          {/* Conditionally render the test name and other content */}
           {isAddedToList && (
             <>
               <h3
@@ -544,7 +594,9 @@ const CreateNewTest = ({
                   color: '#333',
                 }}
               >
-                Test Name: {testName}
+                {testName && testName.trim() !== '' && (
+                  <div>Test Name: {testName}</div>
+                )}
               </h3>
             </>
           )}

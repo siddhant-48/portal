@@ -1,51 +1,50 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useFetch } from '../Utils/Hooks/useFetchAPI'
 import PropTypes from 'prop-types'
 import { Layout, Row, Col, Card, Typography } from 'antd'
-import { PieChart, Pie, Text, Sector, Cell, ResponsiveContainer, Legend } from 'recharts'
-import ComingSoon from '../assets/dashboard_coming_soon.jpg'
-import { Image } from 'antd'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 
 const { Title } = Typography
 
 
-// adding dummy data for display purpose on Dashboard
-const dataMCQs = [
-  { name: 'Easy', value: 10 },
-  { name: 'Medium', value: 3 },
-  { name: 'Hard', value: 5 },
-]
-
-const dataProgram = [
-  { name: 'Easy', value: 2 },
-  { name: 'Medium', value: 5 },
-  { name: 'Hard', value: 1 },
-]
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28']
 
 const Dashboard = (props) => {
   // trigger on component mount
+  const [fetchUrl, setFetchUrl] = useState('dashboard/')
+  const { isLoading, serverError, apiData, fetchData } = useFetch(fetchUrl)
   useEffect(() => {
     props.setSelectedKey('dashboard')
   }, [])
-
+  const dataMCQs = [
+    { name: 'Easy', value: apiData? apiData.data.easy_mcq_questions :0},
+    { name: 'Medium', value: apiData? apiData.data.medium_mcq_questions :0 },
+    { name: 'Hard', value: apiData? apiData.data.hard_mcq_questions :0 },
+  ]
+  
+  const dataProgram = [
+    { name: 'Easy', value: apiData? apiData.data.easy_program_questions :0 },
+    { name: 'Medium', value: apiData? apiData.data.medium_program_questions :0 },
+    { name: 'Hard', value: apiData? apiData.data.hard_program_questions :0},
+  ]
   return (
     <Layout.Content
       style={{ height: '100vh', padding: '1rem', textAlign: 'center' }}
     >
       <Row justify={'center'}>
         <Col span={7} style={{ margin: 16 }}>
-          <Card title=" Active / Total Test" bordered={false}>
-            <Title>3/5</Title>
+          <Card title="Total Test" bordered={false}>
+            <Title>{apiData? apiData.data.total_test : 0}</Title>
           </Card>
         </Col>
         <Col span={7} style={{ margin: 16 }}>
           <Card title="Total Questions" bordered={false}>
-            <Title>26</Title>
+            <Title>{apiData? apiData.data.total_questions : 0}</Title>
           </Card>
         </Col>
         <Col span={7} style={{ margin: 16 }}>
           <Card title="Attempt till date" bordered={false}>
-            <Title>20</Title>
+            <Title>{apiData? apiData.data.total_attempted_test : 0}</Title>
           </Card>
         </Col>
       </Row>
@@ -56,7 +55,7 @@ const Dashboard = (props) => {
             <ResponsiveContainer width="100%" height={250}>
               <Row>
                 <Col span={12}>MCQs</Col>
-                <Col span={12}>Programs</Col>
+                {/* <Col span={12}>Programs</Col> */}
               </Row>
               <Row></Row>
               <PieChart
@@ -116,7 +115,7 @@ const Dashboard = (props) => {
                   ))}
                 </Pie>
 
-                <Pie
+                {/* <Pie
                   data={dataProgram}
                   cx={980}
                   cy={120}
@@ -163,7 +162,7 @@ const Dashboard = (props) => {
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
-                </Pie>
+                </Pie> */}
               </PieChart>
             </ResponsiveContainer>
           </Card>

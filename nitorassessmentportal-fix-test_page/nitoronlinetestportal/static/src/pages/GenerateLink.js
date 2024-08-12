@@ -12,6 +12,7 @@ import {
   Select,
   Collapse,
   Tooltip,
+  Tag,
 } from 'antd'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import ClipboardCopy from '../components/ClipboardCopy'
@@ -23,6 +24,7 @@ import MultiTagInput from '../components/MultiTagInput'
 import { useLocation } from 'react-router-dom'
 import moment from 'moment'
 import '../style.css'
+import ReactTags from 'react-tag-input'
 
 const { Panel } = Collapse
 
@@ -230,6 +232,8 @@ const GenerateLink = (props) => {
 
   // Function to open form
   const showGeneratedTestLinkModal = () => {
+    console.log('resetting tags')
+    setTags([])
     setIsModalOpen(true)
   }
 
@@ -237,6 +241,10 @@ const GenerateLink = (props) => {
   const closeGeneratedTestLinkModal = () => {
     setIsModalOpen(false)
     setRowRecord(null)
+    form.resetFields()
+    setTags([])
+    setTestRecord({}) // Reset testRecord state
+    setEndDate(null) // Reset endDate state
   }
 
   // Function to submit the Generate Test Link Form
@@ -247,6 +255,7 @@ const GenerateLink = (props) => {
 
     values.name = testName + '_' + values.name
     let end_date = endDate + ' 00:00:00'
+    console.log('enddate', end_date)
     values.end_date = end_date
     values.email_list = tags.toString()
 
@@ -261,11 +270,48 @@ const GenerateLink = (props) => {
         setShowGenerateTestError(reason.message)
         message.error(reason.message)
       })
+    form.resetFields()
+    setTags([])
+    setTestList()
   }
 
   // Function to handle the Form failed
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo)
+    form.resetFields()
+    setTags([])
+    setTestList()
+  }
+  //for multitag
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const [inputValue, setInputValue] = useState('')
+  const [tagsError, setTagsError] = useState(false)
+
+  const handleInputConfirm = () => {
+    if (inputValue && emailRegex.test(inputValue) && tags.length < 25) {
+      setTags([...tags, inputValue])
+      setInputValue('')
+      setTagsError(false)
+    } else if (!emailRegex.test(inputValue)) {
+      setTagsError('Please enter a valid email address.')
+    } else if (tags.length >= 25) {
+      setTagsError('You cannot enter more than 25 tags!')
+    }
+  }
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value)
+  }
+  const handleTagClose = (removedTag) => {
+    setTags((prevTags) => prevTags.filter((tag) => tag !== removedTag))
+  }
+
+  const handleModalOk = () => {
+    if (inputValue) {
+      setTagsError('Please confirm or clear the current email input.')
+    } else {
+      form.submit()
+    }
   }
 
   return (
@@ -291,10 +337,11 @@ const GenerateLink = (props) => {
           dataSource={apiData ? apiData.data : []}
           onChange={onTableChange}
         />
+        {/* modal */}
         <Modal
           title="Generate Test Link"
           open={isModalOpen}
-          onOk={form.submit}
+          onOk={handleModalOk}
           onCancel={closeGeneratedTestLinkModal}
         >
           <Form
@@ -303,15 +350,15 @@ const GenerateLink = (props) => {
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: 600 }}
+            onFinish={submitGeneratedLinkForm}
+            // onFinishFailed={onFinishFailed}
+            autoComplete="off"
             initialValues={{
               ...(testRecord && {
                 test: testRecord.id,
                 end_date: testRecord?.end_date ? moment(testRecord.end_date) : null,
               }),
             }}
-            onFinish={submitGeneratedLinkForm} // Ensure this line is correct
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
           >
             {TestLinkTable.map((item, index) => (
               <Form.Item
@@ -320,7 +367,7 @@ const GenerateLink = (props) => {
                 name={item.dataIndex}
                 rules={[
                   {
-                    required: item.dataIndex !== 'email_list',
+                    required: true,
                     message: `Please input your ${item.title}`,
                   },
                 ]}
@@ -340,7 +387,25 @@ const GenerateLink = (props) => {
                     options={filter_test_data}
                   />
                 ) : item.dataIndex === 'email_list' ? (
-                  <MultiTagInput setTags={setTags} tags={tags} />
+                  <div>
+                    <Input
+                      type="text"
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      onBlur={handleInputConfirm}
+                      onPressEnter={handleInputConfirm}
+                      placeholder="Enter email list"
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ margin: '8px 0' }}>
+                      {tags.map((tag) => (
+                        <Tag key={tag} closable onClose={() => handleTagClose(tag)}>
+                          {tag}
+                        </Tag>
+                      ))}
+                    </div>
+                    {tagsError && <p style={{ color: 'red' }}>{tagsError}</p>}
+                  </div>
                 ) : (
                   <Input addonBefore={testRecord?.test ? testRecord.test : null} />
                 )}

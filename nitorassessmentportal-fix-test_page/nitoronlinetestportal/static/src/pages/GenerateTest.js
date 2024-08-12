@@ -51,12 +51,12 @@ const GenerateTest = () => {
   const [questionData, setQuestionData] = useState([])
   const [languages, setLanguages] = useState([])
   const [selectedQuestion, setSelectedQuestion] = useState()
-  const [defaultMenuKey, setDefaultMenuKey] = useState()
   const [isSecondLastItem, setIsSecondLastItem] = useState(false)
   const [showPreviousButton, setShowPreviousButton] = useState(false)
   const [stepsItems, setStepsItems] = useState([])
+  const [defaultMenuKey, setDefaultMenuKey] = useState()
   const [isTestFinished, setisTestFinished] = useState(false)
-  const [current, setCurrent] = useState(0)
+  const [current, setCurrent] = useState(1)
 
   // Use effect for handling the page switch
   useEffect(() => {
@@ -95,6 +95,21 @@ const GenerateTest = () => {
       return () => clearInterval(interval)
     }
   }, [counter])
+
+  useEffect(() => {
+    if (!isTestFinished) {
+      const handleBeforeUnload = (event) => {
+        event.preventDefault()
+        return 'If You refresh it and the test will be automatically terminated.' // Optional message
+      }
+
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    }
+  }, [])
 
   const openCodeEditor = () => {
     setShowCodeEditor(true)
@@ -137,10 +152,14 @@ const GenerateTest = () => {
       }
       const lang = languages && languages.length > 0 && languages[0]
       const question = data[lang]
+
       const defaultQuestion = question && question.length > 0 && question[0]
+
       setSelectedQuestion(defaultQuestion)
       setDefaultMenuKey(defaultQuestion.question + '')
       setLanguages(languages)
+      console.log('useeffect', languages)
+
       let menuItemsData = []
       for (let i = 0; i < languages.length; i++) {
         let temp = {
@@ -196,6 +215,7 @@ const GenerateTest = () => {
     }
   }, [])
 
+  //
   function getItemItem(label, key, children) {
     return {
       key,
@@ -228,10 +248,13 @@ const GenerateTest = () => {
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     setCurrent(current + 1)
+    console.log('next', current)
+    console.log('default', defaultMenuKey)
+
     for (let i = 0; i < questionData.length; i++) {
       if (questionData[i].questionId == defaultMenuKey) {
         if ((i + 1) % questionData.length === 0) {
-          saveAnswer(question_details, '', result, true)
+          saveAnswer(question_details, selectedAnswerIndex, result, true)
           setShowResult(true)
           setisTestFinished(true)
           localStorage.removeItem('user_details')
@@ -249,7 +272,7 @@ const GenerateTest = () => {
 
         saveAnswer(question_details, selectedAnswerIndex, result, false)
         setSelectedAnswerIndex(null)
-        setDefaultMenuKey(questionData[i + 1].questionId)
+        setDefaultMenuKey('' + questionData[i + 1].questionId)
         setSelectedQuestion(questionData[i + 1].questionDetails)
       }
     }
@@ -266,7 +289,7 @@ const GenerateTest = () => {
         }
         saveAnswer(question_details, selectedAnswerIndex, result, false)
         setSelectedAnswerIndex(null)
-        setDefaultMenuKey(questionData[i - 1].questionId)
+        setDefaultMenuKey('' + questionData[i - 1].questionId)
         setSelectedQuestion(questionData[i - 1].questionDetails)
       }
     }
@@ -302,8 +325,9 @@ const GenerateTest = () => {
 
   // Function to save answer
   const saveAnswer = (question_details, selectedAnswerIndex, score, finish) => {
-    let candidateAnswers = selectedAnswerIndex !== undefined ? selectedAnswerIndex : candidate_answers;
-
+    let candidateAnswers =
+      selectedAnswerIndex !== undefined ? selectedAnswerIndex : candidate_answers
+    question_details.question_score = 0
     let request_data = {
       userTestId: JSON.parse(localStorage.getItem('user_details'))['id'],
       question_details: question_details,
@@ -349,7 +373,7 @@ const GenerateTest = () => {
     window.open('', '_self')
     window.close()
   }
-
+  console.log('377', defaultMenuKey)
 
   return (
     <>
@@ -368,6 +392,7 @@ const GenerateTest = () => {
                 <Menu
                   defaultSelectedKeys={[defaultMenuKey]}
                   defaultOpenKeys={languages}
+                  selectedKeys={defaultMenuKey}
                   mode="inline"
                   theme="light"
                   items={items}
@@ -381,7 +406,7 @@ const GenerateTest = () => {
                     {counter > 0 ? (
                       <div className="timer">
                         <div className="clock">
-                          <h1>Time Left-</h1>
+                          <h1>Time Left - </h1>
                           <div className="numbers">
                             <p className="minutes">{minutes}</p>
                           </div>
@@ -398,16 +423,9 @@ const GenerateTest = () => {
                     )}
                   </div>
                 </div>
+                <hr></hr>
+                <br></br>
                 {/* Stepper */}
-                <div className="row stepper-row">
-                  <Steps
-                    type="navigation"
-                    size="small"
-                    current={current}
-                    className="site-navigation-steps"
-                    items={stepsItems}
-                  />
-                </div>
                 {/* Question Name */}
                 <div className="row question-row">
                   <div className="col">
@@ -530,15 +548,15 @@ const GenerateTest = () => {
             >
               <h1 className="card-h1">Test finished</h1>
               <p className="card-p">
-                Your total score for the test was {score.score}, Number of correct
-                answers was {score.correct_answers}
+                You have successfully completed the test, you can close the browser.
+                <p>Thank you.</p>
               </p>
               <p className="card-p"></p>
               {/* TODO: going to implement a section to display test analysis */}
               {/* <p className="card-p">Click to see complete analysis</p> */}
-              <Button className="card-button" onClick={onExit}>
+              {/* <Button className="card-button" onClick={onExit}>
                 Exit Window
-              </Button>
+              </Button> */}
             </Card>
           </Layout>
         ) : isCompleted ? (

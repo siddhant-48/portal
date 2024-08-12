@@ -1,0 +1,14 @@
+.correct_answer{
+    background-color: #d4edda;
+}
+.incorrect_answer{
+    background-color: #f8d7da;
+}
+.answercomment {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    white-space: nowrap;
+    right: 10px;
+    top: 10px;
+}
+

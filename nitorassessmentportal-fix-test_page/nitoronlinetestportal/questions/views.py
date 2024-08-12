@@ -10,6 +10,42 @@ from utils.response_handlers import standard_json_response
 
 from .serializers import (MultipleChoicesAnswerSerializer,
                           ProgramTestCaseSerializer, QuestionSerializer)
+from tests_app.models import TestAllocations, UserTests
+
+
+@api_view(('GET',))
+@permission_classes((IsAuthenticated, ))
+def dashboard(request):
+    """
+        Returns list of count of questions and programs
+    """
+
+    questions = Question.objects.all()
+    total_mcq_questions = questions.filter(type=Question.MULTIPLE_CHOICES)
+    easy_mcq_questions = total_mcq_questions.filter(difficulty=Question.EASY)
+    medium_mcq_questions = total_mcq_questions.filter(difficulty=Question.MEDIUM)
+    hard_mcq_questions = total_mcq_questions.filter(difficulty=Question.HARD)
+    total_program_questions = questions.filter(type=Question.PROGRAMS)
+    easy_program_questions = total_program_questions.filter(difficulty=Question.EASY)
+    medium_program_questions = total_program_questions.filter(difficulty=Question.MEDIUM)
+    hard_program_questions = total_program_questions.filter(difficulty=Question.HARD)
+    total_test = TestAllocations.objects.all()
+    attempted_test = UserTests.objects.all()
+    response_data = {
+        "total_questions" : len(questions),
+        "total_mcq_questions" : len(total_mcq_questions),
+        "easy_mcq_questions":len(easy_mcq_questions),
+        "medium_mcq_questions":len(medium_mcq_questions),
+        "hard_mcq_questions":len(hard_mcq_questions),
+        "total_program_questions" : len(total_program_questions),
+        "easy_program_questions" : len(easy_program_questions),
+        "medium_program_questions" : len(medium_program_questions),
+        "hard_program_questions" : len(hard_program_questions),
+        "total_test" : len(total_test),
+        "total_attempted_test" : len(attempted_test),
+    }
+
+    return standard_json_response(data=response_data)
 
 
 @api_view(('GET',))
@@ -18,11 +54,11 @@ def get_question_list(request):
     """
         Returns list of questions
     """
-    language_filter = request.query_params["language"] if "language" in request.query_params else "python"
+    language_filter = request.query_params["language"] if "language" in request.query_params else ""
     filter_params = {}
     allowed_keys = ['id', 'type', 'difficulty']
     for key, value in request.query_params.items():
-        if key in allowed_keys:
+        if key in allowed_keys and value:
             filter_params[key] = value
 
     page = request.query_params.get('page', 1)

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Input, Layout, Space, Table, Tooltip } from 'antd'
+import {
+  Input,
+  Layout,
+  Space,
+  Table,
+  Tooltip,
+} from 'antd'
 import { useFetch } from '../Utils/Hooks/useFetchAPI'
 
 const { Search } = Input;
+
 
 const columns = [
   {
@@ -24,6 +31,11 @@ const columns = [
     title: 'Correct Answers',
     dataIndex: 'correct_answers',
     key: 'correct_answers',
+  },
+  {
+    title: 'Completion Date',
+    dataIndex: 'created_at',
+    key: 'created_at',
   },
   {
     title: 'Action',
@@ -53,27 +65,27 @@ const columns = [
       </Space>
     ),
   },
-];
+]
 
 const goToTestSummary = (record) => {
-  window.open(`/#/use-test-summary/${record.id}`, '_blank');
+  window.open(`/#/use-test-summary/${record.id}`, '_self')
 };
 
 const UserSubmissions = (props) => {
-  const [fetchUrl, setFetchUrl] = useState('get_submissions/');
-  const [searchTxt, setSearchTxt] = useState('');
-  const { isLoading, serverError, apiData, fetchData } = useFetch(fetchUrl);
+  const [fetchUrl, setFetchUrl] = useState('get_submissions/')
+  const [searchTxt, setSearchTxt] = useState('')
+  const { isLoading, serverError, apiData, fetchData } = useFetch(fetchUrl)
   const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
     props.setSelectedKey('user-submissions');
-  }, [props]);
+  }, [props])
 
   useEffect(() => {
     if (apiData && apiData.data) {
       setFilteredData(apiData.data);
     }
-  }, [apiData]);
+  }, [apiData])
 
   useEffect(() => {
     if (searchTxt) {
@@ -82,15 +94,15 @@ const UserSubmissions = (props) => {
         item.name.toLowerCase().includes(lowercasedFilter) ||
         item.email.toLowerCase().includes(lowercasedFilter)
       );
-      setFilteredData(filtered);
+      setFilteredData(filtered)
     } else {
       setFilteredData(apiData ? apiData.data : []);
     }
-  }, [searchTxt, apiData]);
+  }, [searchTxt, apiData])
 
   useEffect(() => {
     fetchData();
-  }, [fetchUrl, fetchData]);
+  }, [fetchUrl, fetchData])
 
   return (
     <Layout.Content
@@ -116,7 +128,7 @@ const UserSubmissions = (props) => {
         rowKey="id"
       />
     </Layout.Content>
-  );
-};
+  )
+}
 
-export default UserSubmissions;
+export default UserSubmissions

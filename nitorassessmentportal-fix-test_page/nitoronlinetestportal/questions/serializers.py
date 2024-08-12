@@ -32,9 +32,10 @@ class QuestionSerializer(serializers.ModelSerializer):
 class MultipleChoicesAnswerSerializer(serializers.ModelSerializer):
     question_details = QuestionSerializer(source='question', read_only=True)
     candidate_answers = serializers.CharField(required=False, allow_null=True)
+    question_score = serializers.FloatField(required=False)
     class Meta:
         model = MultipleChoicesAnswer
-        fields = ('option1', 'option2', 'option3', 'option4', 'correct_value', 'question', 'question_details', 'candidate_answers','created_by', 'updated_by', 'created_at', 'updated_at')
+        fields = ('option1', 'option2', 'option3', 'option4', 'correct_value', 'question', 'question_details', 'candidate_answers', 'question_score', 'created_by', 'updated_by', 'created_at', 'updated_at')
         extra_kwargs = {
             'option1': {'required': True},
             'option2': {'required': True},
@@ -56,14 +57,15 @@ class MultipleChoicesAnswerSerializer(serializers.ModelSerializer):
 class ProgramTestCaseSerializer(serializers.ModelSerializer):
     question_details = QuestionSerializer(source='question', read_only=True)
     candidate_answers = serializers.CharField(required=False, allow_null=True)
+    question_score = serializers.FloatField(required=False)
     class Meta:
         model = ProgramTestCase
-        fields = ('case1', 'case2', 'case3', 'case4', 'question', 'question_details', 'candidate_answers', 'created_by', 'updated_by', 'created_at', 'updated_at')
+        fields = ('case1', 'case2', 'case3', 'case4', 'question', 'question_details', 'candidate_answers', 'question_score', 'created_by', 'updated_by', 'created_at', 'updated_at')
         extra_kwargs = {
             'case1': {'required': True},
             'case2': {'required': True},
-            'case3': {'required': True},
-            'case4': {'required': True},
+            'case3': {'required': False},
+            'case4': {'required': False},
             'question': {'required': True},
         }
 

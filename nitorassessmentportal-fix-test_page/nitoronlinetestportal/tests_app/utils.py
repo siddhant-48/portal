@@ -110,6 +110,21 @@ def validate_single_question_details(details):
     return random_easy_mcq, random_medium_mcq, random_hard_mcq, random_easy_program, random_medium_program, random_hard_program
 
 
+def calculate_score(candidate_answers, correct_value, q_type, difficulty, data):
+    if candidate_answers == correct_value:
+        if q_type == 1:
+            question_score = 5
+    else:
+        question_score = 0
+    total_score = 0
+    for langauge in data:
+        if isinstance(data[langauge], list):
+            for question in data[langauge]:
+                if "question_score" in question and question["question_score"]:
+                    total_score += question["question_score"]
+
+    return question_score, total_score
+
 
 def send_email(recipient, subject, template_path, data):
     # Load the template

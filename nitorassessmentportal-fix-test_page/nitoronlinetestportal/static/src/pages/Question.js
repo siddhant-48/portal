@@ -17,7 +17,6 @@ import {
   Select,
 } from 'antd'
 
-import * as XLSX from 'xlsx'
 import RenderQuestions from './RenderQuestions'
 const { Option } = Select
 import { UploadOutlined } from '@ant-design/icons'
@@ -29,7 +28,6 @@ import {
   caseList,
   languageOptions,
 } from '../Utils/constants'
-import { EditFilled, DeleteFilled } from '@ant-design/icons'
 import PropTypes from 'prop-types'
 
 const { Panel } = Collapse
@@ -41,6 +39,8 @@ const Question = (props) => {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [lang, setLang] = useState([])
+  const [type, setType] = useState([])
+  const [difficulty, setDifficulty] = useState([])
 
   const [record, setRecord] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -56,7 +56,7 @@ const Question = (props) => {
   const [addQuestionDetail, setAddQuestionDetail] = useState(null)
   const [testDetails, setTestDetails] = useState(null)
   const [fetchUrl, setFetchUrl] = useState(
-    'questions?language=' + lang + '&page=' + page,
+    `questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`,
   )
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -105,9 +105,11 @@ const Question = (props) => {
   }, [form3, testDetails])
 
   useEffect(() => {
-    setFetchUrl(`questions?language=${lang}&page=${page}&page_size=${pageSize}`)
+    setFetchUrl(
+      `questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`,
+    )
     fetchData()
-  }, [lang, page, pageSize])
+  }, [lang, type, difficulty, page, pageSize])
 
   //filter questions
   const filter_language = () => {
@@ -162,24 +164,26 @@ const Question = (props) => {
     )
   }
 
-  const filterQuestions = () => [
-    { text: 'Easy MCQ Question', value: 'Easy MCQ Question' },
-    { text: 'Medium MCQ Question', value: 'Medium MCQ Question' },
-    { text: 'Hard MCQ Question', value: 'Hard MCQ Question' },
-    { text: 'Easy Program', value: 'Easy Program' },
-    { text: 'Medium Program', value: 'Medium Program' },
-    { text: 'Hard Program', value: 'Hard Program' },
+  const filterQuestionsType = () => [
+    { text: 'MCQ', value: 'MCQ' },
+    { text: 'Program', value: 'Program' },
   ]
-
-  const mapQuestionType = (type, difficulty) => {
+  const filterQuestionsDifficulty = () => [
+    { text: 'Easy', value: 'Easy' },
+    { text: 'Medium', value: 'Medium' },
+    { text: 'Hard', value: 'Hard' },
+  ]
+  const mapQuestionDifficulty = (difficulty) => {
+    if (difficulty === 1) return 'Easy'
+    if (difficulty === 2) return 'Medium'
+    if (difficulty === 3) return 'Hard'
+    return ''
+  }
+  const mapQuestionType = (type) => {
     if (type === 1) {
-      if (difficulty === 1) return 'Easy MCQ Question'
-      if (difficulty === 2) return 'Medium MCQ Question'
-      if (difficulty === 3) return 'Hard MCQ Question'
+      return 'MCQ'
     } else if (type === 2) {
-      if (difficulty === 1) return 'Easy Program'
-      if (difficulty === 2) return 'Medium Program'
-      if (difficulty === 3) return 'Hard Program'
+      return 'Program'
     }
     return ''
   }
@@ -205,16 +209,47 @@ const Question = (props) => {
     {
       title: 'Question Type',
       dataIndex: 'type',
-      filters: filterQuestions(),
+      filters: filterQuestionsType(),
       filterSearch: true,
       key: 'type',
       width: 230,
       onFilter: (value, record) => {
-        const typeLabel = mapQuestionType(record.type, record.difficulty)
+        const typeLabel = mapQuestionType(record.type)
         return typeLabel === value
       },
       render: (_, record) => {
-        const typeLabel = mapQuestionType(record.type, record.difficulty)
+        const typeLabel = mapQuestionType(record.type)
+        return (
+          <>
+            {typeLabel && (
+              <Tag
+                color={
+                  typeLabel.includes('MCQ')
+                    ? 'purple'
+                    : typeLabel.includes('Program')
+                      ? 'pink'
+                      : 'red'
+                }
+              >
+                {typeLabel}
+              </Tag>
+            )}
+          </>
+        )
+      },
+    },
+    {
+      title: 'Difficulty',
+      dataIndex: 'difficulty',
+      filters: filterQuestionsDifficulty(),
+      key: 'difficulty',
+      width: 230,
+      onFilter: (value, record) => {
+        const typeLabel = mapQuestionDifficulty(record.difficulty)
+        return typeLabel === value
+      },
+      render: (_, record) => {
+        const typeLabel = mapQuestionDifficulty(record.difficulty)
         return (
           <>
             {typeLabel && (
@@ -326,6 +361,30 @@ const Question = (props) => {
       setLang(filters.language)
     } else {
       setLang([])
+    }
+    if (filters.type) {
+      let type = 1
+      if (filters.type === 'MCQ') {
+        type = 1
+      } else if (filters.type === 'Program') {
+        type = 2
+      }
+      setType(type)
+    } else {
+      setType([])
+    }
+    if (filters.difficulty) {
+      let difficulty = 1
+      if (filters.difficulty === 'Easy') {
+        difficulty = 1
+      } else if (filters.difficulty === 'Medium') {
+        difficulty = 2
+      } else if (filters.difficulty === 'Hard') {
+        difficulty = 3
+      }
+      setDifficulty(difficulty)
+    } else {
+      setDifficulty([])
     }
   }
 
@@ -535,12 +594,24 @@ const Question = (props) => {
       delete new_values['multiple_options']
       delete new_values['program_test_cases']['candidate_answers']
     }
+    if (new_values['type'] == 2) {
+      delete new_values['multiple_options']
+      delete new_values['multiple_options']
+      delete new_values['multiple_options']
+      delete new_values['multiple_options']
+      delete new_values['multiple_options']
+      new_values['program_test_cases'] = {
+        case1: values.case1,
+        case2: values.case2,
+        case3: values.case3,
+        case4: values.case4,
+      }
+    }
 
     console.log('Payload being sent:', { id: values.id, values: new_values }) // Debugging line
 
     try {
       const data = await triggerFetchData('add_question/', {
-        id: values.id,
         values: new_values,
       })
       console.log(data)
@@ -570,7 +641,7 @@ const Question = (props) => {
           }}
         >
           <Button onClick={() => downloadExcelTemplate()}>
-            Download Excel Template
+            Download Question bank Template
           </Button>
         </div>
 
@@ -610,7 +681,7 @@ const Question = (props) => {
             defaultPageSize: pageSize,
             total: totalRecords,
             showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '30'],
+            pageSizeOptions: ['10', '20', '50', '100'],
             onChange: (page, pageSize) => {
               setPage(page)
               setPageSize(pageSize)
@@ -679,20 +750,28 @@ const Question = (props) => {
                       )
                     }}
                   </Form.Item>
+                ) : item.title === 'Language Name' ? (
+                  <Select placeholder="Select Language" style={{ width: '100%' }}>
+                    {languageOptions.map((option) => (
+                      <Option key={option.id} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
                 ) : (
                   <Input />
                 )}
               </Form.Item>
             ))}
             {questionDetail ? (
-              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
-                <Panel header="Question Details" key={`panel-index`}>
+              <Collapse defaultActiveKey={['0']} key="question-detail-collapse">
+                <Panel header="Question Details" key="0">
                   <Form
                     form={form2}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
-                    key="panel_form"
+                    key="panel_form_question"
                     initialValues={questionDetail}
                     onFinish={onFinish}
                     autoComplete="off"
@@ -700,7 +779,7 @@ const Question = (props) => {
                     {optionList?.map((item, index) => (
                       <Form.Item
                         style={item.title === 'Action' ? { display: 'none' } : null}
-                        key={`form-item-${index}`}
+                        key={`form-item-question-${index}`}
                         label={item.title}
                         name={item.dataIndex}
                         rules={[
@@ -741,14 +820,14 @@ const Question = (props) => {
                 </Panel>
               </Collapse>
             ) : (
-              <Collapse key={`collapse-index`} defaultActiveKey={['1']}>
-                <Panel header="Test Details" key={`panel-index`}>
+              <Collapse defaultActiveKey={['0']} key="test-detail-collapse">
+                <Panel header="Test Details" key="0">
                   <Form
                     form={form3}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
-                    key="panel_form"
+                    key="panel_form_test"
                     initialValues={testDetails}
                     onFinish={onFinish}
                     autoComplete="off"
@@ -756,7 +835,7 @@ const Question = (props) => {
                     {caseList?.map((item, index) => (
                       <Form.Item
                         style={item.title === 'Action' ? { display: 'none' } : null}
-                        key={`form-item-${index}`}
+                        key={`form-item-test-${index}`}
                         label={item.title}
                         name={item.dataIndex}
                         rules={[
@@ -802,7 +881,7 @@ const Question = (props) => {
 
         {/* add question */}
         <Modal
-          title="Add Ques"
+          title="Add Question"
           open={isAddModalOpen}
           onOk={addModal.submit} // Ensure form submission is triggered
           onCancel={handleAddCancel}
@@ -853,12 +932,11 @@ const Question = (props) => {
             <Form.Item
               label="Question"
               name="name"
-              placeholder="Enter the Question"
               rules={[
                 { required: true, message: 'Please input your Question Title' },
               ]}
             >
-              <Input style={{ width: '100%' }} />
+              <Input placeholder="Enter the Question" style={{ width: '100%' }} />
             </Form.Item>
 
             <Form.Item
@@ -888,8 +966,8 @@ const Question = (props) => {
             </Form.Item>
 
             {addQuestionDetail && (
-              <Collapse key="collapse-question-detail" defaultActiveKey={['1']}>
-                <Panel header="Question Details" key="panel-question-detail">
+              <Collapse key="collapse-question-detail" defaultActiveKey={['0']}>
+                <Panel header="Question Details" key="0">
                   {addQuestionDetail.map((item, index) => (
                     <Form.Item
                       key={`form-item-${index}`}

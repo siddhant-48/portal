@@ -136,7 +136,7 @@ class SingleUserTestsSerialiazer(serializers.ModelSerializer):
     end_date = serializers.SerializerMethodField()
     class Meta:
         model = UserTests
-        fields = ('id', 'first_name','name', 'last_name', 'email', 'test_allocation', 'test_allocation_detail', 'test_name', 'end_date', 'correct_answers', 'completed', 'score', 'generated_question')
+        fields = ('id', 'first_name','name', 'last_name', 'email', 'test_allocation', 'test_allocation_detail', 'test_name', 'end_date', 'correct_answers', 'completed', 'score', 'generated_question', 'created_at')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},

@@ -519,12 +519,12 @@ const CreateTest = ({ setSelectedKey, history }) => {
                       <p>Medium: {item.medium_mcq_count}</p>
                       <p>Hard: {item.hard_mcq_count}</p>
                     </div>
-                    <div className="details-column">
+                    {/* <div className="details-column">
                       <h3>Program</h3>
                       <p>Easy: {item.easy_program_count}</p>
                       <p>Medium: {item.medium_program_count}</p>
                       <p>Hard: {item.hard_program_count}</p>
-                    </div>
+                    </div> */}
                   </div>
                 </Panel>
               </Collapse>

@@ -18,6 +18,7 @@ from django.urls import path
 from questions.views import *
 
 urlpatterns = [
+    path('dashboard/', dashboard),
     path('questions/', get_question_list),
     path('add_question/', add_question, name='add_question'),
     path('bulk_questions/', bulk_questions, name='bulk_questions'),

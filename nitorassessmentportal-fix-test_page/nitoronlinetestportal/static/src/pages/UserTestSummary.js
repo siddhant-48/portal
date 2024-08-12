@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import '../styles/user-submissions.css'
 import {
   Row,
   Col,
@@ -104,7 +105,9 @@ const formatData = (data) => {
                 <div>{questionDetails.name}</div>
                 <div>
                   {questionOptions.map((option, idx) => (
-                    <div key={idx}>{`${idx + 1}. ${option}`}</div>
+                    option ? 
+                    question.correct_value === option && question.candidate_answers === option  ? <div className='correct_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Candidate answer&nbsp;&nbsp;</span></div>
+                     : question.correct_value === option ? <div className='correct_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Correct answer&nbsp;&nbsp;</span></div> : question.candidate_answers === option ? <div className='incorrect_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Candidate answer&nbsp;&nbsp;</span></div> :<div className='' key={idx}>{`${idx + 1}. ${option}`}</div> : <></>
                   ))}
                 </div>
                 <div>{`Candidate Answer: ${question.candidate_answers}`}</div>
@@ -134,7 +137,6 @@ const UserTestSummary = (props) => {
   const onChange = (key) => {
     console.log(key)
   }
-  console.log('score', apiData?.data?.score)
 
   //percentage calculate
   const calculatePercentage = (score, weightage) => {
@@ -157,21 +159,10 @@ const UserTestSummary = (props) => {
       children: (
         <>
           <Card>
-            <Collapse
-              ghost
-              items={[
-                {
-                  key: '1',
-                  label: (
-                    <>
-                      <b>Score distribution</b> - {apiData?.data?.score}/
-                      {apiData?.data?.generated_question?.weightage} ({percentage}%)
-                    </>
-                  ),
-                  children: <p>Candidate Score Details</p>,
-                },
-              ]}
-            />
+            <>
+              <b>Score distribution</b> - {apiData?.data?.score}/
+              {apiData?.data?.generated_question?.weightage} ({percentage}%)
+            </>
           </Card>
           <Card style={{ marginTop: '16px' }} title="Candidate Summary">
             <Table
@@ -212,15 +203,13 @@ const UserTestSummary = (props) => {
             <Descriptions.Item label="Test Name">
               {apiData?.data?.test_name}t
             </Descriptions.Item>
+            <Descriptions.Item label="Complition Date">
+              {apiData?.data?.created_at}
+            </Descriptions.Item>
           </Descriptions>
         </Card>
       ),
-    },
-    {
-      key: '3',
-      label: 'Attempt Activity',
-      children: 'Content of Tab Pane 3',
-    },
+    }
   ]
 
   return (
@@ -244,7 +233,7 @@ const UserTestSummary = (props) => {
             <p style={{ fontWeight: 'bold', fontSize: '28px' }}>
               {apiData?.data?.name || 'Loading...'}
             </p>
-            <p>Senior Level</p>
+            {/* <p>Senior Level</p> */}
           </Col>
 
           <Col offset={18} style={{ alignSelf: 'center' }}>

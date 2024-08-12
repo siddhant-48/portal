@@ -207,23 +207,23 @@ const CreateTestForm = [
     dataIndex: 'hard_mcq_count',
     key: 'hard_mcq_count',
   },
-  {
-    title: 'Easy Programs',
-    dataIndex: 'easy_program_count',
-    key: 'easy_program_count',
-  },
+  // {
+  //   title: 'Easy Programs',
+  //   dataIndex: 'easy_program_count',
+  //   key: 'easy_program_count',
+  // },
 
-  {
-    title: 'Medium Program',
-    dataIndex: 'medium_program_count',
-    key: 'medium_program_count',
-  },
+  // {
+  //   title: 'Medium Program',
+  //   dataIndex: 'medium_program_count',
+  //   key: 'medium_program_count',
+  // },
 
-  {
-    title: 'Hard Program',
-    dataIndex: 'hard_program_count',
-    key: 'hard_program_count',
-  },
+  // {
+  //   title: 'Hard Program',
+  //   dataIndex: 'hard_program_count',
+  //   key: 'hard_program_count',
+  // },
   {
     title: 'Long Summary',
     dataIndex: 'long_summary_count',
@@ -292,7 +292,7 @@ const CreateTestForm_3 = [
 
 const testSectionOption = [
   { id: 1, label: 'Add MCQs', name: 'Add MCQs', value: 'Add_MCQs' },
-  { id: 2, label: 'Add Programs', name: 'Add Programs', value: 'Add_Programs' },
+  // { id: 2, label: 'Add Programs', name: 'Add Programs', value: 'Add_Programs' },
 ]
 
 const initialNewTestValues = {

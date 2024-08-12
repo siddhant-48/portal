@@ -55,7 +55,7 @@ from tests_app.serializers import (TestAllocationsSerialiazer,
 from utils.response_handlers import standard_json_response
 from datetime import datetime
 import threading
-from .utils import get_total_duration, validate_single_question_details, send_email
+from .utils import get_total_duration, validate_single_question_details, send_email, calculate_score
 
 @api_view(('POST',))
 @permission_classes((IsAuthenticated, ))
@@ -462,48 +462,49 @@ def save_candidate_answer(request):
         "q_type": 2
     }
     """
-
-    user_test_id = request.data.get('userTestId')
-    user_details = request.data
-    if not user_test_id:
-        return standard_json_response(message='User Test Id required', status_code=status.HTTP_400_BAD_REQUEST)
-
     try:
-        user_test = UserTests.objects.get(id=user_test_id)
-    except UserTests.DoesNotExist:
-        return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
+        user_test_id = request.data.get('userTestId')
+        user_details = request.data
+        if not user_test_id:
+            return standard_json_response(message='User Test Id required', status_code=status.HTTP_400_BAD_REQUEST)
 
-    data = user_test.generated_question
+        try:
+            user_test = UserTests.objects.get(id=user_test_id)
+        except UserTests.DoesNotExist:
+            return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
 
-    # Find the variable key dynamically
-    language = "Python"
-    variable_key = next(key for key in data.keys() if isinstance(data[key], list))
-    if "question_details" in user_details:
-        q_type = user_details["question_details"]["type"]
-        question_id = user_details["question_details"]["id"]
-        language = user_details["question_details"]["language"]
-    else:
-        q_type = user_details['q_type']
+        data = user_test.generated_question
 
-    data_dict = data[variable_key][0]  
-    for key, value in data_dict.items():
-        if key.startswith('question_details'):
-            lang = value["language"]
+        # Find the variable key dynamically
+        language = "Python"
+        if "question_details" in user_details:
+            q_type = user_details["question_details"]["type"]
+            question_id = user_details["question_details"]["id"]
+            language = user_details["question_details"]["language"]
+        else:
+            q_type = user_details['q_type']
+        variable_key = 0
+        for question_data in data[language]:
+            if question_data["question"] == question_id:
+                break
+            variable_key += 1
+        data_dict = data[language][variable_key]
+        if 'question_details' in data_dict:
             if q_type == 1:
                 score = 0
                 if user_details["question_details"]["id"] == question_id:
                     if "candidate_answers" in  user_details:
-                        user_test.generated_question[language][0]["candidate_answers"] = user_details["candidate_answers"]
-                    
-                    if user_details["score"]:
+                        user_test.generated_question[language][variable_key]["candidate_answers"] = user_details["candidate_answers"]
+                        
+                        question_score, total_score = calculate_score(user_details["candidate_answers"], data_dict["correct_value"], q_type, user_details["question_details"]['difficulty'], data)
                         user_score, user_test.correct_answers, user_test.wrong_answer = user_details["score"].values()
-                        if q_type == 1:
-                            score = user_test.correct_answers * 5
-                            user_test.score = score
+                        user_test.score = total_score + question_score
+                        user_test.generated_question[language][variable_key]["question_score"] = question_score
 
             else:
                 score = verify_coding_answer(request, q_type)
                 user_test.score += score
+                user_test.generated_question[language][variable_key]["question_score"] = question_score
         user_test.completed = user_details.get("completed", False)
         if user_details.get("completed", False):
             user_test.submission_date = datetime.today()
@@ -511,7 +512,11 @@ def save_candidate_answer(request):
         user_test.updated_at = datetime.now()
         user_test.save()
 
-    user_details = UserTestsSerialiazer(instance = user_test)
+        user_details = UserTestsSerialiazer(instance = user_test)
+    except Exception as e :
+        print(e)
+        return standard_json_response(data={}, status_code=status.HTTP_400_BAD_REQUEST)
+
   
     return standard_json_response(data=user_details.data, status_code=status.HTTP_201_CREATED)
 
@@ -620,7 +625,7 @@ def verify_coding_answer(request, q_type):
 @api_view(('GET',))
 @permission_classes((IsAuthenticated, ))
 def get_submissions(request, search_text=''):
-    user_tests_list = UserTests.objects.all()
+    user_tests_list = UserTests.objects.all().order_by('-updated_by', '-created_by')
     if search_text :
         user_tests_list = user_tests_list.filter(
             first_name__icontains=search_text,
