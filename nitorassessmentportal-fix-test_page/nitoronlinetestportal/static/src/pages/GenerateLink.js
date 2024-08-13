@@ -68,6 +68,7 @@ const GenerateLink = (props) => {
     triggerFetchData('get_test_list/', {}, 'GET')
       .then((data) => {
         setTestList(data.data)
+        console.log(data.data)
       })
       .catch((reason) => message.error(reason))
   }
@@ -239,12 +240,15 @@ const GenerateLink = (props) => {
 
   // Function to close form
   const closeGeneratedTestLinkModal = () => {
+    setInputValue('')
+    setTagsError('')
+    form.resetFields()
+    form.setFieldValue('test', 'siddhant')
     setIsModalOpen(false)
     setRowRecord(null)
-    form.resetFields()
     setTags([])
-    setTestRecord({}) // Reset testRecord state
-    setEndDate(null) // Reset endDate state
+    setTestRecord({})
+    setEndDate(null)
   }
 
   // Function to submit the Generate Test Link Form
@@ -265,14 +269,17 @@ const GenerateLink = (props) => {
         message.success('Test Link Generated')
         setIsModalOpen(false)
         fetchData()
+        form.resetFields()
+        setInputValue('')
+        setTags([])
+        setTestRecord({})
+        setEndDate(null)
+        setIsModalOpen(false)
       })
       .catch((reason) => {
         setShowGenerateTestError(reason.message)
         message.error(reason.message)
       })
-    form.resetFields()
-    setTags([])
-    setTestList()
   }
 
   // Function to handle the Form failed
@@ -288,14 +295,20 @@ const GenerateLink = (props) => {
   const [tagsError, setTagsError] = useState(false)
 
   const handleInputConfirm = () => {
-    if (inputValue && emailRegex.test(inputValue) && tags.length < 25) {
-      setTags([...tags, inputValue])
-      setInputValue('')
+    if (inputValue) {
+      if (emailRegex.test(inputValue)) {
+        if (tags.length < 25) {
+          setTags([...tags, inputValue])
+          setInputValue('')
+          setTagsError(false) // Clear error after successful addition
+        } else {
+          setTagsError('You cannot enter more than 25 tags!')
+        }
+      } else {
+        setTagsError('Please enter a valid email address.')
+      }
+    } else {
       setTagsError(false)
-    } else if (!emailRegex.test(inputValue)) {
-      setTagsError('Please enter a valid email address.')
-    } else if (tags.length >= 25) {
-      setTagsError('You cannot enter more than 25 tags!')
     }
   }
 
@@ -313,6 +326,7 @@ const GenerateLink = (props) => {
       form.submit()
     }
   }
+  console.log('testrec', testRecord)
 
   return (
     <>
@@ -343,6 +357,13 @@ const GenerateLink = (props) => {
           open={isModalOpen}
           onOk={handleModalOk}
           onCancel={closeGeneratedTestLinkModal}
+          afterClose={() => {
+            form.resetFields()
+            setInputValue('')
+            setTags([])
+            setTagsError('')
+            setTestRecord({})
+          }}
         >
           <Form
             form={form}
@@ -354,10 +375,8 @@ const GenerateLink = (props) => {
             // onFinishFailed={onFinishFailed}
             autoComplete="off"
             initialValues={{
-              ...(testRecord && {
-                test: testRecord.id,
-                end_date: testRecord?.end_date ? moment(testRecord.end_date) : null,
-              }),
+              test: testRecord.id,
+              end_date: testRecord?.end_date ? moment(testRecord.end_date) : null,
             }}
           >
             {TestLinkTable.map((item, index) => (
@@ -428,21 +447,28 @@ const GenerateLink = (props) => {
             onCancel={closeGeneratedTestLinkModal}
           >
             {record.test_details?.question_details?.map((item, index) => (
-              <Collapse key={`collapse-index-${index}`} defaultActiveKey={['1']}>
-                <Panel header={item.language}>
-                  {
-                    <ul>
-                      <li> MCQ Count: {item.mcq_count}</li>
-                      <li>Easy MCQ Count: {item.easy_mcq_count}</li>
-                      <li>Medium MCQ Count: {item.medium_mcq_count}</li>
-                      <li>Hard MCQ Count: {item.hard_mcq_count}</li>
-                      <li> Easy Program: {item.easy_program_count}</li>
-                      <li>Medium Count: {item.medium_program_count}</li>
-                      <li> Hard Program: {item.hard_program_count}</li>
-                    </ul>
-                  }
-                </Panel>
-              </Collapse>
+              <div key={`collapse-index-${index}`} className="collapse-container">
+                <Collapse defaultActiveKey={['0']} className="custom-collapse">
+                  <Panel
+                    header={<span className="panel-header">{item.language}</span>}
+                  >
+                    <div className="details-container">
+                      <div className="details-column">
+                        <h3>MCQ</h3>
+                        <p>Easy: {item.easy_mcq_count}</p>
+                        <p>Medium: {item.medium_mcq_count}</p>
+                        <p>Hard: {item.hard_mcq_count}</p>
+                      </div>
+                      {/* <div className="details-column">
+                      <h3>Program</h3>
+                      <p>Easy: {item.easy_program_count}</p>
+                      <p>Medium: {item.medium_program_count}</p>
+                      <p>Hard: {item.hard_program_count}</p>
+                    </div> */}
+                    </div>
+                  </Panel>
+                </Collapse>
+              </div>
             ))}
           </Modal>
         </>

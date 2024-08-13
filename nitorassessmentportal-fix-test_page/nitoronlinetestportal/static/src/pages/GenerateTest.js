@@ -158,7 +158,6 @@ const GenerateTest = () => {
       setSelectedQuestion(defaultQuestion)
       setDefaultMenuKey(defaultQuestion.question + '')
       setLanguages(languages)
-      console.log('useeffect', languages)
 
       let menuItemsData = []
       for (let i = 0; i < languages.length; i++) {
@@ -248,8 +247,6 @@ const GenerateTest = () => {
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     setCurrent(current + 1)
-    console.log('next', current)
-    console.log('default', defaultMenuKey)
 
     for (let i = 0; i < questionData.length; i++) {
       if (questionData[i].questionId == defaultMenuKey) {
@@ -373,7 +370,6 @@ const GenerateTest = () => {
     window.open('', '_self')
     window.close()
   }
-  console.log('377', defaultMenuKey)
 
   return (
     <>

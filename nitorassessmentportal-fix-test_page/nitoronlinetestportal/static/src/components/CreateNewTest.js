@@ -212,14 +212,23 @@ const CreateNewTest = ({
   }
 
   // Function to Update the Score Weightage dynamically
-  const handleCountInputChange = (index, value) => {
+  const handleCountInputChange = (field, value) => {
     const updatedValues = form.getFieldsValue()
     const updatedWeightage = calculateWeightage(updatedValues)
-
+    form.setFieldValue(field, value)
     // Update the dynamic score in the state
     dispatch({
       type: ACTION.SET_DYNAMIC_SCORE,
       payload: { dynamicScore: updatedWeightage },
+    })
+    dispatch({
+      type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+      payload: { showNotEnoughQuesErrorMessage: '' },
+    })
+
+    dispatch({
+      type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+      payload: { showNotEnoughQuesError: false },
     })
   }
 
@@ -351,13 +360,13 @@ const CreateNewTest = ({
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
           payload: {
-            showNotEnoughQuesErrorMessage: reason?.error?.message || '',
+            showNotEnoughQuesErrorMessage: reason && reason.error && reason.message,
           },
         })
 
         dispatch({
           type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
-          payload: { showNotEnoughQuesError: reason?.error || false },
+          payload: { showNotEnoughQuesError: reason && reason.error },
         })
       })
 
@@ -413,12 +422,40 @@ const CreateNewTest = ({
   }
 
   const [selectedSections, setSelectedSections] = useState([])
+
   const handleAddSection = (value) => {
+    if (!value.includes('Add_MCQs')) {
+      // Reset MCQ fields when "Add_MCQs" is removed from selected sections
+      form.resetFields(['easy_mcq_count', 'medium_mcq_count', 'hard_mcq_count'])
+    }
     dispatch({
       type: ACTION.SET_ADDED_SECTIONS,
       payload: { addedSections: value },
     })
     setSelectedSections(value)
+  }
+  const handleLanguageChange = () => {
+    form.resetFields([
+      'add_sections',
+      'easy_mcq_count',
+      'medium_mcq_count',
+      'hard_mcq_count',
+    ])
+    dispatch({
+      type: ACTION.SET_DYNAMIC_SCORE,
+      payload: { dynamicScore: 0 },
+    })
+    setSelectedSections([]) // Clear the sections to hide "Add MCQ"
+    //validation
+    dispatch({
+      type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+      payload: { showNotEnoughQuesErrorMessage: '' },
+    })
+
+    dispatch({
+      type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+      payload: { showNotEnoughQuesError: false },
+    })
   }
   const [isAddedToList, setIsAddedToList] = useState(false)
 
@@ -478,20 +515,7 @@ const CreateNewTest = ({
                       <Select
                         placeholder="Select a language"
                         options={languageOptions}
-                        onChange={(value) => {
-                          // Reset the MCQ fields and clear sections when the language changes
-                          form.resetFields([
-                            'add_sections',
-                            'easy_mcq_count',
-                            'medium_mcq_count',
-                            'hard_mcq_count',
-                          ])
-                          dispatch({
-                            type: ACTION.SET_DYNAMIC_SCORE,
-                            payload: { dynamicScore: 0 },
-                          })
-                          setSelectedSections([]) // Clear the sections to hide "Add MCQ"
-                        }}
+                        onChange={(value) => handleLanguageChange(value)}
                         allowClear
                       />
                     ) : item.dataIndex === 'add_sections' ? (
@@ -502,14 +526,6 @@ const CreateNewTest = ({
                         placeholder="Please select"
                         onChange={(value) => {
                           handleAddSection(value)
-                          if (!value.includes('Add_MCQs')) {
-                            // Reset MCQ fields when "Add_MCQs" is removed from selected sections
-                            form.resetFields([
-                              'easy_mcq_count',
-                              'medium_mcq_count',
-                              'hard_mcq_count',
-                            ])
-                          }
                         }}
                         options={testSectionOption}
                       />
