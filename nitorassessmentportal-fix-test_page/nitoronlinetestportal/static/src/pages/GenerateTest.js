@@ -51,12 +51,12 @@ const GenerateTest = () => {
   const [questionData, setQuestionData] = useState([])
   const [languages, setLanguages] = useState([])
   const [selectedQuestion, setSelectedQuestion] = useState()
+  const [defaultMenuKey, setDefaultMenuKey] = useState()
   const [isSecondLastItem, setIsSecondLastItem] = useState(false)
   const [showPreviousButton, setShowPreviousButton] = useState(false)
   const [stepsItems, setStepsItems] = useState([])
-  const [defaultMenuKey, setDefaultMenuKey] = useState()
   const [isTestFinished, setisTestFinished] = useState(false)
-  const [current, setCurrent] = useState(1)
+  const [current, setCurrent] = useState(0)
 
   // Use effect for handling the page switch
   useEffect(() => {
@@ -144,7 +144,7 @@ const GenerateTest = () => {
       let data = JSON.parse(localStorage.getItem('user_details'))[
         'generated_question'
       ]
-      const languages = Array()
+      const languages = []
       for (let i in data) {
         if (Array.isArray(data[i])) {
           languages.push(i)
@@ -152,14 +152,12 @@ const GenerateTest = () => {
       }
       const lang = languages && languages.length > 0 && languages[0]
       const question = data[lang]
-
       const defaultQuestion = question && question.length > 0 && question[0]
-
       setSelectedQuestion(defaultQuestion)
       setDefaultMenuKey(defaultQuestion.question + '')
       setLanguages(languages)
-
       let menuItemsData = []
+
       for (let i = 0; i < languages.length; i++) {
         let temp = {
           languageLabel: languages[i],
@@ -188,7 +186,7 @@ const GenerateTest = () => {
       })
       setItems(items)
 
-      // setting steps items
+      // Setting steps items
       menuItemsData.map((item) => {
         item.languageQuestions.map((ques, index) => {
           setStepsItems((current) => [
@@ -214,7 +212,6 @@ const GenerateTest = () => {
     }
   }, [])
 
-  //
   function getItemItem(label, key, children) {
     return {
       key,
@@ -233,7 +230,24 @@ const GenerateTest = () => {
       const data = questions[lang]
       const selectedQues = data.filter((q) => q.question == key)
 
-      setSelectedQuestion(selectedQues[0])
+      if (selectedQues.length > 0) {
+        const selectedQuestion = selectedQues[0]
+        setSelectedQuestion(selectedQuestion)
+        setDefaultMenuKey(key)
+
+        // Update current index based on selected question
+        const index = questionData.findIndex(
+          (q) => Number(q.questionId) === Number(key),
+        )
+        console.log('index', index)
+
+        setCurrent(index)
+        console.log(questionData.length)
+
+        // Update button visibility
+        setShowPreviousButton(index > 0)
+        setIsSecondLastItem(index + 1 > questionData.length - 1)
+      }
     } else {
       history.push(`/screening/user-details/${path[3]}/${path[4]}`)
     }
@@ -244,39 +258,99 @@ const GenerateTest = () => {
     goToNextQuestion(question_details)
     localStorage.removeItem('user_details')
   }
+
+  //get answer
+  const getSelectedAnswerIndex = (questionId) => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    let storedAnswers = userDetails.answers || {}
+
+    return storedAnswers[questionId]
+      ? storedAnswers[questionId].selectedAnswerIndex
+      : null
+  }
+
+  //save answer
+  const saveAnswerToLocalStorage = (
+    questionId,
+    selectedAnswerIndex,
+    question_details,
+  ) => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    let storedAnswers = userDetails.answers || {}
+
+    for (
+      let i = 0;
+      i < userDetails.generated_question[question_details.language].length;
+      i++
+    ) {
+      let language =
+        question_details.language[0].toUpperCase() +
+        question_details.language.slice(1)
+
+      if (
+        userDetails.generated_question[language][i]['question'] ==
+        question_details['id']
+      ) {
+        userDetails.generated_question[language][i]['candidate_answers'] =
+          selectedAnswerIndex
+      }
+    }
+
+    storedAnswers[questionId] = { selectedAnswerIndex }
+
+    userDetails.answers = storedAnswers
+    localStorage.setItem('user_details', JSON.stringify(userDetails))
+  }
+
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
+    // Save the selected answer for the current question
+    saveAnswerToLocalStorage(defaultMenuKey, selectedAnswerIndex, question_details)
+
     setCurrent(current + 1)
 
     for (let i = 0; i < questionData.length; i++) {
       if (questionData[i].questionId == defaultMenuKey) {
+        // Check if this is the last question
         if ((i + 1) % questionData.length === 0) {
-          saveAnswer(question_details, selectedAnswerIndex, result, true)
-          setShowResult(true)
-          setisTestFinished(true)
-          localStorage.removeItem('user_details')
+          // Call handleFinishTest to handle the end of the test
+          handleFinishTest()
           return
         }
 
+        // Handle the second last item
         if (i + 1 == questionData.length - 1) {
           setIsSecondLastItem(true)
         }
 
-        // Show previous button
+        // Show the previous button for all but the first question
         if (i + 1 > 0) {
           setShowPreviousButton(true)
         }
 
-        saveAnswer(question_details, selectedAnswerIndex, result, false)
-        setSelectedAnswerIndex(null)
-        setDefaultMenuKey('' + questionData[i + 1].questionId)
-        setSelectedQuestion(questionData[i + 1].questionDetails)
+        // Retrieve the selected answer for the next question
+        const nextQuestionId = questionData[i + 1].questionId
+
+        // Ensure type is defined
+        const nextQuestionDetails = questionData[i + 1].questionDetails
+        if (nextQuestionDetails && typeof nextQuestionDetails.type !== 'undefined') {
+          setSelectedAnswerIndex(getSelectedAnswerIndex(nextQuestionId))
+          setDefaultMenuKey('' + nextQuestionId)
+          setSelectedQuestion(nextQuestionDetails)
+        } else {
+          console.error(
+            'Question type is not defined for question ID:',
+            nextQuestionId,
+          )
+        }
       }
     }
   }
 
-  // Function to handle Next button Click
   const goToPreviousQuestion = (question_details) => {
+    // Save the selected answer for the current question
+    saveAnswerToLocalStorage(defaultMenuKey, selectedAnswerIndex, question_details)
+
     setCurrent(current - 1)
     setIsSecondLastItem(false)
     for (let i = 0; i < questionData.length; i++) {
@@ -284,12 +358,37 @@ const GenerateTest = () => {
         if (i === 1) {
           setShowPreviousButton(false)
         }
-        saveAnswer(question_details, selectedAnswerIndex, result, false)
-        setSelectedAnswerIndex(null)
-        setDefaultMenuKey('' + questionData[i - 1].questionId)
+
+        // Retrieve the selected answer for the previous question
+        const previousQuestionId = questionData[i - 1].questionId
+        setSelectedAnswerIndex(getSelectedAnswerIndex(previousQuestionId))
+        setDefaultMenuKey('' + previousQuestionId)
         setSelectedQuestion(questionData[i - 1].questionDetails)
       }
     }
+  }
+  //finish test
+  const handleFinishTest = () => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    let storedAnswers = userDetails.answers || {}
+
+    // Map through the answers to display status
+    let answerStatuses = Object.keys(storedAnswers).map((questionId) => {
+      let { selectedAnswerIndex, questionDetails } = storedAnswers[questionId] || {}
+      return {
+        questionId,
+        questionType: questionDetails?.type === 1 ? 'MCQ' : 'Program',
+        status: selectedAnswerIndex !== null ? 'Answered' : 'Unanswered',
+      }
+    })
+
+    // Log or display the statuses as needed
+    console.log(answerStatuses) // This logs the statuses
+
+    // Display the result, mark the test as finished, and clear localStorage
+    setShowResult(true)
+    setisTestFinished(true)
+    localStorage.removeItem('user_details')
   }
 
   // Function to handle once question selected
@@ -320,17 +419,14 @@ const GenerateTest = () => {
     }
   }
 
-  // Function to save answer
-  const saveAnswer = (question_details, selectedAnswerIndex, score, finish) => {
-    let candidateAnswers =
-      selectedAnswerIndex !== undefined ? selectedAnswerIndex : candidate_answers
+  const saveAnswer = (question_details, user_question_answer_list, finish) => {
+    //question type must be checked when program functionality is added
     question_details.question_score = 0
     let request_data = {
       userTestId: JSON.parse(localStorage.getItem('user_details'))['id'],
-      question_details: question_details,
-      candidate_answers: candidateAnswers,
+      q_type: 1,
+      user_question_answer_list: user_question_answer_list,
       completed: finish ? true : false,
-      score: score,
     }
 
     triggerFetchData(`save_candidate_answer/`, request_data)

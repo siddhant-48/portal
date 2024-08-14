@@ -15,16 +15,13 @@ import {
   Tag,
 } from 'antd'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
-import ClipboardCopy from '../components/ClipboardCopy'
 import { baseURL, TestLinkTable } from '../Utils/constants'
 import openLinkSvg from '../components/OpenLink'
 import Icon from '@ant-design/icons'
 import PropTypes from 'prop-types'
-import MultiTagInput from '../components/MultiTagInput'
 import { useLocation } from 'react-router-dom'
 import moment from 'moment'
 import '../style.css'
-import ReactTags from 'react-tag-input'
 
 const { Panel } = Collapse
 
@@ -68,7 +65,6 @@ const GenerateLink = (props) => {
     triggerFetchData('get_test_list/', {}, 'GET')
       .then((data) => {
         setTestList(data.data)
-        console.log(data.data)
       })
       .catch((reason) => message.error(reason))
   }
@@ -97,7 +93,6 @@ const GenerateLink = (props) => {
   const goToScreeningTest = (record, history) => {
     window.open(`/#/screening/user-details/${record.test}/${record.key}`, '_blank')
   }
-
   // Tables column
   const list_columns = [
     {
@@ -233,7 +228,6 @@ const GenerateLink = (props) => {
 
   // Function to open form
   const showGeneratedTestLinkModal = () => {
-    console.log('resetting tags')
     setTags([])
     setIsModalOpen(true)
   }
@@ -259,7 +253,6 @@ const GenerateLink = (props) => {
 
     values.name = testName + '_' + values.name
     let end_date = endDate + ' 00:00:00'
-    console.log('enddate', end_date)
     values.end_date = end_date
     values.email_list = tags.toString()
 
@@ -326,7 +319,6 @@ const GenerateLink = (props) => {
       form.submit()
     }
   }
-  console.log('testrec', testRecord)
 
   return (
     <>
@@ -375,8 +367,10 @@ const GenerateLink = (props) => {
             // onFinishFailed={onFinishFailed}
             autoComplete="off"
             initialValues={{
-              test: testRecord.id,
-              end_date: testRecord?.end_date ? moment(testRecord.end_date) : null,
+              ...(testRecord && {
+                test: testRecord.id,
+                end_date: testRecord?.end_date ? moment(testRecord.end_date) : null,
+              }),
             }}
           >
             {TestLinkTable.map((item, index) => (

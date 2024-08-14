@@ -105,10 +105,7 @@ const Question = (props) => {
   }, [form3, testDetails])
 
   useEffect(() => {
-    setFetchUrl(
-      `questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`,
-    )
-    fetchData()
+    setFetchUrl(`questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`)
   }, [lang, type, difficulty, page, pageSize])
 
   //filter questions
@@ -174,9 +171,15 @@ const Question = (props) => {
     { text: 'Hard', value: 'Hard' },
   ]
   const mapQuestionDifficulty = (difficulty) => {
-    if (difficulty === 1) return 'Easy'
-    if (difficulty === 2) return 'Medium'
-    if (difficulty === 3) return 'Hard'
+    if (difficulty === 1) {
+      return 'Easy'
+    }
+    if (difficulty === 2) {
+      return 'Medium'
+    }
+    if (difficulty === 3) {
+      return 'Hard'
+    }
     return ''
   }
   const mapQuestionType = (type) => {
@@ -242,6 +245,7 @@ const Question = (props) => {
       title: 'Difficulty',
       dataIndex: 'difficulty',
       filters: filterQuestionsDifficulty(),
+      filterSearch: true,
       key: 'difficulty',
       width: 230,
       onFilter: (value, record) => {
@@ -363,24 +367,32 @@ const Question = (props) => {
       setLang([])
     }
     if (filters.type) {
+      let type_list = []
       let type = 1
-      if (filters.type === 'MCQ') {
-        type = 1
-      } else if (filters.type === 'Program') {
-        type = 2
+      for (let i = 0; i < filters.type.length; i++) {
+        if (filters.type[i] === 'MCQ') {
+          type = 1
+        } else if (filters.type[i] === 'Program') {
+          type = 2
+        }
+        type_list.push(type)
       }
-      setType(type)
+      setType(type_list)
     } else {
       setType([])
     }
     if (filters.difficulty) {
-      let difficulty = 1
-      if (filters.difficulty === 'Easy') {
-        difficulty = 1
-      } else if (filters.difficulty === 'Medium') {
-        difficulty = 2
-      } else if (filters.difficulty === 'Hard') {
-        difficulty = 3
+      let difficulty = []
+      let diff = 1
+      for (let i = 0; i < filters.difficulty.length; i++) {
+        if (filters.difficulty[i] === 'Easy') {
+          diff = 1
+        } else if (filters.difficulty[i] === 'Medium') {
+          diff = 2
+        } else if (filters.difficulty[i] === 'Hard') {
+          diff = 3
+        }
+        difficulty.push(diff)
       }
       setDifficulty(difficulty)
     } else {
@@ -442,7 +454,7 @@ const Question = (props) => {
 
   const testSectionOption = [
     { id: 1, label: 'Add MCQ', name: 'Add MCQ', value: 1 },
-    { id: 2, label: 'Add Program', name: 'Add Program', value: 2 },
+    // { id: 2, label: 'Add Program', name: 'Add Program', value: 2 },
   ]
   const difficultOption = [
     { id: 1, label: 'Easy', name: 'Easy', value: 1 },
@@ -932,11 +944,12 @@ const Question = (props) => {
             <Form.Item
               label="Question"
               name="name"
+              placeholder="Enter the Question"
               rules={[
                 { required: true, message: 'Please input your Question Title' },
               ]}
             >
-              <Input placeholder="Enter the Question" style={{ width: '100%' }} />
+              <Input style={{ width: '100%' }} />
             </Form.Item>
 
             <Form.Item

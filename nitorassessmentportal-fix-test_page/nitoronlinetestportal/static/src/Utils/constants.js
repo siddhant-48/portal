@@ -15,19 +15,19 @@ const templateJSONData = {
       duration: 60,
     },
   ],
-  programs: [
-    {
-      name: 'Write a program',
-      type: 2,
-      difficulty: 1,
-      language: 'python',
-      case1: 'case1',
-      case2: 'case2',
-      case3: 'case3',
-      case4: 'case4',
-      duration: 300,
-    },
-  ],
+  // programs: [
+  //   {
+  //     name: 'Write a program',
+  //     type: 2,
+  //     difficulty: 1,
+  //     language: 'python',
+  //     case1: 'case1',
+  //     case2: 'case2',
+  //     case3: 'case3',
+  //     case4: 'case4',
+  //     duration: 300,
+  //   },
+  // ],
 }
 
 const languageOptions = [
@@ -207,23 +207,23 @@ const CreateTestForm = [
     dataIndex: 'hard_mcq_count',
     key: 'hard_mcq_count',
   },
-  // {
-  //   title: 'Easy Programs',
-  //   dataIndex: 'easy_program_count',
-  //   key: 'easy_program_count',
-  // },
+  {
+    title: 'Easy Programs',
+    dataIndex: 'easy_program_count',
+    key: 'easy_program_count',
+  },
 
-  // {
-  //   title: 'Medium Program',
-  //   dataIndex: 'medium_program_count',
-  //   key: 'medium_program_count',
-  // },
+  {
+    title: 'Medium Program',
+    dataIndex: 'medium_program_count',
+    key: 'medium_program_count',
+  },
 
-  // {
-  //   title: 'Hard Program',
-  //   dataIndex: 'hard_program_count',
-  //   key: 'hard_program_count',
-  // },
+  {
+    title: 'Hard Program',
+    dataIndex: 'hard_program_count',
+    key: 'hard_program_count',
+  },
   {
     title: 'Long Summary',
     dataIndex: 'long_summary_count',

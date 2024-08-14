@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import {
   Input,
@@ -178,14 +178,25 @@ const CreateTest = ({ setSelectedKey, history }) => {
             {/* generate link */}
             <Tooltip placement="top" title="Generate Link">
               <label className="container">
-                <input checked="checked" type="checkbox" readOnly />
+                <input
+                  checked={testRecord.is_active}
+                  type="checkbox"
+                  readOnly
+                  disabled={!testRecord.is_active}
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
                   className="bi bi-link-45deg size-6 text-primary"
                   viewBox="0 0 16 16"
                   onClick={() => {
-                    generateTest(testRecord)
+                    if (testRecord.is_active) {
+                      generateTest(testRecord)
+                    }
+                  }}
+                  style={{
+                    cursor: testRecord.is_active ? 'pointer' : 'not-allowed',
+                    opacity: testRecord.is_active ? 1 : 0.5,
                   }}
                 >
                   <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z" />
@@ -193,6 +204,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 </svg>
               </label>
             </Tooltip>
+
             {/* view test */}
             <Tooltip placement="top" title="View Test">
               <label className="container">
@@ -200,7 +212,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
-                  class="size-6"
+                  className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
                     openDetailModal(testRecord)
@@ -215,19 +227,30 @@ const CreateTest = ({ setSelectedKey, history }) => {
             {/* edit test */}
             <Tooltip placement="top" title="Edit Test">
               <label className="container">
-                <input checked="checked" type="checkbox" readOnly />
+                <input
+                  checked={testRecord.is_active}
+                  type="checkbox"
+                  readOnly
+                  disabled={!testRecord.is_active}
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
-                  class="size-6"
+                  className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
-                    openEditModal(testRecord)
+                    if (testRecord.is_active) {
+                      openEditModal(testRecord)
+                    }
+                  }}
+                  style={{
+                    cursor: testRecord.is_active ? 'pointer' : 'not-allowed',
+                    opacity: testRecord.is_active ? 1 : 0.5,
                   }}
                 >
                   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                   <path
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                     d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                   />
                 </svg>
@@ -240,14 +263,14 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
-                  class="size-6"
+                  className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
                     openSummaryModal(testRecord)
                   }}
                 >
                   <path
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                     d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"
                   />
                 </svg>
@@ -288,8 +311,10 @@ const CreateTest = ({ setSelectedKey, history }) => {
     })
   }
 
+  // const [deactivate, setDeactivate] = useState(false)
   // Function to open deactivate Test Model
   const showDeactivateModal = (testRecord) => {
+    // setDeactivate(true)
     dispatch({
       type: ACTION.SET_DELETE_MODEL_OPEN,
       payload: { isDeleteModalOpen: true },
@@ -519,12 +544,12 @@ const CreateTest = ({ setSelectedKey, history }) => {
                       <p>Medium: {item.medium_mcq_count}</p>
                       <p>Hard: {item.hard_mcq_count}</p>
                     </div>
-                    {/* <div className="details-column">
+                    <div className="details-column">
                       <h3>Program</h3>
                       <p>Easy: {item.easy_program_count}</p>
                       <p>Medium: {item.medium_program_count}</p>
                       <p>Hard: {item.hard_program_count}</p>
-                    </div> */}
+                    </div>
                   </div>
                 </Panel>
               </Collapse>

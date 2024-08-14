@@ -196,7 +196,7 @@ def validate_test(request):
 @api_view(('GET',))
 @permission_classes((IsAuthenticated, ))
 def get_test_list(request):
-    tests_details_list = TestsDetails.objects.all().order_by('-updated_by', '-created_by')
+    tests_details_list = TestsDetails.objects.all().order_by('-updated_at', '-created_at')
     test_details_json = TestDetailSerializer(tests_details_list, many=True).data
     return standard_json_response(data=test_details_json)
 
@@ -420,6 +420,7 @@ def upload_captured_image(request):
 
     return standard_json_response(message='Upload success')
 
+
 @api_view(('POST',))
 def save_candidate_answer(request):
     """
@@ -427,16 +428,17 @@ def save_candidate_answer(request):
     for question_type = 1
         {
             "userTestId": 76,
-            "question_details": {
+            "q_type": 2,
+            "user_question_answer_list": [{
                 "id": 77,
                 "all_languages": "[{\"language\": \"python\"}]",
                 "name": "Is python a programming language?",
                 "type": 1,
                 "difficulty": 1,
                 "language": "python",
-                "duration": null
-            },
-            "candidate_answers": "Yes",
+                "duration": null,
+                "candidate_answers": "Yes",
+            }],
             "completed": false,
             "score": {
                 "score": 1,
@@ -464,7 +466,11 @@ def save_candidate_answer(request):
     """
     try:
         user_test_id = request.data.get('userTestId')
-        user_details = request.data
+        request_body = request.data
+        total_score = 0
+        correct_answers = 0
+        temp_question_score = 5
+        print(request_body)
         if not user_test_id:
             return standard_json_response(message='User Test Id required', status_code=status.HTTP_400_BAD_REQUEST)
 
@@ -473,50 +479,45 @@ def save_candidate_answer(request):
         except UserTests.DoesNotExist:
             return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
 
-        data = user_test.generated_question
+        question_type = request_body["q_type"]
 
-        # Find the variable key dynamically
-        language = "Python"
-        if "question_details" in user_details:
-            q_type = user_details["question_details"]["type"]
-            question_id = user_details["question_details"]["id"]
-            language = user_details["question_details"]["language"]
-        else:
-            q_type = user_details['q_type']
-        variable_key = 0
-        for question_data in data[language]:
-            if question_data["question"] == question_id:
-                break
-            variable_key += 1
-        data_dict = data[language][variable_key]
-        if 'question_details' in data_dict:
-            if q_type == 1:
-                score = 0
-                if user_details["question_details"]["id"] == question_id:
-                    if "candidate_answers" in  user_details:
-                        user_test.generated_question[language][variable_key]["candidate_answers"] = user_details["candidate_answers"]
+        if question_type == 1:
+            # MCQ question logic
+            for answer in request_body['user_question_answer_list']:
+                for test_question in user_test.generated_question[answer['language'].capitalize()]:
+                    if answer['id'] == test_question['question']:
+                        test_question["candidate_answers"] = answer["candidate_answers"]
                         
-                        question_score, total_score = calculate_score(user_details["candidate_answers"], data_dict["correct_value"], q_type, user_details["question_details"]['difficulty'], data)
-                        user_score, user_test.correct_answers, user_test.wrong_answer = user_details["score"].values()
-                        user_test.score = total_score + question_score
-                        user_test.generated_question[language][variable_key]["question_score"] = question_score
+                        # Calculate Score - for now each question has score 5
+                        if answer["candidate_answers"] == test_question['correct_value']:
+                            question_score = temp_question_score
+                            total_score += question_score
+                            correct_answers += 1
+                        else:
+                            question_score = 0
+                        test_question["question_score"] = question_score
+                        break
+            user_test.score = total_score
+            user_test.correct_answers = correct_answers
+                
+        else:
+            programming_question = None
+            # Write programming question logic
+            # score = verify_coding_answer(request, question_type)
+            # user_test.score += score
+            # user_test.generated_question[language][variable_key]["question_score"] = question_score
 
-            else:
-                score = verify_coding_answer(request, q_type)
-                user_test.score += score
-                user_test.generated_question[language][variable_key]["question_score"] = question_score
-        user_test.completed = user_details.get("completed", False)
-        if user_details.get("completed", False):
+        user_test.completed = request_body.get("completed", False)
+        if user_test.completed:
             user_test.submission_date = datetime.today()
         
         user_test.updated_at = datetime.now()
         user_test.save()
 
-        user_details = UserTestsSerialiazer(instance = user_test)
+        user_details = UserTestsSerialiazer(instance=user_test)
     except Exception as e :
         print(e)
         return standard_json_response(data={}, status_code=status.HTTP_400_BAD_REQUEST)
-
   
     return standard_json_response(data=user_details.data, status_code=status.HTTP_201_CREATED)
 

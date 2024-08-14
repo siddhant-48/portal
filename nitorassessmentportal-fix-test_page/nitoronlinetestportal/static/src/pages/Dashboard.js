@@ -55,7 +55,7 @@ const Dashboard = (props) => {
             <ResponsiveContainer width="100%" height={250}>
               <Row>
                 <Col span={12}>MCQs</Col>
-                {/* <Col span={12}>Programs</Col> */}
+                <Col span={12}>Programs</Col>
               </Row>
               <Row></Row>
               <PieChart
@@ -115,7 +115,7 @@ const Dashboard = (props) => {
                   ))}
                 </Pie>
 
-                {/* <Pie
+                <Pie
                   data={dataProgram}
                   cx={980}
                   cy={120}
@@ -162,7 +162,7 @@ const Dashboard = (props) => {
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
-                </Pie> */}
+                </Pie>
               </PieChart>
             </ResponsiveContainer>
           </Card>

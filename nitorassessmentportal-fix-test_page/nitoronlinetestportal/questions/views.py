@@ -55,8 +55,11 @@ def get_question_list(request):
         Returns list of questions
     """
     language_filter = request.query_params["language"] if "language" in request.query_params else ""
+    difficulty_filter = request.query_params["difficulty"] if "difficulty" in request.query_params else ""
+    type_filter = request.query_params["type"] if "type" in request.query_params else ""
+
     filter_params = {}
-    allowed_keys = ['id', 'type', 'difficulty']
+    allowed_keys = ['id']
     for key, value in request.query_params.items():
         if key in allowed_keys and value:
             filter_params[key] = value
@@ -67,6 +70,12 @@ def get_question_list(request):
     questions = Question.objects.filter(**filter_params).order_by('-updated_by', '-created_by')
     if language_filter :
         questions = questions.filter(language__in=language_filter.split(","))
+
+    if difficulty_filter:
+        questions = questions.filter(difficulty__in=list(map(int, difficulty_filter.split(","))))
+    
+    if type_filter:
+        questions = questions.filter(type__in=list(map(int, type_filter.split(","))))
     
     paginator = Paginator(questions, page_size)
     try:
@@ -243,15 +252,15 @@ def bulk_questions(request):
 
     if mcq:
         try:
-            validated_mcq_questions = validate_questions(request, mcq)
-            bulk_create_objects(validated_mcq_questions, mcq, MultipleChoicesAnswerSerializer, MultipleChoicesAnswer)
+            validated_mcq_questions_obj, validated_mcq_questions_data = validate_questions(request, mcq)
+            bulk_create_objects(validated_mcq_questions_obj, validated_mcq_questions_data, MultipleChoicesAnswerSerializer, MultipleChoicesAnswer)
         except Exception as exc:
             return standard_json_response(message=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
 
     if programs:
         try:
-            validated_programs_questions = validate_questions(request, programs)
-            bulk_create_objects(validated_programs_questions, programs, ProgramTestCaseSerializer, ProgramTestCase)
+            validated_programs_questions_obj, validated_programs_questions_data = validate_questions(request, programs)
+            bulk_create_objects(validated_programs_questions_obj, validated_programs_questions_data, ProgramTestCaseSerializer, ProgramTestCase)
         except Exception as exc:
             return standard_json_response(message=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
 
@@ -288,14 +297,21 @@ def validate_questions(request, question_data):
         ]
     """
     validated_questions = []
+    validated_questions_data = []
     for obj in question_data:
         obj["created_by"] = request.user.id
         obj["updated_by"] = request.user.id
         q_serializer = QuestionSerializer(data=obj)
         if not q_serializer.is_valid():
             raise Exception('question with name, type, diffiulty and langauge is required')
+
+        if Question.objects.filter(name=obj['name'], language=obj['language']).exists():
+            # raise Exception(f"Question : \"{obj['name']}\" in language : {obj['language']} is already exist")
+            continue
+
         validated_questions.append(Question(**q_serializer.validated_data))
-    return validated_questions
+        validated_questions_data.append(obj)
+    return validated_questions, validated_questions_data
 
 
 def bulk_create_objects(validated_questions, model_data, model_serializer, model):

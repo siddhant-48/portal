@@ -251,7 +251,7 @@ const EditTest = ({
 
   const [selectedSections, setSelectedSections] = useState([
     'Add_MCQs',
-    // 'Add_Programs',
+    'Add_Programs',
   ])
 
   const handleSectionChange = (value) => {
@@ -403,7 +403,7 @@ const EditTest = ({
                         ))}
                       </Row>
                     )}
-                    {/* {selectedSections.includes('Add_Programs') && (
+                    {selectedSections.includes('Add_Programs') && (
                       <Row justify="start">
                         <Col span={24}>
                           <h4>Program Count</h4>
@@ -438,7 +438,7 @@ const EditTest = ({
                           </Col>
                         ))}
                       </Row>
-                    )} */}
+                    )}
                     <Button type="primary" ghost onClick={form.submit}>
                       Update
                     </Button>
