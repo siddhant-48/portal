@@ -11,8 +11,10 @@ const readExcel = (file) => {
       const wb = XLSX.read(bufferArray, { type: 'buffer' })
 
       wb.SheetNames.forEach((element, index) => {
-        let data = XLSX.utils.sheet_to_json(wb.Sheets[element])
-        sheetsData[wb.SheetNames[index]] = data
+          if (element=="mcq") {
+          let data = XLSX.utils.sheet_to_json(wb.Sheets[element])
+          sheetsData[wb.SheetNames[index]] = data
+        }
       })
       resolve(sheetsData)
     }

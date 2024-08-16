@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { withRouter, useLocation, useHistory } from 'react-router-dom'
-import { Button, message, Layout, Card, Row, Col, Menu, Steps } from 'antd'
+import {
+  Button,
+  message,
+  Layout,
+  Card,
+  Row,
+  Col,
+  Menu,
+  Steps,
+  Modal,
+  Typography,
+  Divider,
+} from 'antd'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import '../styles/generate-test.css'
 import TestCodeEditor from '../pages/TestCodeEditor'
@@ -96,20 +108,26 @@ const GenerateTest = () => {
     }
   }, [counter])
 
-  useEffect(() => {
-    if (!isTestFinished) {
-      const handleBeforeUnload = (event) => {
-        event.preventDefault()
-        return 'If You refresh it and the test will be automatically terminated.' // Optional message
-      }
+  // useEffect(() => {
+  //   if (!isTestFinished) {
+  //     const handleBeforeUnload = (event) => {
+  //       // Prevent the default behavior
+  //       event.preventDefault()
+  //       event.returnValue = ''
+  //       const userDetails = JSON.parse(localStorage.getItem('user_details'))
 
-      window.addEventListener('beforeunload', handleBeforeUnload)
+  //       if (userDetails && userDetails.answers) {
+  //         delete userDetails.answers
+  //         localStorage.setItem('user_details', JSON.stringify(userDetails))
+  //       }
+  //     }
+  //     window.addEventListener('beforeunload', handleBeforeUnload)
 
-      return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload)
-      }
-    }
-  }, [])
+  //     return () => {
+  //       window.removeEventListener('beforeunload', handleBeforeUnload)
+  //     }
+  //   }
+  // }, [isTestFinished])
 
   const openCodeEditor = () => {
     setShowCodeEditor(true)
@@ -277,31 +295,27 @@ const GenerateTest = () => {
   ) => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     let storedAnswers = userDetails.answers || {}
+    console.log('language', question_details.language)
 
-    for (
-      let i = 0;
-      i < userDetails.generated_question[question_details.language].length;
-      i++
-    ) {
-      let language =
-        question_details.language[0].toUpperCase() +
-        question_details.language.slice(1)
+    // Update the candidate_answers in the generated_question
+    let language = question_details.language
 
-      if (
-        userDetails.generated_question[language][i]['question'] ==
-        question_details['id']
-      ) {
-        userDetails.generated_question[language][i]['candidate_answers'] =
-          selectedAnswerIndex
+    if (userDetails.generated_question && userDetails.generated_question[language]) {
+      for (let question of userDetails.generated_question[language]) {
+        if (question.question === question_details.id) {
+          question.candidate_answers = selectedAnswerIndex
+          break
+        }
       }
     }
 
+    // Update the answers object with the new selectedAnswerIndex
     storedAnswers[questionId] = { selectedAnswerIndex }
 
     userDetails.answers = storedAnswers
+
     localStorage.setItem('user_details', JSON.stringify(userDetails))
   }
-
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -312,7 +326,8 @@ const GenerateTest = () => {
       if (questionData[i].questionId == defaultMenuKey) {
         // Check if this is the last question
         if ((i + 1) % questionData.length === 0) {
-          handleFinishTest(question_details)
+          showFinishModal(question_details)
+          // handleFinishTest(question_details)
           return
         }
 
@@ -334,37 +349,38 @@ const GenerateTest = () => {
   }
 
   //finish button
-  const handleFinishTest = (question_details) => {
-    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
-    console.log('final', userDetails.answers)
+  // const handleFinishTest = (question_details) => {
+  //   showFinishModal()
+  //   let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+  //   console.log('final', userDetails.answers)
 
-    // Check the status of each MCQ and log the results
-    Object.keys(userDetails.answers).forEach((questionId) => {
-      const answerDetails = userDetails.answers[questionId]
-      if (answerDetails && answerDetails.selectedAnswerIndex) {
-        console.log(
-          `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
-        )
-      } else {
-        console.log(`Question ID ${questionId} is unanswered or null.`)
-      }
-    })
+  //   // Check the status of each MCQ and log the results
+  //   Object.keys(userDetails.answers).forEach((questionId) => {
+  //     const answerDetails = userDetails.answers[questionId]
+  //     if (answerDetails && answerDetails.selectedAnswerIndex) {
+  //       console.log(
+  //         `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
+  //       )
+  //     } else {
+  //       console.log(`Question ID ${questionId} is unanswered or null.`)
+  //     }
+  //   })
 
-    // Extract user_question_answer_list data from userDetails
-    let user_question_answer_list = Object.values(userDetails.generated_question)
-      .filter((value) => Array.isArray(value))
-      .flat()
-      .map((item) => ({
-        ...item.question_details,
-        candidate_answers: item.candidate_answers,
-        correct_value: item.correct_value,
-      }))
+  //   // Extract user_question_answer_list data from userDetails
+  //   let user_question_answer_list = Object.values(userDetails.generated_question)
+  //     .filter((value) => Array.isArray(value))
+  //     .flat()
+  //     .map((item) => ({
+  //       ...item.question_details,
+  //       candidate_answers: item.candidate_answers,
+  //       correct_value: item.correct_value,
+  //     }))
 
-    saveAnswer(question_details, user_question_answer_list, true)
-    setShowResult(true)
-    setisTestFinished(true)
-    localStorage.removeItem('user_details')
-  }
+  //   saveAnswer(question_details, user_question_answer_list, true)
+  //   setShowResult(true)
+  //   setisTestFinished(true)
+  //   localStorage.removeItem('user_details')
+  // }
 
   const goToPreviousQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -389,30 +405,51 @@ const GenerateTest = () => {
 
   // Function to handle once question selected
   const onAnswerSelected = (answer, selectedQuestionId) => {
+    // Find the selected question details
+    const selectedQuestion = stepsItems.find(
+      (step) => step.key === selectedQuestionId,
+    )
+
+    // Ensure selectedQuestion exists and has the question_details property
+    if (!selectedQuestion) {
+      console.error('Selected question not found')
+      return
+    }
+
+    const question_details = selectedQuestion.question_details
+
+    // Update steps status
     const updatedSteps = stepsItems.map((step) => {
-      if (step.key == selectedQuestionId) {
+      if (step.key === selectedQuestionId) {
         step.status = 'Finished'
       }
       return step
     })
 
     setStepsItems(updatedSteps)
+
+    // Update answer state
     setSelectedAnswerIndex(answer)
+
+    // Check correctness and update result
     if (answer === correct_value) {
       setSelectedAnswer(true)
-      setResult({
-        score: result.score + 1,
-        correctAnswers: result.correctAnswers + 1,
+      setResult((prevResult) => ({
+        ...prevResult,
+        score: prevResult.score + 1,
+        correctAnswers: prevResult.correctAnswers + 1,
         wrongAnswers: 0,
-      })
+      }))
     } else {
       setSelectedAnswer(false)
-      setResult({
-        score: 0,
-        correctAnswers: 0,
-        wrongAnswers: result.wrongAnswers + 1,
-      })
+      setResult((prevResult) => ({
+        ...prevResult,
+        wrongAnswers: prevResult.wrongAnswers + 1,
+      }))
     }
+
+    // Save the answer to localStorage
+    saveAnswerToLocalStorage(selectedQuestionId, answer, question_details)
   }
 
   const saveAnswer = (question_details, user_question_answer_list, finish) => {
@@ -463,8 +500,111 @@ const GenerateTest = () => {
     window.close()
   }
 
+  //finish modal
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMessage, setModalMessage] = useState('')
+
+  //finish modal
+  const showFinishModal = () => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    let answeredCount = 0
+    let unansweredCount = 0
+    //get status
+    Object.keys(userDetails.answers).forEach((questionId) => {
+      const answerDetails = userDetails.answers[questionId]
+      if (answerDetails && answerDetails.selectedAnswerIndex) {
+        console.log(
+          `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
+        )
+      } else {
+        console.log(`Question ID ${questionId} is unanswered or null.`)
+      }
+    })
+    // Check the status of each MCQ
+    Object.keys(userDetails.answers).forEach((questionId) => {
+      const answerDetails = userDetails.answers[questionId]
+      if (answerDetails && answerDetails.selectedAnswerIndex !== null) {
+        answeredCount++
+      } else {
+        unansweredCount++
+      }
+    })
+
+    const totalMCQs = Object.keys(userDetails.answers).length
+    unansweredCount = totalMCQs - answeredCount // Calculate unanswered
+
+    // Display the counts in the modal
+    if (unansweredCount === 0) {
+      setModalMessage(`All Answered questions: ${answeredCount}`)
+    } else {
+      setModalMessage(`Answered: ${answeredCount}, Unanswered: ${unansweredCount}`)
+    }
+    setIsModalOpen(true) // Trigger the modal open
+  }
+
+  const handleFinishCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  //final submission
+  const handleOk = (question_details) => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    console.log('final', userDetails.answers)
+
+    // Check the status of each MCQ and log the results
+    Object.keys(userDetails.answers).forEach((questionId) => {
+      const answerDetails = userDetails.answers[questionId]
+      if (answerDetails && answerDetails.selectedAnswerIndex) {
+        console.log(
+          `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
+        )
+      } else {
+        console.log(`Question ID ${questionId} is unanswered or null.`)
+      }
+    })
+
+    // Extract user_question_answer_list data from userDetails
+    let user_question_answer_list = Object.values(userDetails.generated_question)
+      .filter((value) => Array.isArray(value))
+      .flat()
+      .map((item) => ({
+        ...item.question_details,
+        candidate_answers: item.candidate_answers,
+        correct_value: item.correct_value,
+      }))
+
+    saveAnswer(question_details, user_question_answer_list, true)
+    setShowResult(true)
+    setisTestFinished(true)
+    localStorage.removeItem('user_details')
+    setIsModalOpen(false)
+  }
+
   return (
     <>
+      <Modal
+        title="Finish Test Confirmation"
+        open={isModalOpen}
+        onOk={() => handleOk(question_details)} // Pass question_details here
+        onCancel={handleFinishCancel}
+        okText="Finish"
+        cancelText="Cancel"
+        okButtonProps={{ type: 'primary', danger: true }}
+        centered
+      >
+        <div style={{ textAlign: 'center' }}>
+          <Typography.Title level={4}>Test Summary</Typography.Title>
+          <Divider style={{ margin: '15px' }} />
+          <Typography.Text style={{ fontSize: '16px' }}>
+            {modalMessage}
+          </Typography.Text>
+          <Divider dashed style={{ margin: '15px' }} />
+          <Typography.Text strong style={{ fontSize: '18px', color: '#fa541c' }}>
+            Are you sure you want to Finish the Test?
+          </Typography.Text>
+        </div>
+      </Modal>
+
       <WebCam />
       <div className="quiz-container">
         {questions[language] && !showResult ? (

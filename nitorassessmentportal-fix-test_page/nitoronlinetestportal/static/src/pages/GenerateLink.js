@@ -53,6 +53,7 @@ const GenerateLink = (props) => {
   const [showGenerateTestError, setShowGenerateTestError] = useState(null)
 
   const { isLoading, serverError, apiData, fetchData } = useFetch('get_test_link')
+  console.log('-------======', apiData)
 
   // Trigger on component mount for setting the header tab
   useEffect(() => {
@@ -71,7 +72,7 @@ const GenerateLink = (props) => {
 
   if (testList) {
     testList.map((data, index) => {
-      if (!filter_test_data.some((item) => data.name === item.value)) {
+      if (!filter_test_data.some((item) => data.name === item.value) && data.is_active) {
         filter_test_data.push({ label: data.name, value: data.id })
       }
     })
@@ -340,7 +341,7 @@ const GenerateLink = (props) => {
         <Table
           className="table-generate"
           columns={list_columns}
-          dataSource={apiData ? apiData.data : []}
+          dataSource={apiData ? apiData.data.filter((item) => item.test_details.is_active) : []}
           onChange={onTableChange}
         />
         {/* modal */}

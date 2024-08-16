@@ -111,6 +111,10 @@
   margin-top: 16px;
 }
 
-.left-menu-bar{
+.left-menu-bar {
   width: 15%;
+}
+.unanswered {
+  color: red;
+  font-weight: bold;
 }
