@@ -308,43 +308,62 @@ const GenerateTest = () => {
     saveAnswerToLocalStorage(defaultMenuKey, selectedAnswerIndex, question_details)
 
     setCurrent(current + 1)
-
     for (let i = 0; i < questionData.length; i++) {
       if (questionData[i].questionId == defaultMenuKey) {
         // Check if this is the last question
         if ((i + 1) % questionData.length === 0) {
-          // Call handleFinishTest to handle the end of the test
-          handleFinishTest()
+          handleFinishTest(question_details)
           return
         }
 
-        // Handle the second last item
         if (i + 1 == questionData.length - 1) {
           setIsSecondLastItem(true)
         }
 
-        // Show the previous button for all but the first question
         if (i + 1 > 0) {
           setShowPreviousButton(true)
         }
 
         // Retrieve the selected answer for the next question
         const nextQuestionId = questionData[i + 1].questionId
-
-        // Ensure type is defined
-        const nextQuestionDetails = questionData[i + 1].questionDetails
-        if (nextQuestionDetails && typeof nextQuestionDetails.type !== 'undefined') {
-          setSelectedAnswerIndex(getSelectedAnswerIndex(nextQuestionId))
-          setDefaultMenuKey('' + nextQuestionId)
-          setSelectedQuestion(nextQuestionDetails)
-        } else {
-          console.error(
-            'Question type is not defined for question ID:',
-            nextQuestionId,
-          )
-        }
+        setSelectedAnswerIndex(getSelectedAnswerIndex(nextQuestionId))
+        setDefaultMenuKey('' + nextQuestionId)
+        setSelectedQuestion(questionData[i + 1].questionDetails)
       }
     }
+  }
+
+  //finish button
+  const handleFinishTest = (question_details) => {
+    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
+    console.log('final', userDetails.answers)
+
+    // Check the status of each MCQ and log the results
+    Object.keys(userDetails.answers).forEach((questionId) => {
+      const answerDetails = userDetails.answers[questionId]
+      if (answerDetails && answerDetails.selectedAnswerIndex) {
+        console.log(
+          `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
+        )
+      } else {
+        console.log(`Question ID ${questionId} is unanswered or null.`)
+      }
+    })
+
+    // Extract user_question_answer_list data from userDetails
+    let user_question_answer_list = Object.values(userDetails.generated_question)
+      .filter((value) => Array.isArray(value))
+      .flat()
+      .map((item) => ({
+        ...item.question_details,
+        candidate_answers: item.candidate_answers,
+        correct_value: item.correct_value,
+      }))
+
+    saveAnswer(question_details, user_question_answer_list, true)
+    setShowResult(true)
+    setisTestFinished(true)
+    localStorage.removeItem('user_details')
   }
 
   const goToPreviousQuestion = (question_details) => {
@@ -366,29 +385,6 @@ const GenerateTest = () => {
         setSelectedQuestion(questionData[i - 1].questionDetails)
       }
     }
-  }
-  //finish test
-  const handleFinishTest = () => {
-    let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
-    let storedAnswers = userDetails.answers || {}
-
-    // Map through the answers to display status
-    let answerStatuses = Object.keys(storedAnswers).map((questionId) => {
-      let { selectedAnswerIndex, questionDetails } = storedAnswers[questionId] || {}
-      return {
-        questionId,
-        questionType: questionDetails?.type === 1 ? 'MCQ' : 'Program',
-        status: selectedAnswerIndex !== null ? 'Answered' : 'Unanswered',
-      }
-    })
-
-    // Log or display the statuses as needed
-    console.log(answerStatuses) // This logs the statuses
-
-    // Display the result, mark the test as finished, and clear localStorage
-    setShowResult(true)
-    setisTestFinished(true)
-    localStorage.removeItem('user_details')
   }
 
   // Function to handle once question selected
@@ -498,7 +494,7 @@ const GenerateTest = () => {
                     {counter > 0 ? (
                       <div className="timer">
                         <div className="clock">
-                          <h1>Time Left - </h1>
+                          <h1> Left - </h1>
                           <div className="numbers">
                             <p className="minutes">{minutes}</p>
                           </div>
