@@ -53,7 +53,6 @@ const GenerateLink = (props) => {
   const [showGenerateTestError, setShowGenerateTestError] = useState(null)
 
   const { isLoading, serverError, apiData, fetchData } = useFetch('get_test_link')
-  console.log('-------======', apiData)
 
   // Trigger on component mount for setting the header tab
   useEffect(() => {

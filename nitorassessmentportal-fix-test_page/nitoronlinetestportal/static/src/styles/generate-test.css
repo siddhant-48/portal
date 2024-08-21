@@ -2,10 +2,7 @@
 
 .quiz-questions-box {
   background: #ffffff;
-  border-radius: 4px;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
 }
 
 .row {
@@ -25,9 +22,14 @@
   justify-content: center;
 }
 
-/* .question-row {
-  justify-content: center;
-} */
+.question-container {
+  padding: 16px;
+  border: 3px solid #2d264b;
+  border-radius: 30px 0 30px 0;
+  margin-bottom: 16px;
+  font-weight: bold;
+  font-size: larger;
+}
 
 .timer {
   display: flex;
@@ -63,31 +65,72 @@
 }
 
 .option {
-  list-style: none;
-  color: #2d264b;
+  position: relative;
+  color: #212529;
   font-size: 16px;
   background: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 16px;
+  border: 3px solid #212529;
+  border-radius: 16px 0 16px 0;
   padding: 11px;
   cursor: pointer;
+  margin-bottom: 16px;
+  padding-left: 60px;
+  font-weight: bold;
+}
+
+.option::before{
+    display: inline-block;
+    position: absolute;
+    background-color: #b21d21;
+    width: 40px;
+    height: 40px;
+    top: -3px;
+    left: -3px;
+    border: 3px solid #212529;
+    border-radius: 16px 0;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    align-content: center;
+}
+
+.option-a::before{
+    content: "A";
+}
+
+.option-b::before{
+  content: "B";
+}
+
+.option-c::before{
+  content: "C";
+}
+
+.option-d::before{
+  content: "D";
+}
+
+.option:hover{
+  background: #f9f9f9;
 }
 
 .selected-answer {
-  background: #c8cfe6;
-  border: 1px solid #1f3c85;
+  background: #dee2e6;
+  border: 3px solid #212529;
+}
+
+.selected-answer:hover {
+  background: #dee2e6;
 }
 
 .navigation-button {
-  background: linear-gradient(90.04deg, #1f3c85 0.03%, #8f94b5 99.96%);
-  border-radius: 9px;
+  background: #b21d21;
+  border-radius: 16px 0;
+  border: 3px solid #b21d21;
+  width: 100%;
   font-size: 20px;
   color: #ffffff;
-  padding: 10px 42px;
-  outline: none;
-  border: none;
   cursor: pointer;
-  margin-top: 15px;
   height: 45px;
 }
 
@@ -98,7 +141,8 @@
 }
 
 .navigation-button:hover {
-  color: #ffffff !important;
+  background-color: #7a0f13;
+  border: 3px solid #7a0f13;
 }
 
 .flex-center {
@@ -114,6 +158,7 @@
 .left-menu-bar {
   width: 15%;
 }
+
 .unanswered {
   color: red;
   font-weight: bold;

@@ -42,11 +42,11 @@ const GenerateTest = () => {
   const [isCompleted, setIsCompleted] = useState(false)
   const path = search.pathname.split('/')
   const [counter, setCounter] = useState(
-    'user_details' in localStorage
-      ? JSON.parse(localStorage.getItem('user_details'))['generated_question'][
-          'duration'
-        ]
-      : 0,
+    'remaining_duration' in localStorage
+      ? localStorage.getItem('remaining_duration')
+      : JSON.parse(localStorage.getItem('user_details'))['generated_question'][
+        'duration'
+      ],
   )
   const minutes = Math.floor(counter / 60)
   const seconds = Math.floor(counter % 60)
@@ -123,6 +123,7 @@ const GenerateTest = () => {
     if (counter > 0) {
       const interval = setInterval(() => {
         setCounter(counter - 1)
+        localStorage.setItem('remaining_duration', counter)
       }, 1000)
       return () => clearInterval(interval)
     }
@@ -186,8 +187,8 @@ const GenerateTest = () => {
       ]
 
       // set timer for test
-      setCounter(data['duration'])
-      delete data['duration']
+      // setCounter(data['duration'])
+      // delete data['duration']
       setQuestions(data)
       setLanguage(Object.keys(data)[0])
     } else {
@@ -257,8 +258,8 @@ const GenerateTest = () => {
               key: ques.question,
               title: ques.question_details.type == 1 ? 'MCQ' : 'Program',
               description:
-                ques.question_details.language.charAt(0).toUpperCase() +
-                ques.question_details.language.slice(1),
+                ques.question_details?.language.charAt(0).toUpperCase() +
+                ques.question_details?.language.slice(1),
               status: 'wait',
             },
           ])
@@ -339,10 +340,10 @@ const GenerateTest = () => {
   ) => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     let storedAnswers = userDetails.answers || {}
-    console.log('language', question_details.language)
+    console.log('language', question_details?.language)
 
     // Update the candidate_answers in the generated_question
-    let language = question_details.language
+    let language = question_details?.language
 
     if (userDetails.generated_question && userDetails.generated_question[language]) {
       for (let question of userDetails.generated_question[language]) {
@@ -379,6 +380,7 @@ const GenerateTest = () => {
           setIsSecondLastItem(true)
         }
 
+        // Show previous button
         if (i + 1 > 0) {
           setShowPreviousButton(true)
         }
@@ -626,7 +628,6 @@ const GenerateTest = () => {
 
   return (
     <>
-      <WebCam />
       <Modal
         title="Finish Test Confirmation"
         open={isModalOpen}
@@ -649,6 +650,8 @@ const GenerateTest = () => {
           </Typography.Text>
         </div>
       </Modal>
+
+      <WebCam />
       <div className="quiz-container">
         {isCompleted ? (
           <LinkExpired modalName="userComplete" />
@@ -667,7 +670,7 @@ const GenerateTest = () => {
                   defaultOpenKeys={languages}
                   selectedKeys={defaultMenuKey}
                   mode="inline"
-                  theme="light"
+                  theme="dark"
                   items={items}
                   onClick={onMenuClick}
                 />
@@ -679,7 +682,7 @@ const GenerateTest = () => {
                     {counter > 0 ? (
                       <div className="timer">
                         <div className="clock">
-                          <h1>Left -</h1>
+                          <h1> Time Left - </h1>
                           <div className="numbers">
                             <p className="minutes">{minutes}</p>
                           </div>
@@ -696,98 +699,97 @@ const GenerateTest = () => {
                     )}
                   </div>
                 </div>
-                <hr />
-                <br />
+                <hr></hr>
+                <br></br>
                 {/* Stepper */}
                 {/* Question Name */}
-                <div className="row question-row">
-                  <div className="col">
-                    <h2>{question_details.name}</h2>
-                  </div>
+                <div className="question-container">
+                  {question_details.name}
                 </div>
                 {/* Question Details */}
+                {/* <div className="container"> */}
+                {/* MCQ Question Type */}
                 {question_details.type == 1 ? (
-                  <ul className="options-list">
-                    {option1 && (
-                      <li
-                        onClick={() =>
-                          onAnswerSelected(option1, question_details.id)
-                        }
-                        key={option1}
-                        className={`option ${
-                          selectedAnswerIndex === option1 ||
-                          candidate_answers === option1
-                            ? 'selected-answer'
-                            : ''
-                        }`}
-                      >
-                        {option1}
-                      </li>
-                    )}
-                    {option2 && (
-                      <li
-                        onClick={() =>
-                          onAnswerSelected(option2, question_details.id)
-                        }
-                        key={option2}
-                        className={`option ${
-                          selectedAnswerIndex === option2 ||
-                          candidate_answers === option2
-                            ? 'selected-answer'
-                            : ''
-                        }`}
-                      >
-                        {option2}
-                      </li>
-                    )}
-                    {option3 && (
-                      <li
-                        onClick={() =>
-                          onAnswerSelected(option3, question_details.id)
-                        }
-                        key={option3}
-                        className={`option ${
-                          selectedAnswerIndex === option3 ||
-                          candidate_answers === option3
-                            ? 'selected-answer'
-                            : ''
-                        }`}
-                      >
-                        {option3}
-                      </li>
-                    )}
-                    {option4 && (
-                      <li
-                        onClick={() =>
-                          onAnswerSelected(option4, question_details.id)
-                        }
-                        key={option4}
-                        className={`option ${
-                          selectedAnswerIndex === option4 ||
-                          candidate_answers === option4
-                            ? 'selected-answer'
-                            : ''
-                        }`}
-                      >
-                        {option4}
-                      </li>
-                    )}
-                    {showPreviousButton && (
-                      <button
-                        className="navigation-button"
-                        onClick={() => goToPreviousQuestion(question_details)}
-                      >
-                        Previous
-                      </button>
-                    )}
-                    <button
-                      className="navigation-button"
-                      onClick={() => goToNextQuestion(question_details)}
-                      style={{ marginLeft: showPreviousButton ? '8px' : '0px' }}
-                    >
-                      {isSecondLastItem ? 'Finish' : 'Next'}
-                    </button>
-                  </ul>
+                  <>
+                    <div className="options-container">
+                      <Row justify={'space-between'} gutter={16}>
+                        <Col span={12}>
+                          {option1 && (
+                            <div
+                              onClick={() =>
+                                onAnswerSelected(option1, question_details.id)
+                              }
+                              key={option1}
+                              className={`option option-a ${selectedAnswerIndex === option1 || candidate_answers === option1 ? 'selected-answer' : ''}`}
+                            >
+                              {option1}
+                            </div>
+                          )}
+                        </Col>
+                        <Col span={12}>
+                          {option2 && (
+                            <div
+                              onClick={() =>
+                                onAnswerSelected(option2, question_details.id)
+                              }
+                              key={option2}
+                              className={`option option-b ${selectedAnswerIndex === option2 || candidate_answers === option2 ? 'selected-answer' : ''}`}
+                            >
+                              {option2}
+                            </div>
+                          )}
+                        </Col>
+                      </Row>
+                      <Row justify={'space-between'} gutter={16}>
+                        <Col span={12}>
+                          {option3 && (
+                            <div
+                              onClick={() =>
+                                onAnswerSelected(option3, question_details.id)
+                              }
+                              key={option3}
+                              className={`option option-c ${selectedAnswerIndex === option3 || candidate_answers === option3 ? 'selected-answer' : ''}`}
+                            >
+                              {option3}
+                            </div>
+                          )}
+                        </Col>
+                        <Col span={12}>
+                          {option4 && (
+                            <div
+                              onClick={() =>
+                                onAnswerSelected(option4, question_details.id)
+                              }
+                              key={option4}
+                              className={`option option-d ${selectedAnswerIndex === option4 || candidate_answers === option4 ? 'selected-answer' : ''}`}
+                            >
+                              {option4}
+                            </div>
+                          )}
+                        </Col>
+                      </Row>
+                    </div>
+                    <Row justify={"space-between"}>
+                      <Col span={6}>
+                        {showPreviousButton && (
+                          <button
+                            className="navigation-button"
+                            onClick={() => goToPreviousQuestion(question_details)}
+                          >
+                            Previous
+                          </button>
+                        )}
+                      </Col>
+                      <Col  span={6}>
+                        <button
+                          className="navigation-button"
+                          onClick={() => goToNextQuestion(question_details)}
+                        >
+                          {isSecondLastItem ? 'Finish' : 'Next'}
+                        </button>
+                      </Col>
+                    </Row>
+                  </>
                 ) : (
                   <div className="flex-center mt-4">
                     {showText && (
@@ -823,6 +825,7 @@ const GenerateTest = () => {
                     )}
                   </div>
                 )}
+                {/* </div> */}
               </div>
             </div>
           </>
@@ -832,7 +835,7 @@ const GenerateTest = () => {
             <Card
               style={{
                 width: '60%',
-                padding: '2rem',
+                padding: 2 + 'rem',
               }}
               className="card-style-test"
             >
@@ -841,8 +844,16 @@ const GenerateTest = () => {
                 You have successfully completed the test, you can close the browser.
                 <p>Thank you.</p>
               </p>
+              <p className="card-p"></p>
+              {/* TODO: going to implement a section to display test analysis */}
+              {/* <p className="card-p">Click to see complete analysis</p> */}
+              {/* <Button className="card-button" onClick={onExit}>
+                Exit Window
+              </Button> */}
             </Card>
           </Layout>
+        ) : isCompleted ? (
+          <LinkExpired modalName="userComplete" />
         ) : isLinkExpired['expired'] ? (
           <LinkExpired modalName={isLinkExpired['module_name']} />
         ) : null}

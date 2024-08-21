@@ -227,7 +227,7 @@ const UserTestSummary = (props) => {
               {apiData?.data?.email}
             </Descriptions.Item>
             <Descriptions.Item label="Test Name">
-              {apiData?.data?.test_name}t
+              {apiData?.data?.test_name}
             </Descriptions.Item>
             <Descriptions.Item label="Complition Date">
               {apiData?.data?.created_at}

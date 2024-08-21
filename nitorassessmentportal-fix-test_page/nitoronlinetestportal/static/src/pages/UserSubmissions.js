@@ -123,7 +123,8 @@ const UserSubmissions = (props) => {
       </div>
       <Table
         columns={columns}
-        dataSource={filteredData}
+        // Show completed test only
+        dataSource={filteredData.filter((item) => item.completed === true)}
         loading={isLoading}
         rowKey="id"
       />

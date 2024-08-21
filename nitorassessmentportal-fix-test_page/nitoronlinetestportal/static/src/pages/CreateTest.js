@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useReducer } from 'react'
 import { withRouter } from 'react-router-dom'
 import {
   Input,
@@ -204,7 +204,6 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 </svg>
               </label>
             </Tooltip>
-
             {/* view test */}
             <Tooltip placement="top" title="View Test">
               <label className="container">
@@ -311,10 +310,8 @@ const CreateTest = ({ setSelectedKey, history }) => {
     })
   }
 
-  // const [deactivate, setDeactivate] = useState(false)
   // Function to open deactivate Test Model
   const showDeactivateModal = (testRecord) => {
-    // setDeactivate(true)
     dispatch({
       type: ACTION.SET_DELETE_MODEL_OPEN,
       payload: { isDeleteModalOpen: true },

@@ -11,12 +11,11 @@ const goBack = () => {
   localStorage.removeItem('is_exam_completed')
 
   // Close the current tab/window
-  window.open('', '_self').close()
+  window.close()
 }
 
 function LinkExpired({ modalName }) {
   React.useEffect(() => {
-    // Set linkExpired flag in localStorage and mark the exam as completed
     localStorage.setItem(
       'linkExpired',
       JSON.stringify({ expired: true, module_name: modalName }),

@@ -289,85 +289,85 @@ const CreateNewTest = ({
     setTestName(name)
 
     // Prepare the updated data list without setting it directly
-    let tempUpdatedDataList = [...dataList]
-    let languageExists = false
+      let tempUpdatedDataList = [...dataList]
+      let languageExists = false
 
-    tempUpdatedDataList = tempUpdatedDataList.map((item) => {
-      if (item.language === language) {
-        languageExists = true
+      tempUpdatedDataList = tempUpdatedDataList.map((item) => {
+        if (item.language === language) {
+          languageExists = true
 
-        // Update the question details and weightage for the existing language
-        return {
-          ...item,
-          question_details: [
-            {
-              ...item.question_details[0],
-              easy_mcq_count: parseInt(easy_mcq_count),
-              medium_mcq_count: parseInt(medium_mcq_count),
-              hard_mcq_count: parseInt(hard_mcq_count),
-            },
-          ],
-          weightage: newWeightage,
+          // Update the question details and weightage for the existing language
+          return {
+            ...item,
+            question_details: [
+              {
+                ...item.question_details[0],
+                easy_mcq_count: parseInt(easy_mcq_count),
+                medium_mcq_count: parseInt(medium_mcq_count),
+                hard_mcq_count: parseInt(hard_mcq_count),
+              },
+            ],
+            weightage: newWeightage,
+          }
         }
+        return item
+      })
+
+      if (!languageExists) {
+        tempUpdatedDataList.push(form_data)
       }
-      return item
-    })
 
-    if (!languageExists) {
-      tempUpdatedDataList.push(form_data)
-    }
+      // Create an array of all weightages
+      const weightageList = tempUpdatedDataList.map((item) => ({
+        language: item.language,
+        weightage: item.weightage,
+      }))
 
-    // Create an array of all weightages
-    const weightageList = tempUpdatedDataList.map((item) => ({
-      language: item.language,
-      weightage: item.weightage,
-    }))
+      // Create payload
+      let payload = {
+        name,
+        end_date,
+        weightages: weightageList, // Passing weightages outside question_details
+        question_details: tempUpdatedDataList.flatMap((item) => item.question_details),
+      }
 
-    // Create payload
-    let payload = {
-      name,
-      end_date,
-      weightages: weightageList, // Passing weightages outside question_details
-      question_details: tempUpdatedDataList.flatMap((item) => item.question_details),
-    }
+      console.log('Payload from handleAddToList:', payload)
 
-    console.log('Payload from handleAddToList:', payload)
+      // Submit the payload
+      triggerFetchData('validate_test/', payload)
+        .then((data) => {
+          console.log('Response:', data)
 
-    // Submit the payload
-    triggerFetchData('validate_test/', payload)
-      .then((data) => {
-        console.log('Response:', data)
+          // Update dataList and use updatedDataList as payload only if the submission is successful
+          setDataList(tempUpdatedDataList)
 
-        // Update dataList and use updatedDataList as payload only if the submission is successful
-        setDataList(tempUpdatedDataList)
+          // Store the payload in state
+          setTestPayload(payload)
 
-        // Store the payload in state
-        setTestPayload(payload)
-
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
-          payload: { showNotEnoughQuesErrorMessage: '' },
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+            payload: { showNotEnoughQuesErrorMessage: '' },
+          })
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+            payload: { showNotEnoughQuesError: false },
+          })
         })
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
-          payload: { showNotEnoughQuesError: false },
-        })
-      })
-      .catch((reason) => {
-        console.error('Error Response:', reason)
+        .catch((reason) => {
+          console.error('Error Response:', reason)
 
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
-          payload: {
-            showNotEnoughQuesErrorMessage: reason && reason.error && reason.message,
-          },
-        })
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+            payload: {
+              showNotEnoughQuesErrorMessage: reason && reason.error && reason.message,
+            },
+          })
 
-        dispatch({
-          type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
-          payload: { showNotEnoughQuesError: reason && reason.error },
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+            payload: { showNotEnoughQuesError: reason && reason.error },
+          })
         })
-      })
 
     dispatch({
       type: ACTION.SET_EDIT_SECTION,
