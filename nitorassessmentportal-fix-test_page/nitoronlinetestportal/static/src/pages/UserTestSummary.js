@@ -44,33 +44,33 @@ const getStatusIcon = (correct) => {
   )
 }
 
-  const columns = [
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-    },
-    {
-      title: 'Question',
-      dataIndex: 'question',
-      key: 'question',
-    },
-    {
-      title: 'Language',
-      dataIndex: 'language',
-      key: 'language',
-    },
-    {
-      title: 'Question Type',
-      dataIndex: 'questionType',
-      key: 'questionType',
-    },
-    {
-      title: 'Score',
-      dataIndex: 'score',
-      key: 'score',
-    },
-  ]
+const columns = [
+  {
+    title: 'Status',
+    dataIndex: 'status',
+    key: 'status',
+  },
+  {
+    title: 'Question',
+    dataIndex: 'question',
+    key: 'question',
+  },
+  {
+    title: 'Language',
+    dataIndex: 'language',
+    key: 'language',
+  },
+  {
+    title: 'Question Type',
+    dataIndex: 'questionType',
+    key: 'questionType',
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+  },
+]
 
 const formatData = (data) => {
   let formattedData = []
@@ -104,13 +104,39 @@ const formatData = (data) => {
               <>
                 <div>{questionDetails.name}</div>
                 <div>
-                  {questionOptions.map((option, idx) => (
-                    option ? 
-                    question.correct_value === option && question.candidate_answers === option  ? <div className='correct_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Candidate answer&nbsp;&nbsp;</span></div>
-                     : question.correct_value === option ? <div className='correct_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Correct answer&nbsp;&nbsp;</span></div> : question.candidate_answers === option ? <div className='incorrect_answer' key={idx}>{`${idx + 1}. ${option}`} <span class="answercomment pull-right">&nbsp;&nbsp;Candidate answer&nbsp;&nbsp;</span></div> :<div className='' key={idx}>{`${idx + 1}. ${option}`}</div> : <></>
-                  ))}
+                  {questionOptions.map((option, idx) =>
+                    option ? (
+                      question.correct_value === option &&
+                      question.candidate_answers === option ? (
+                        <div className="correct_answer" key={idx}>
+                          {`${idx + 1}. ${option}`}{' '}
+                          <span class="answercomment pull-right">
+                            &nbsp;&nbsp;Candidate answer&nbsp;&nbsp;
+                          </span>
+                        </div>
+                      ) : question.correct_value === option ? (
+                        <div className="correct_answer" key={idx}>
+                          {`${idx + 1}. ${option}`}{' '}
+                          <span class="answercomment pull-right">
+                            &nbsp;&nbsp;Correct answer&nbsp;&nbsp;
+                          </span>
+                        </div>
+                      ) : question.candidate_answers === option ? (
+                        <div className="incorrect_answer" key={idx}>
+                          {`${idx + 1}. ${option}`}{' '}
+                          <span class="answercomment pull-right">
+                            &nbsp;&nbsp;Candidate answer&nbsp;&nbsp;
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="" key={idx}>{`${idx + 1}. ${option}`}</div>
+                      )
+                    ) : (
+                      <></>
+                    ),
+                  )}
                 </div>
-                <div>{`Candidate Answer: ${question.candidate_answers}`}</div>
+                <div>{`Candidate Answer: ${question.candidate_answers === null ? 'Not answered' : question.candidate_answers}`}</div>
                 <div>{`Correct Answer: ${question.correct_value}`}</div>
               </>
             ),
@@ -209,7 +235,7 @@ const UserTestSummary = (props) => {
           </Descriptions>
         </Card>
       ),
-    }
+    },
   ]
 
   return (
