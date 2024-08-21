@@ -296,7 +296,7 @@ const testSectionOption = [
 ]
 
 const initialNewTestValues = {
-  add_sections: [],
+  add_sections: ["Add_MCQs"],
   easy_mcq_count: '0',
   easy_program_count: '0',
   end_date: null,

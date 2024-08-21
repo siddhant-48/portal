@@ -52,7 +52,6 @@ const GenerateTest = () => {
   const seconds = Math.floor(counter % 60)
     .toString()
     .padStart(2, '0')
-  const [isLinkExpired, setIsLinkExpired] = useState({})
   const [result, setResult] = useState({
     score: 0,
     correctAnswers: 0,
@@ -70,22 +69,43 @@ const GenerateTest = () => {
   const [isTestFinished, setisTestFinished] = useState(false)
   const [current, setCurrent] = useState(0)
 
+  const [isLinkExpired, setIsLinkExpired] = useState({
+    expired: false,
+    module_name: '',
+  })
+
+  // Check if the exam is already completed on component mount
+  useEffect(() => {
+    const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
+    if (isExamCompleted) {
+      setIsCompleted(true)
+    }
+  }, [])
+
   // Use effect for handling the page switch
   useEffect(() => {
     const pageSwitchCount = parseInt(localStorage.getItem('screen_change')) || 0
-    if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
-      localStorage.setItem('screen_change', pageSwitchCount + 1)
-      if (pageSwitchCount >= 3) {
-        alert(`Your exam link has expired due to switching browser tabs frequently.`)
+    const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
+
+    // Update the state to reflect exam completion
+    if (isExamCompleted) {
+      setIsCompleted(true)
+    } else if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
+      const newSwitchCount = pageSwitchCount + 1
+      localStorage.setItem('screen_change', newSwitchCount)
+
+      if (newSwitchCount >= 3) {
+        alert('Your exam link has expired due to switching browser tabs frequently.')
+        localStorage.setItem('is_exam_completed', 'true')
         setIsCompleted(true)
         saveAnswer(question_details, '', 0, true)
       } else {
         alert(
-          `Warning ${pageSwitchCount + 1}: You are not allowed to leave the page. Your progress may be lost.`,
+          `Warning ${newSwitchCount}: You are not allowed to leave the page. Your progress may be lost.`,
         )
       }
     }
-  }, [pageVisibilityStatus])
+  }, [pageVisibilityStatus, isCompleted, isTestFinished])
 
   // Test Score set at end
   useEffect(() => {
@@ -108,26 +128,50 @@ const GenerateTest = () => {
     }
   }, [counter])
 
-  // useEffect(() => {
-  //   if (!isTestFinished) {
-  //     const handleBeforeUnload = (event) => {
-  //       // Prevent the default behavior
-  //       event.preventDefault()
-  //       event.returnValue = ''
-  //       const userDetails = JSON.parse(localStorage.getItem('user_details'))
+  useEffect(() => {
+    if (!isTestFinished) {
+      const handleBeforeUnload = (event) => {
+        // Prevent the default behavior
+        event.preventDefault()
+        event.returnValue = ''
 
-  //       if (userDetails && userDetails.answers) {
-  //         delete userDetails.answers
-  //         localStorage.setItem('user_details', JSON.stringify(userDetails))
-  //       }
-  //     }
-  //     window.addEventListener('beforeunload', handleBeforeUnload)
+        let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
 
-  //     return () => {
-  //       window.removeEventListener('beforeunload', handleBeforeUnload)
-  //     }
-  //   }
-  // }, [isTestFinished])
+        // Nullify candidate_answers in generated_question
+        if (userDetails.generated_question) {
+          Object.keys(userDetails.generated_question).forEach((language) => {
+            const questions = userDetails.generated_question[language]
+
+            // Ensure questions is an array before trying to iterate over it
+            if (Array.isArray(questions)) {
+              questions.forEach((question) => {
+                if ('candidate_answers' in question) {
+                  question.candidate_answers = null
+                }
+              })
+            }
+          })
+        }
+
+        // Delete the answers key directly
+        if (userDetails.answers) {
+          delete userDetails.answers
+        }
+
+        // Log the updated userDetails to confirm the changes
+        console.log('Updated user_details:', userDetails)
+
+        // Update the localStorage with the modified userDetails
+        localStorage.setItem('user_details', JSON.stringify(userDetails))
+      }
+
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+      }
+    }
+  }, [isTestFinished])
 
   const openCodeEditor = () => {
     setShowCodeEditor(true)
@@ -582,6 +626,7 @@ const GenerateTest = () => {
 
   return (
     <>
+      <WebCam />
       <Modal
         title="Finish Test Confirmation"
         open={isModalOpen}
@@ -604,16 +649,16 @@ const GenerateTest = () => {
           </Typography.Text>
         </div>
       </Modal>
-
-      <WebCam />
       <div className="quiz-container">
-        {questions[language] && !showResult ? (
+        {isCompleted ? (
+          <LinkExpired modalName="userComplete" />
+        ) : questions[language] && !showResult ? (
           <>
             <div
               style={{
                 width: '100%',
                 display: 'flex',
-                flex: 'row',
+                flexDirection: 'row',
               }}
             >
               <div className="left-menu-bar">
@@ -634,7 +679,7 @@ const GenerateTest = () => {
                     {counter > 0 ? (
                       <div className="timer">
                         <div className="clock">
-                          <h1> Left - </h1>
+                          <h1>Left -</h1>
                           <div className="numbers">
                             <p className="minutes">{minutes}</p>
                           </div>
@@ -651,8 +696,8 @@ const GenerateTest = () => {
                     )}
                   </div>
                 </div>
-                <hr></hr>
-                <br></br>
+                <hr />
+                <br />
                 {/* Stepper */}
                 {/* Question Name */}
                 <div className="row question-row">
@@ -661,8 +706,6 @@ const GenerateTest = () => {
                   </div>
                 </div>
                 {/* Question Details */}
-                {/* <div className="container"> */}
-                {/* MCQ Question Type */}
                 {question_details.type == 1 ? (
                   <ul className="options-list">
                     {option1 && (
@@ -671,7 +714,12 @@ const GenerateTest = () => {
                           onAnswerSelected(option1, question_details.id)
                         }
                         key={option1}
-                        className={`option ${selectedAnswerIndex === option1 || candidate_answers === option1 ? 'selected-answer' : ''}`}
+                        className={`option ${
+                          selectedAnswerIndex === option1 ||
+                          candidate_answers === option1
+                            ? 'selected-answer'
+                            : ''
+                        }`}
                       >
                         {option1}
                       </li>
@@ -682,7 +730,12 @@ const GenerateTest = () => {
                           onAnswerSelected(option2, question_details.id)
                         }
                         key={option2}
-                        className={`option ${selectedAnswerIndex === option2 || candidate_answers === option2 ? 'selected-answer' : ''}`}
+                        className={`option ${
+                          selectedAnswerIndex === option2 ||
+                          candidate_answers === option2
+                            ? 'selected-answer'
+                            : ''
+                        }`}
                       >
                         {option2}
                       </li>
@@ -693,7 +746,12 @@ const GenerateTest = () => {
                           onAnswerSelected(option3, question_details.id)
                         }
                         key={option3}
-                        className={`option ${selectedAnswerIndex === option3 || candidate_answers === option3 ? 'selected-answer' : ''}`}
+                        className={`option ${
+                          selectedAnswerIndex === option3 ||
+                          candidate_answers === option3
+                            ? 'selected-answer'
+                            : ''
+                        }`}
                       >
                         {option3}
                       </li>
@@ -704,7 +762,12 @@ const GenerateTest = () => {
                           onAnswerSelected(option4, question_details.id)
                         }
                         key={option4}
-                        className={`option ${selectedAnswerIndex === option4 || candidate_answers === option4 ? 'selected-answer' : ''}`}
+                        className={`option ${
+                          selectedAnswerIndex === option4 ||
+                          candidate_answers === option4
+                            ? 'selected-answer'
+                            : ''
+                        }`}
                       >
                         {option4}
                       </li>
@@ -760,7 +823,6 @@ const GenerateTest = () => {
                     )}
                   </div>
                 )}
-                {/* </div> */}
               </div>
             </div>
           </>
@@ -770,7 +832,7 @@ const GenerateTest = () => {
             <Card
               style={{
                 width: '60%',
-                padding: 2 + 'rem',
+                padding: '2rem',
               }}
               className="card-style-test"
             >
@@ -779,16 +841,8 @@ const GenerateTest = () => {
                 You have successfully completed the test, you can close the browser.
                 <p>Thank you.</p>
               </p>
-              <p className="card-p"></p>
-              {/* TODO: going to implement a section to display test analysis */}
-              {/* <p className="card-p">Click to see complete analysis</p> */}
-              {/* <Button className="card-button" onClick={onExit}>
-                Exit Window
-              </Button> */}
             </Card>
           </Layout>
-        ) : isCompleted ? (
-          <LinkExpired modalName="userComplete" />
         ) : isLinkExpired['expired'] ? (
           <LinkExpired modalName={isLinkExpired['module_name']} />
         ) : null}

@@ -1,0 +1,37 @@
+/* Style for the modal container */
+/* .link-expired-modal {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+  } */
+
+/* Style for the content inside the modal */
+.link-expired-content {
+  text-align: center;
+}
+
+/* Style for the message text */
+.modal-message {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Style for the button */
+.card-button {
+  background-color: #ff4d4f; /* Red color */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the button */
+/* .link-expired-modal .card-button:hover {
+  background-color: #d43f3a;
+} */
