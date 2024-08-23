@@ -9,9 +9,9 @@ const goBack = () => {
   localStorage.removeItem('screen_change')
   localStorage.removeItem('linkExpired')
   localStorage.removeItem('is_exam_completed')
+  localStorage.removeItem('endTime')
 
   // Close the current tab/window
-  // window.open('', '_self', '')
   window.close()
 }
 

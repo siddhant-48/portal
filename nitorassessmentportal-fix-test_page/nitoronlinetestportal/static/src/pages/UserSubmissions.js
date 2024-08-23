@@ -23,6 +23,11 @@ const columns = [
     key: 'email',
   },
   {
+    title: 'Test Name',
+    dataIndex: 'test_name',
+    key: 'test_name',
+  },
+  {
     title: 'Score',
     dataIndex: 'score',
     key: 'score',

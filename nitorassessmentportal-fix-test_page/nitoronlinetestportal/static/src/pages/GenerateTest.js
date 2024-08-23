@@ -17,6 +17,7 @@ import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import '../styles/generate-test.css'
 import TestCodeEditor from '../pages/TestCodeEditor'
 import LinkExpired from '../components/LinkExpired'
+import CountdownTimer from '../components/CountdownTimer'
 import WebCam from '../components/WebCam'
 import { usePageVisibility } from '../Utils/Hooks/usePageVisibility'
 import { findQuestionPosition } from '../Utils/utilFunctions'
@@ -42,17 +43,7 @@ const GenerateTest = () => {
   )
   const [isCompleted, setIsCompleted] = useState(false)
   const path = search.pathname.split('/')
-  const [counter, setCounter] = useState(
-    'remaining_duration' in localStorage
-      ? localStorage.getItem('remaining_duration')
-      : JSON.parse(localStorage.getItem('user_details'))['generated_question'][
-          'duration'
-        ],
-  )
-  const minutes = Math.floor(counter / 60)
-  const seconds = Math.floor(counter % 60)
-    .toString()
-    .padStart(2, '0')
+  
   const [result, setResult] = useState({
     score: 0,
     correctAnswers: 0,
@@ -119,16 +110,6 @@ const GenerateTest = () => {
     )
   }, [showResult])
 
-  // Set Counter
-  useEffect(() => {
-    if (counter > 0) {
-      const interval = setInterval(() => {
-        setCounter(counter - 1)
-        localStorage.setItem('remaining_duration', counter)
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [counter])
 
   useEffect(() => {
     if (!isTestFinished) {
@@ -187,9 +168,6 @@ const GenerateTest = () => {
         'generated_question'
       ]
 
-      // set timer for test
-      // setCounter(data['duration'])
-      // delete data['duration']
       setQuestions(data)
       setLanguage(Object.keys(data)[0])
     } else {
@@ -275,6 +253,20 @@ const GenerateTest = () => {
       setIsLinkExpired(linkExpired)
     }
   }, [])
+  ////question tracker
+  const [positionInfo, setPositionInfo] = useState({})
+
+  useEffect(() => {
+    if (items && Array.isArray(items)) {
+      const questionId = Number(defaultMenuKey)
+
+      // Find the question position
+      const result = findQuestionPosition(items, questionId)
+      setPositionInfo(result)
+    } else {
+      console.warn('Items is not valid or empty')
+    }
+  }, [current, items])
 
   function getItemItem(label, key, children) {
     return {
@@ -303,9 +295,9 @@ const GenerateTest = () => {
         const index = questionData.findIndex(
           (q) => Number(q.questionId) === Number(key),
         )
+        console.log('index', index)
 
         setCurrent(index)
-        console.log('index', index)
         console.log(questionData.length)
 
         // Update button visibility
@@ -321,6 +313,7 @@ const GenerateTest = () => {
     setisTestFinished(true)
     goToNextQuestion(question_details)
     localStorage.removeItem('user_details')
+    localStorage.removeItem('endTime')
   }
 
   //get answer
@@ -548,7 +541,7 @@ const GenerateTest = () => {
 
     // Display the counts in the modal
     if (unansweredCount === 0) {
-      setModalMessage(`All Answered questions: ${answeredCount}`)
+      setModalMessage(`All questions answered: ${answeredCount}`)
     } else {
       setModalMessage(`Answered: ${answeredCount}, Unanswered: ${unansweredCount}`)
     }
@@ -592,24 +585,6 @@ const GenerateTest = () => {
     localStorage.removeItem('user_details')
     setIsModalOpen(false)
   }
-
-  ////question tracker
-  const [positionInfo, setPositionInfo] = useState({})
-
-  useEffect(() => {
-    console.log('useEffect triggered')
-    if (items && Array.isArray(items)) {
-      const questionId = +defaultMenuKey
-
-      // Find the question position
-      const result = findQuestionPosition(items, questionId)
-      setPositionInfo(result)
-    } else {
-      console.warn('Items is not valid or empty')
-    }
-  }, [current, items])
-
-  console.log('posi_info', positionInfo)
 
   return (
     <>
@@ -664,24 +639,7 @@ const GenerateTest = () => {
                 <div className="row">
                   {/* Time Left */}
                   <div className="col-4">
-                    {counter > 0 ? (
-                      <div className="timer">
-                        <div className="clock">
-                          <h1> Time Left - </h1>
-                          <div className="numbers">
-                            <p className="minutes">{minutes}</p>
-                          </div>
-                          <div className="colon">
-                            <p>:</p>
-                          </div>
-                          <div className="numbers">
-                            <p className="seconds">{seconds}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <LinkExpired modalName="timeExpire" />
-                    )}
+                    <CountdownTimer testDuration = {JSON.parse(localStorage.getItem('user_details'))['generated_question']['duration']}/>
                   </div>
                   <div className="question-tracker">
                     {positionInfo && <span>{positionInfo}</span>}
@@ -691,7 +649,9 @@ const GenerateTest = () => {
                 <br></br>
                 {/* Stepper */}
                 {/* Question Name */}
-                <div className="question-container">{question_details.name}</div>
+                <div className="question-container">
+                  {question_details.name}
+                </div>
                 {/* Question Details */}
                 {/* <div className="container"> */}
                 {/* MCQ Question Type */}
@@ -755,7 +715,7 @@ const GenerateTest = () => {
                         </Col>
                       </Row>
                     </div>
-                    <Row justify={'space-between'}>
+                    <Row justify={"space-between"}>
                       <Col span={6}>
                         {showPreviousButton && (
                           <button
@@ -766,7 +726,7 @@ const GenerateTest = () => {
                           </button>
                         )}
                       </Col>
-                      <Col span={6}>
+                      <Col  span={6}>
                         <button
                           className="navigation-button"
                           onClick={() => goToNextQuestion(question_details)}
