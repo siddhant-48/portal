@@ -19,6 +19,7 @@ import TestCodeEditor from '../pages/TestCodeEditor'
 import LinkExpired from '../components/LinkExpired'
 import WebCam from '../components/WebCam'
 import { usePageVisibility } from '../Utils/Hooks/usePageVisibility'
+import { findQuestionPosition } from '../Utils/utilFunctions'
 
 const GenerateTest = () => {
   const history = useHistory()
@@ -45,8 +46,8 @@ const GenerateTest = () => {
     'remaining_duration' in localStorage
       ? localStorage.getItem('remaining_duration')
       : JSON.parse(localStorage.getItem('user_details'))['generated_question'][
-        'duration'
-      ],
+          'duration'
+        ],
   )
   const minutes = Math.floor(counter / 60)
   const seconds = Math.floor(counter % 60)
@@ -83,29 +84,29 @@ const GenerateTest = () => {
   }, [])
 
   // Use effect for handling the page switch
-  useEffect(() => {
-    const pageSwitchCount = parseInt(localStorage.getItem('screen_change')) || 0
-    const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
+  // useEffect(() => {
+  //   const pageSwitchCount = parseInt(localStorage.getItem('screen_change')) || 0
+  //   const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
 
-    // Update the state to reflect exam completion
-    if (isExamCompleted) {
-      setIsCompleted(true)
-    } else if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
-      const newSwitchCount = pageSwitchCount + 1
-      localStorage.setItem('screen_change', newSwitchCount)
+  //   // Update the state to reflect exam completion
+  //   if (isExamCompleted) {
+  //     setIsCompleted(true)
+  //   } else if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
+  //     const newSwitchCount = pageSwitchCount + 1
+  //     localStorage.setItem('screen_change', newSwitchCount)
 
-      if (newSwitchCount >= 3) {
-        alert('Your exam link has expired due to switching browser tabs frequently.')
-        localStorage.setItem('is_exam_completed', 'true')
-        setIsCompleted(true)
-        saveAnswer(question_details, '', 0, true)
-      } else {
-        alert(
-          `Warning ${newSwitchCount}: You are not allowed to leave the page. Your progress may be lost.`,
-        )
-      }
-    }
-  }, [pageVisibilityStatus, isCompleted, isTestFinished])
+  //     if (newSwitchCount >= 3) {
+  //       alert('Your exam link has expired due to switching browser tabs frequently.')
+  //       localStorage.setItem('is_exam_completed', 'true')
+  //       setIsCompleted(true)
+  //       saveAnswer(question_details, '', 0, true)
+  //     } else {
+  //       alert(
+  //         `Warning ${newSwitchCount}: You are not allowed to leave the page. Your progress may be lost.`,
+  //       )
+  //     }
+  //   }
+  // }, [pageVisibilityStatus, isCompleted, isTestFinished])
 
   // Test Score set at end
   useEffect(() => {
@@ -302,9 +303,9 @@ const GenerateTest = () => {
         const index = questionData.findIndex(
           (q) => Number(q.questionId) === Number(key),
         )
-        console.log('index', index)
 
         setCurrent(index)
+        console.log('index', index)
         console.log(questionData.length)
 
         // Update button visibility
@@ -393,40 +394,6 @@ const GenerateTest = () => {
       }
     }
   }
-
-  //finish button
-  // const handleFinishTest = (question_details) => {
-  //   showFinishModal()
-  //   let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
-  //   console.log('final', userDetails.answers)
-
-  //   // Check the status of each MCQ and log the results
-  //   Object.keys(userDetails.answers).forEach((questionId) => {
-  //     const answerDetails = userDetails.answers[questionId]
-  //     if (answerDetails && answerDetails.selectedAnswerIndex) {
-  //       console.log(
-  //         `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
-  //       )
-  //     } else {
-  //       console.log(`Question ID ${questionId} is unanswered or null.`)
-  //     }
-  //   })
-
-  //   // Extract user_question_answer_list data from userDetails
-  //   let user_question_answer_list = Object.values(userDetails.generated_question)
-  //     .filter((value) => Array.isArray(value))
-  //     .flat()
-  //     .map((item) => ({
-  //       ...item.question_details,
-  //       candidate_answers: item.candidate_answers,
-  //       correct_value: item.correct_value,
-  //     }))
-
-  //   saveAnswer(question_details, user_question_answer_list, true)
-  //   setShowResult(true)
-  //   setisTestFinished(true)
-  //   localStorage.removeItem('user_details')
-  // }
 
   const goToPreviousQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -626,6 +593,24 @@ const GenerateTest = () => {
     setIsModalOpen(false)
   }
 
+  ////question tracker
+  const [positionInfo, setPositionInfo] = useState({})
+
+  useEffect(() => {
+    console.log('useEffect triggered')
+    if (items && Array.isArray(items)) {
+      const questionId = +defaultMenuKey
+
+      // Find the question position
+      const result = findQuestionPosition(items, questionId)
+      setPositionInfo(result)
+    } else {
+      console.warn('Items is not valid or empty')
+    }
+  }, [current, items])
+
+  console.log('posi_info', positionInfo)
+
   return (
     <>
       <Modal
@@ -698,14 +683,15 @@ const GenerateTest = () => {
                       <LinkExpired modalName="timeExpire" />
                     )}
                   </div>
+                  <div className="question-tracker">
+                    {positionInfo && <span>{positionInfo}</span>}
+                  </div>
                 </div>
                 <hr></hr>
                 <br></br>
                 {/* Stepper */}
                 {/* Question Name */}
-                <div className="question-container">
-                  {question_details.name}
-                </div>
+                <div className="question-container">{question_details.name}</div>
                 {/* Question Details */}
                 {/* <div className="container"> */}
                 {/* MCQ Question Type */}
@@ -720,7 +706,7 @@ const GenerateTest = () => {
                                 onAnswerSelected(option1, question_details.id)
                               }
                               key={option1}
-                              className={`option option-a ${selectedAnswerIndex === option1 || candidate_answers === option1 ? 'selected-answer' : ''}`}
+                              className={`option option-a ${selectedAnswerIndex === option1 || candidate_answers === option1 ? 'selected-answer selected' : ''}`}
                             >
                               {option1}
                             </div>
@@ -733,7 +719,7 @@ const GenerateTest = () => {
                                 onAnswerSelected(option2, question_details.id)
                               }
                               key={option2}
-                              className={`option option-b ${selectedAnswerIndex === option2 || candidate_answers === option2 ? 'selected-answer' : ''}`}
+                              className={`option option-b ${selectedAnswerIndex === option2 || candidate_answers === option2 ? 'selected-answer selected' : ''}`}
                             >
                               {option2}
                             </div>
@@ -748,7 +734,7 @@ const GenerateTest = () => {
                                 onAnswerSelected(option3, question_details.id)
                               }
                               key={option3}
-                              className={`option option-c ${selectedAnswerIndex === option3 || candidate_answers === option3 ? 'selected-answer' : ''}`}
+                              className={`option option-c ${selectedAnswerIndex === option3 || candidate_answers === option3 ? 'selected-answer selected' : ''}`}
                             >
                               {option3}
                             </div>
@@ -761,7 +747,7 @@ const GenerateTest = () => {
                                 onAnswerSelected(option4, question_details.id)
                               }
                               key={option4}
-                              className={`option option-d ${selectedAnswerIndex === option4 || candidate_answers === option4 ? 'selected-answer' : ''}`}
+                              className={`option option-d ${selectedAnswerIndex === option4 || candidate_answers === option4 ? 'selected-answer selected' : ''}`}
                             >
                               {option4}
                             </div>
@@ -769,7 +755,7 @@ const GenerateTest = () => {
                         </Col>
                       </Row>
                     </div>
-                    <Row justify={"space-between"}>
+                    <Row justify={'space-between'}>
                       <Col span={6}>
                         {showPreviousButton && (
                           <button
@@ -780,7 +766,7 @@ const GenerateTest = () => {
                           </button>
                         )}
                       </Col>
-                      <Col  span={6}>
+                      <Col span={6}>
                         <button
                           className="navigation-button"
                           onClick={() => goToNextQuestion(question_details)}

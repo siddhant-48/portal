@@ -11,7 +11,7 @@ const readExcel = (file) => {
       const wb = XLSX.read(bufferArray, { type: 'buffer' })
 
       wb.SheetNames.forEach((element, index) => {
-          if (element=="mcq") {
+        if (element == 'mcq') {
           let data = XLSX.utils.sheet_to_json(wb.Sheets[element])
           sheetsData[wb.SheetNames[index]] = data
         }
@@ -44,4 +44,20 @@ const generateExcelFromJson = (sheetsDataObject, filename = '', download = true)
   return workbook
 }
 
-export { readExcel, generateExcelFromJson }
+function findQuestionPosition(arr, questionId) {
+  let result = ''
+
+  for (let i = 0; i < arr.length; i++) {
+    let language = arr[i].label
+    let totalQuestions = arr[i].children.length
+    let specificQuestionPosition =
+      arr[i].children.findIndex((question) => question.key === questionId) + 1
+
+    if (specificQuestionPosition > 0) {
+      result = `${language}: ${specificQuestionPosition}/${totalQuestions}`
+    }
+  }
+  return result
+}
+
+export { readExcel, generateExcelFromJson, findQuestionPosition }

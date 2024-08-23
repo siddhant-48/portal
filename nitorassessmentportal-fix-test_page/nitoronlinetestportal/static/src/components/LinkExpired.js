@@ -11,6 +11,7 @@ const goBack = () => {
   localStorage.removeItem('is_exam_completed')
 
   // Close the current tab/window
+  // window.open('', '_self', '')
   window.close()
 }
 
