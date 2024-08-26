@@ -15,6 +15,8 @@ import UserTestSummary from './UserTestSummary'
 import UserSubmissions from './UserSubmissions'
 import { Layout } from 'antd'
 import Header from '../components/Header'
+import { ErrorBoundary } from 'react-error-boundary'
+import ErrorFallback from '../components/ErrorFallback'
 
 const App = () => {
   const isUserExists = !!JSON.parse(localStorage.getItem('authdata'))
@@ -22,49 +24,56 @@ const App = () => {
   const [selectedKey, setSelectedKey] = useState('')
 
   return (
-    <Layout>
-      <Switch>
-        <Route exact path="/">
-          <Login setIsLoggedIn={setIsLoggedIn} />
-        </Route>
-        <Route path="/screening/user-details/:id/:key">
-          <UserDetail />
-        </Route>
-        <Route path="/screening/test/:id/:key">
-          <GenerateTest />
-        </Route>
-        <Route path="/candidate-test">
-          <CandidateTest />
-        </Route>
-        <Route path="/test-code-editor">
-          <TestCodeEditor />
-        </Route>
-        <Protected isLoggedIn={isLoggedIn}>
-          <Header selectedKey={selectedKey} />
-          <Route path="/dashboard">
-            <Dashboard setSelectedKey={setSelectedKey} />
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onReset={() => {
+        // Reset any state or perform actions on error boundary reset
+      }}
+    >
+      <Layout>
+        <Switch>
+          <Route exact path="/">
+            <Login setIsLoggedIn={setIsLoggedIn} />
           </Route>
-          <Route path="/created-test-details">
-            <CreatedTestDetails setSelectedKey={setSelectedKey} />
+          <Route path="/screening/user-details/:id/:key">
+            <UserDetail />
           </Route>
-          <Route path="/create-test">
-            <CreateTest setSelectedKey={setSelectedKey} />
+          <Route path="/screening/test/:id/:key">
+            <GenerateTest />
           </Route>
-          <Route path="/questions">
-            <Question setSelectedKey={setSelectedKey} />
+          <Route path="/candidate-test">
+            <CandidateTest />
           </Route>
-          <Route path="/generate-link">
-            <GenerateLink setSelectedKey={setSelectedKey} />
+          <Route path="/test-code-editor">
+            <TestCodeEditor />
           </Route>
-          <Route path="/user-submissions">
-            <UserSubmissions setSelectedKey={setSelectedKey} />
-          </Route>
-          <Route path="/use-test-summary/:id">
-            <UserTestSummary setSelectedKey={setSelectedKey} />
-          </Route>
-        </Protected>
-      </Switch>
-    </Layout>
+          <Protected isLoggedIn={isLoggedIn}>
+            <Header selectedKey={selectedKey} />
+            <Route path="/dashboard">
+              <Dashboard setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/created-test-details">
+              <CreatedTestDetails setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/create-test">
+              <CreateTest setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/questions">
+              <Question setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/generate-link">
+              <GenerateLink setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/user-submissions">
+              <UserSubmissions setSelectedKey={setSelectedKey} />
+            </Route>
+            <Route path="/use-test-summary/:id">
+              <UserTestSummary setSelectedKey={setSelectedKey} />
+            </Route>
+          </Protected>
+        </Switch>
+      </Layout>
+    </ErrorBoundary>
   )
 }
 export default withRouter(App)

@@ -12,8 +12,11 @@ import {
   Tooltip,
   Typography,
   Descriptions,
+  Modal,
+  Input,
+  message
 } from 'antd'
-import { useFetch } from '../Utils/Hooks/useFetchAPI'
+import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import { useParams } from 'react-router-dom'
 
 const getStatusIcon = (correct) => {
@@ -158,8 +161,6 @@ const UserTestSummary = (props) => {
   const [fetchUrl, setFetchUrl] = useState(`candidate_test_summary/${id}`)
   const { isLoading, serverError, apiData, fetchData } = useFetch(fetchUrl)
 
-  console.log(apiData)
-
   const onChange = (key) => {
     console.log(key)
   }
@@ -237,6 +238,83 @@ const UserTestSummary = (props) => {
       ),
     },
   ]
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(`download_test_details/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/pdf', // Ensure the server response type is correct
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok.')
+      }
+
+      const blob = await response.blob() // Get the blob from the response
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Test-Report.pdf`) // Set the default filename
+
+      // Append link to the body
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (error) {
+      console.error('Error downloading the file:', error)
+    }
+  }
+  //share result
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState(false)
+
+  const handleShare = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleEditCancel = () => {
+    resetFields()
+    setIsModalOpen(false)
+  }
+
+  const submitShareEmail = (payload) => {
+    const { data } = triggerFetchData('/share_test_details/', payload)
+    message.success("Report shared successfully!")
+    console.log(data)
+  }
+
+  const handleOk = () => {
+    if (validateEmail(email)) {
+      // handle the logic here
+      submitShareEmail({ userTestId: id, shareEmailId: email })
+      setIsModalOpen(false)
+      resetFields()
+    } else {
+      setEmailError(true)
+      message.error("Report not shared")
+      //handle error logic
+    }
+  }
+
+  const handleEmail = (e) => {
+    setEmail(e.target.value)
+    if (emailError) {
+      setEmailError(false)
+    }
+  }
+
+  const resetFields = () => {
+    setEmail('')
+    setEmailError(false)
+  }
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   return (
     <Layout.Content style={{ height: '100vh', padding: '1rem' }}>
@@ -273,7 +351,12 @@ const UserTestSummary = (props) => {
           >
             <Tooltip placement="top" title="Download Test Result">
               <label className="container">
-                <input checked="checked" type="checkbox" readOnly />
+                <input
+                  checked="checked"
+                  type="checkbox"
+                  onClick={handleDownload}
+                  readOnly
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
@@ -287,7 +370,12 @@ const UserTestSummary = (props) => {
             </Tooltip>
             <Tooltip placement="top" title="Share Test Result">
               <label className="container">
-                <input checked="checked" type="checkbox" readOnly />
+                <input
+                  checked="checked"
+                  type="checkbox"
+                  readOnly
+                  onClick={handleShare}
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#3B71CA"
@@ -302,6 +390,24 @@ const UserTestSummary = (props) => {
         </Row>
         <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
       </Card>
+      <Modal
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleEditCancel}
+        okText="Share"
+      >
+        <div className="share-result">
+          <p>Please enter Email address to Share the Result!</p>
+          <Input
+            type="email"
+            value={email}
+            placeholder="example@email.com"
+            onChange={handleEmail}
+            style={{ width: '60%', borderColor: emailError ? 'red' : undefined }}
+          />
+          {emailError && <p style={{ color: 'red' }}>Please enter a valid email</p>}
+        </div>
+      </Modal>
     </Layout.Content>
   )
 }

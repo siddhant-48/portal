@@ -31,5 +31,7 @@ urlpatterns = [
     path('test_summary/<test_id>/', test_summary),
     path('get_submissions/', get_submissions),
     path('get_submissions/<search_text>/', get_submissions),
-    path('candidate_test_summary/<test_id>/', candidate_test_summary)
+    path('candidate_test_summary/<test_id>/', candidate_test_summary),
+    path('download_test_details/<test_id>/', download_test_details),
+    path('share_test_details/',share_test_details),
 ]

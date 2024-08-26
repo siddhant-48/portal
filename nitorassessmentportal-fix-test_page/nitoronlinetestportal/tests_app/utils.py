@@ -6,6 +6,8 @@ from questions.models import MultipleChoicesAnswer, ProgramTestCase, Question
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from jinja2 import Environment, FileSystemLoader
 from nitoronlinetestportal.settings import SENDER_EMAIL, EMAIL_PASSWORD
 
@@ -126,10 +128,9 @@ def calculate_score(candidate_answers, correct_value, q_type, difficulty, data):
     return question_score, total_score
 
 
-def send_email(recipient, subject, template_path, data):
+def send_email(recipient, subject, template_path, data, attachments=None):
     # Load the template
     env = Environment(loader=FileSystemLoader('.'))
-    
     template = env.get_template(template_path)
 
     # Render the template with data
@@ -139,11 +140,24 @@ def send_email(recipient, subject, template_path, data):
     msg = MIMEMultipart()
     msg['Subject'] = subject
     msg['From'] = SENDER_EMAIL
+    msg['To'] = recipient
     msg.attach(MIMEText(html_content, 'html'))
-    
+
+    # Attach files if any
+    if attachments:
+        for attachment in attachments:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                'Content-Disposition',
+                f'attachment; filename="Test Report.pdf"'
+            )
+            msg.attach(part)
+
     # Send the email
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
         smtp.starttls()
         smtp.login(SENDER_EMAIL, EMAIL_PASSWORD)
-        msg['To'] = recipient
         smtp.send_message(msg)
+        print("Email sent successful ")

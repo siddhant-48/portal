@@ -41,7 +41,7 @@
 import base64
 import json
 from datetime import datetime
-
+from django.http import HttpResponse
 from django.conf import settings
 from django.utils import timezone
 
@@ -53,6 +53,7 @@ from tests_app.models import TestAllocations, TestsDetails, UserTests
 from tests_app.serializers import (TestAllocationsSerialiazer,
                                    TestDetailSerializer, TestSummarySerialiazer, UserTestsSerialiazer, SingleUserTestsSerialiazer)
 from utils.response_handlers import standard_json_response
+from utils.pdf_response_handlers import generate_pdf
 from datetime import datetime
 import threading
 from .utils import get_total_duration, validate_single_question_details, send_email, calculate_score
@@ -646,3 +647,40 @@ def candidate_test_summary(request, test_id):
     user_test_details = SingleUserTestsSerialiazer(instance = user_test)
     return standard_json_response(data=user_test_details.data)
 
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
+def download_test_details(request, test_id):
+    user_test = UserTests.objects.filter(id=test_id).last()
+    if not user_test:
+        return standard_json_response(message='Test record does not exist', status_code=status.HTTP_404_NOT_FOUND)
+
+    user_test_details = SingleUserTestsSerialiazer(instance=user_test).data
+
+    pdf_file = generate_pdf(user_test_details)
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="test_details_{test_id}.pdf"'
+
+    return response
+
+
+@api_view(('POST',))
+# @permission_classes((IsAuthenticated, ))
+def share_test_details(request):
+    user_test_id = request.data.get('userTestId')
+    share_email_id = request.data.get('shareEmailId')
+    user_test = UserTests.objects.filter(id=user_test_id).last()
+    if not user_test:
+        return standard_json_response(message='Test record does not exist', status_code=status.HTTP_404_NOT_FOUND)
+    user_test_details = SingleUserTestsSerialiazer(instance=user_test).data
+    pdf_file = generate_pdf(user_test_details)
+    template_path = "templates/report.html"
+    send_email(
+        recipient=share_email_id,
+        subject='User Test Report',
+        template_path = template_path,
+        data = {},
+        attachments=[pdf_file],
+    )
+    return standard_json_response(data={"message":"Successfull"})
