@@ -43,7 +43,7 @@ const GenerateTest = () => {
   )
   const [isCompleted, setIsCompleted] = useState(false)
   const path = search.pathname.split('/')
-  
+
   const [result, setResult] = useState({
     score: 0,
     correctAnswers: 0,
@@ -75,29 +75,29 @@ const GenerateTest = () => {
   }, [])
 
   // Use effect for handling the page switch
-  // useEffect(() => {
-  //   const pageSwitchCount = parseInt(localStorage.getItem('screen_change')) || 0
-  //   const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
+  useEffect(() => {
+    const pageSwitchCount = parseInt(localStorage.getItem('screen_change')) || 0
+    const isExamCompleted = localStorage.getItem('is_exam_completed') === 'true'
 
-  //   // Update the state to reflect exam completion
-  //   if (isExamCompleted) {
-  //     setIsCompleted(true)
-  //   } else if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
-  //     const newSwitchCount = pageSwitchCount + 1
-  //     localStorage.setItem('screen_change', newSwitchCount)
+    // Update the state to reflect exam completion
+    if (isExamCompleted) {
+      setIsCompleted(true)
+    } else if (pageVisibilityStatus && !isCompleted && !isTestFinished) {
+      const newSwitchCount = pageSwitchCount + 1
+      localStorage.setItem('screen_change', newSwitchCount)
 
-  //     if (newSwitchCount >= 3) {
-  //       alert('Your exam link has expired due to switching browser tabs frequently.')
-  //       localStorage.setItem('is_exam_completed', 'true')
-  //       setIsCompleted(true)
-  //       saveAnswer(question_details, '', 0, true)
-  //     } else {
-  //       alert(
-  //         `Warning ${newSwitchCount}: You are not allowed to leave the page. Your progress may be lost.`,
-  //       )
-  //     }
-  //   }
-  // }, [pageVisibilityStatus, isCompleted, isTestFinished])
+      if (newSwitchCount >= 3) {
+        alert('Your exam link has expired due to switching browser tabs frequently.')
+        localStorage.setItem('is_exam_completed', 'true')
+        setIsCompleted(true)
+        saveAnswer(question_details, '', 0, true)
+      } else {
+        alert(
+          `Warning ${newSwitchCount}: You are not allowed to leave the page. Your progress may be lost.`,
+        )
+      }
+    }
+  }, [pageVisibilityStatus, isCompleted, isTestFinished])
 
   // Test Score set at end
   useEffect(() => {
@@ -109,7 +109,6 @@ const GenerateTest = () => {
         : {},
     )
   }, [showResult])
-
 
   useEffect(() => {
     if (!isTestFinished) {
@@ -586,6 +585,33 @@ const GenerateTest = () => {
     setIsModalOpen(false)
   }
 
+  //devtools
+  document.addEventListener('contextmenu', (event) => {
+    event.preventDefault()
+    // alert('You will be logged out of Exam!!')
+  })
+
+  // Disable specific keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+  const [devTools, setDevTools] = useState(0)
+  document.onkeydown = function (event) {
+    if (
+      event.key === 'F12' ||
+      (event.ctrlKey && event.shiftKey && event.key === 'I') ||
+      (event.ctrlKey && event.shiftKey && event.key === 'J') ||
+      (event.ctrlKey && event.key === 'U') ||
+      (event.fn && event.key === 'U')
+    ) {
+      if (devTools == 1) {
+        alert('You have logged out of Exam!!')
+        setIsCompleted(true)
+      } else {
+        alert('Last Warning, you will be logged out of Exam!!')
+        setDevTools(devTools + 1)
+        event.preventDefault()
+      }
+    }
+  }
+
   return (
     <>
       <Modal
@@ -639,7 +665,13 @@ const GenerateTest = () => {
                 <div className="row">
                   {/* Time Left */}
                   <div className="col-4">
-                    <CountdownTimer testDuration = {JSON.parse(localStorage.getItem('user_details'))['generated_question']['duration']}/>
+                    <CountdownTimer
+                      testDuration={
+                        JSON.parse(localStorage.getItem('user_details'))[
+                          'generated_question'
+                        ]['duration']
+                      }
+                    />
                   </div>
                   <div className="question-tracker">
                     {positionInfo && <span>{positionInfo}</span>}
@@ -649,9 +681,7 @@ const GenerateTest = () => {
                 <br></br>
                 {/* Stepper */}
                 {/* Question Name */}
-                <div className="question-container">
-                  {question_details.name}
-                </div>
+                <div className="question-container">{question_details.name}</div>
                 {/* Question Details */}
                 {/* <div className="container"> */}
                 {/* MCQ Question Type */}
@@ -715,7 +745,7 @@ const GenerateTest = () => {
                         </Col>
                       </Row>
                     </div>
-                    <Row justify={"space-between"}>
+                    <Row justify={'space-between'}>
                       <Col span={6}>
                         {showPreviousButton && (
                           <button
@@ -726,7 +756,7 @@ const GenerateTest = () => {
                           </button>
                         )}
                       </Col>
-                      <Col  span={6}>
+                      <Col span={6}>
                         <button
                           className="navigation-button"
                           onClick={() => goToNextQuestion(question_details)}
