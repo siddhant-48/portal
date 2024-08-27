@@ -208,3 +208,13 @@
 .li-tracker {
   list-style-type: none;
 }
+
+.highlighted {
+  border: 2px solid red;
+  position: relative;
+}
+/* .ant-menu-item-active {
+  border: 2px solid rgb(42, 169, 17);
+  position: relative;
+  color: #b21d21 !important;
+} */

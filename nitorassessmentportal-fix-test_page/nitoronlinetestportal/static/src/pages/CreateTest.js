@@ -20,6 +20,7 @@ import EditTest from '../components/EditTest'
 import PropTypes from 'prop-types'
 import '../styles/create-test.css'
 import TestSummary from '../components/TestSummary'
+import { languageOptions } from '../Utils/constants'
 
 const { Panel } = Collapse
 
@@ -117,15 +118,21 @@ const CreateTest = ({ setSelectedKey, history }) => {
     },
     {
       title: 'Languages',
+      dataIndex: 'question_details',
+      key: 'languages',
+      filters: languageOptions.map((lang) => ({
+        text: lang.label,
+        value: lang.value,
+      })),
+      onFilter: (value, testRecord) =>
+        testRecord.question_details.some((ques) => ques.language === value),
       render: (_, testRecord) => (
         <>
-          {
-            <p>
-              {testRecord.question_details.map((ques, index) => {
-                return (index ? ',' : '') + ques.language
-              })}
-            </p>
-          }
+          <p>
+            {testRecord.question_details
+              .map((ques, index) => (index ? ', ' : '') + ques.language)
+              .join('')}
+          </p>
         </>
       ),
     },
@@ -138,9 +145,14 @@ const CreateTest = ({ setSelectedKey, history }) => {
       title: 'Status',
       dataIndex: 'is_active',
       key: 'is_active',
+      filters: [
+        { text: 'Active', value: true },
+        { text: 'Deactivate', value: false },
+      ],
+      onFilter: (value, testRecord) => testRecord.is_active === value,
       render: (_, testRecord) => (
         <>
-          {testRecord.is_active == true ? (
+          {testRecord.is_active === true ? (
             <Tag color="blue">Active</Tag>
           ) : (
             <Tag color="pink">Deactivate</Tag>
@@ -148,6 +160,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
         </>
       ),
     },
+
     {
       title: 'End Date',
       dataIndex: 'end_date',
@@ -541,12 +554,12 @@ const CreateTest = ({ setSelectedKey, history }) => {
                       <p>Medium: {item.medium_mcq_count}</p>
                       <p>Hard: {item.hard_mcq_count}</p>
                     </div>
-                    <div className="details-column">
+                    {/* <div className="details-column">
                       <h3>Program</h3>
                       <p>Easy: {item.easy_program_count}</p>
                       <p>Medium: {item.medium_program_count}</p>
                       <p>Hard: {item.hard_program_count}</p>
-                    </div>
+                    </div> */}
                   </div>
                 </Panel>
               </Collapse>

@@ -509,42 +509,48 @@ const GenerateTest = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMessage, setModalMessage] = useState('')
 
+  const [matchedQuestionIds, setMatchedQuestionIds] = useState([])
+
   //finish modal
   const showFinishModal = () => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     let answeredCount = 0
     let unansweredCount = 0
-    //get status
-    Object.keys(userDetails.answers).forEach((questionId) => {
-      const answerDetails = userDetails.answers[questionId]
-      if (answerDetails && answerDetails.selectedAnswerIndex) {
-        console.log(
-          `Question ID ${questionId} is answered with: ${answerDetails.selectedAnswerIndex}`,
-        )
-      } else {
-        console.log(`Question ID ${questionId} is unanswered or null.`)
+
+    const answers = userDetails.answers || {}
+
+    const itemKeys = items.reduce((acc, item) => {
+      if (item.children) {
+        item.children.forEach((child) => acc.push(child.key))
       }
-    })
-    // Check the status of each MCQ
-    Object.keys(userDetails.answers).forEach((questionId) => {
-      const answerDetails = userDetails.answers[questionId]
-      if (answerDetails && answerDetails.selectedAnswerIndex !== null) {
-        answeredCount++
-      } else {
-        unansweredCount++
-      }
+      return acc
+    }, [])
+
+    const matchedQuestionIds = itemKeys.filter((key) => {
+      const questionId = key.toString()
+      const answerDetails = answers[questionId]
+      const isAnswered = answerDetails && answerDetails.selectedAnswerIndex !== null
+      return !isAnswered
     })
 
-    const totalMCQs = Object.keys(userDetails.answers).length
-    unansweredCount = totalMCQs - answeredCount // Calculate unanswered
+    // Update the state with matched question IDs
+    setMatchedQuestionIds(matchedQuestionIds)
 
-    // Display the counts in the modal
+    answeredCount = Object.keys(answers).filter((questionId) => {
+      const answerDetails = answers[questionId]
+      return answerDetails && answerDetails.selectedAnswerIndex !== null
+    }).length
+
+    const totalMCQs = itemKeys.length
+    unansweredCount = totalMCQs - answeredCount
+
     if (unansweredCount === 0) {
       setModalMessage(`All questions answered: ${answeredCount}`)
     } else {
       setModalMessage(`Answered: ${answeredCount}, Unanswered: ${unansweredCount}`)
     }
-    setIsModalOpen(true) // Trigger the modal open
+
+    setIsModalOpen(true)
   }
 
   const handleFinishCancel = () => {
@@ -568,7 +574,6 @@ const GenerateTest = () => {
       }
     })
 
-    // Extract user_question_answer_list data from userDetails
     let user_question_answer_list = Object.values(userDetails.generated_question)
       .filter((value) => Array.isArray(value))
       .flat()
@@ -585,7 +590,7 @@ const GenerateTest = () => {
     setIsModalOpen(false)
   }
 
-  //devtools
+  // devtools
   document.addEventListener('contextmenu', (event) => {
     event.preventDefault()
     // alert('You will be logged out of Exam!!')
@@ -612,12 +617,44 @@ const GenerateTest = () => {
     }
   }
 
+  useEffect(() => {
+    //highlight menu items
+    matchedQuestionIds.forEach((key) => {
+      highlightMenuItem(key)
+    })
+  }, [matchedQuestionIds])
+
+  const highlightMenuItem = (key) => {
+    const menuItems = document.querySelectorAll(`[data-menu-id="${key}"]`)
+    menuItems.forEach((menuItem) => {
+      menuItem.classList.add('highlighted')
+    })
+  }
+
+  const renderMenuItems = (menuItems) => {
+    return menuItems.map((item) => {
+      if (item.children) {
+        return (
+          <Menu.SubMenu key={item.key} title={item.label}>
+            {renderMenuItems(item.children)}
+          </Menu.SubMenu>
+        )
+      }
+      console.log(matchedQuestionIds)
+
+      return (
+        <Menu.Item key={item.key} data-menu-id={item.key}>
+          {item.label}
+        </Menu.Item>
+      )
+    })
+  }
   return (
     <>
       <Modal
         title="Finish Test Confirmation"
         open={isModalOpen}
-        onOk={() => handleOk(question_details)} // Pass question_details here
+        onOk={() => handleOk(question_details)}
         onCancel={handleFinishCancel}
         okText="Finish"
         cancelText="Cancel"
@@ -657,9 +694,10 @@ const GenerateTest = () => {
                   selectedKeys={defaultMenuKey}
                   mode="inline"
                   theme="dark"
-                  items={items}
                   onClick={onMenuClick}
-                />
+                >
+                  {renderMenuItems(items)}
+                </Menu>
               </div>
               <div className="quiz-questions-box" style={{ width: '100%' }}>
                 <div className="row">
