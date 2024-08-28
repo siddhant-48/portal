@@ -199,7 +199,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   className="bi bi-link-45deg size-6 text-primary"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -223,7 +223,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -247,7 +247,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -274,7 +274,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   className="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -535,7 +535,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
       {/* View Test Modal */}
       {state.isViewTestModalOpen && (
         <Modal
-          title={state.rowRecord.name}
+          title={'Test Name: ' + state.rowRecord.name}
           open={state.isViewTestModalOpen}
           onCancel={closeDetailModal}
           footer={null}

@@ -359,7 +359,7 @@ const UserTestSummary = (props) => {
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   class="bi bi-download"
                   viewBox="0 0 16 16"
                 >
@@ -378,7 +378,7 @@ const UserTestSummary = (props) => {
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   className="bi bi-share"
                   viewBox="0 0 16 16"
                 >

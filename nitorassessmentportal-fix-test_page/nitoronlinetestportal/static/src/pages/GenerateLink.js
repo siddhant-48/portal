@@ -154,7 +154,7 @@ const GenerateLink = (props) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   class="size-6"
                   viewBox="0 0 16 16"
                   onClick={() =>
@@ -175,7 +175,7 @@ const GenerateLink = (props) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="#3B71CA"
+                  fill="#b21d21"
                   class="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => goToScreeningTest(record)}

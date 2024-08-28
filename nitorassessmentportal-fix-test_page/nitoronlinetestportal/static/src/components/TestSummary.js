@@ -10,6 +10,7 @@ const TestSummary = ({ testRecord, isSummaryModalOpen, closeSummaryModal }) => {
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('params', pagination, filters, sorter, extra)
   }
+  console.log(apiData)
 
   const columns = [
     {
@@ -21,6 +22,8 @@ const TestSummary = ({ testRecord, isSummaryModalOpen, closeSummaryModal }) => {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      sorter: (a, b) => a.email.localeCompare(b.email),
+      sortDirections: ['ascend', 'descend'],
     },
     {
       title: 'Correct Answers',
@@ -45,12 +48,14 @@ const TestSummary = ({ testRecord, isSummaryModalOpen, closeSummaryModal }) => {
       title: 'Score',
       dataIndex: 'score',
       key: 'score',
+      sorter: (a, b) => a.score - b.score,
+      sortDirections: ['ascend', 'descend'],
     },
   ]
 
   return (
     <Modal
-      title={testRecord.name}
+      title={'Test Name: ' + testRecord.name}
       open={isSummaryModalOpen}
       onCancel={closeSummaryModal}
       width={900}

@@ -105,7 +105,9 @@ const Question = (props) => {
   }, [form3, testDetails])
 
   useEffect(() => {
-    setFetchUrl(`questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`)
+    setFetchUrl(
+      `questions?language=${lang}&type=${type}&difficulty=${difficulty}&page=${page}&page_size=${pageSize}`,
+    )
   }, [lang, type, difficulty, page, pageSize])
 
   //filter questions
@@ -209,38 +211,38 @@ const Question = (props) => {
       width: 550,
       render: (text) => <RenderQuestions text={text} />,
     },
-    {
-      title: 'Question Type',
-      dataIndex: 'type',
-      filters: filterQuestionsType(),
-      filterSearch: true,
-      key: 'type',
-      width: 230,
-      onFilter: (value, record) => {
-        const typeLabel = mapQuestionType(record.type)
-        return typeLabel === value
-      },
-      render: (_, record) => {
-        const typeLabel = mapQuestionType(record.type)
-        return (
-          <>
-            {typeLabel && (
-              <Tag
-                color={
-                  typeLabel.includes('MCQ')
-                    ? 'purple'
-                    : typeLabel.includes('Program')
-                      ? 'pink'
-                      : 'red'
-                }
-              >
-                {typeLabel}
-              </Tag>
-            )}
-          </>
-        )
-      },
-    },
+    // {
+    //   title: 'Question Type',
+    //   dataIndex: 'type',
+    //   filters: filterQuestionsType(),
+    //   filterSearch: true,
+    //   key: 'type',
+    //   width: 230,
+    //   onFilter: (value, record) => {
+    //     const typeLabel = mapQuestionType(record.type)
+    //     return typeLabel === value
+    //   },
+    //   render: (_, record) => {
+    //     const typeLabel = mapQuestionType(record.type)
+    //     return (
+    //       <>
+    //         {typeLabel && (
+    //           <Tag
+    //             color={
+    //               typeLabel.includes('MCQ')
+    //                 ? 'purple'
+    //                 : typeLabel.includes('Program')
+    //                   ? 'pink'
+    //                   : 'red'
+    //             }
+    //           >
+    //             {typeLabel}
+    //           </Tag>
+    //         )}
+    //       </>
+    //     )
+    //   },
+    // },
     {
       title: 'Difficulty',
       dataIndex: 'difficulty',
@@ -288,7 +290,7 @@ const Question = (props) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
+                  fill="#b21d21"
                   class="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -310,7 +312,7 @@ const Question = (props) => {
                 <input checked="checked" type="checkbox" readOnly />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
+                  fill="#b21d21"
                   class="size-6"
                   viewBox="0 0 16 16"
                   onClick={() => {
@@ -488,8 +490,8 @@ const Question = (props) => {
       delete program_test_cases['question_details']
       values['program_test_cases'] = program_test_cases
     }
-    console.log(record)
-    values['difficulty'] = record.difficulty
+
+    values['difficulty'] = values.difficulty || record.difficulty
 
     //manual date
     const formatDateToISO = (date) => {
@@ -504,6 +506,7 @@ const Question = (props) => {
       ...values,
       multiple_options: questionDetail ? values['multiple_options'] : null,
       program_test_cases: testDetails ? values['program_test_cases'] : null,
+      type: 1, //for mcq payload tentative
     }
 
     // Ensure unwanted fields are not in the nested objects
@@ -770,6 +773,12 @@ const Question = (props) => {
                       </Option>
                     ))}
                   </Select>
+                ) : item.title === 'Difficulty' ? (
+                  <Select placeholder="Select Difficulty" style={{ width: '100%' }}>
+                    <Option value={1}>Easy</Option>
+                    <Option value={2}>Medium</Option>
+                    <Option value={3}>Hard</Option>
+                  </Select>
                 ) : (
                   <Input />
                 )}
@@ -777,7 +786,7 @@ const Question = (props) => {
             ))}
             {questionDetail ? (
               <Collapse defaultActiveKey={['0']} key="question-detail-collapse">
-                <Panel header="Question Details" key="0">
+                <Panel header="Option Details" key="0">
                   <Form
                     form={form2}
                     labelCol={{ span: 8 }}
@@ -804,7 +813,15 @@ const Question = (props) => {
                           },
                         ]}
                       >
-                        {item.title === 'Question Type' ? (
+                        {item.dataIndex === 'correct_value' ? (
+                          <Select placeholder="Select Correct Answer">
+                            {optionList.slice(0, 4).map((_, idx) => (
+                              <Select.Option key={idx + 1} value={idx + 1}>
+                                {form.getFieldValue(`option${idx + 1}`)}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        ) : item.title === 'Question Type' ? (
                           <Form.Item
                             noStyle
                             shouldUpdate={(prevValues, currentValues) =>

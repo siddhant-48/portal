@@ -251,7 +251,7 @@ const EditTest = ({
 
   const [selectedSections, setSelectedSections] = useState([
     'Add_MCQs',
-    'Add_Programs',
+    // 'Add_Programs',
   ])
 
   const handleSectionChange = (value) => {
@@ -319,6 +319,7 @@ const EditTest = ({
                                       options={languageOptions}
                                       onChange={handleChange}
                                       style={{ width: 200 }}
+                                      disabled
                                     />
                                   )
                                 } else if (item.dataIndex === 'add_sections') {
