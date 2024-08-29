@@ -13,6 +13,7 @@ import {
   Collapse,
   Tooltip,
   Tag,
+  Divider,
 } from 'antd'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import { baseURL, TestLinkTable } from '../Utils/constants'
@@ -362,6 +363,7 @@ const GenerateLink = (props) => {
             setTestRecord({})
           }}
         >
+          <Divider />
           <Form
             form={form}
             name="basic"
@@ -440,11 +442,12 @@ const GenerateLink = (props) => {
       {rowRecord && (
         <>
           <Modal
-            title={'Test Name: ' + record.test_details.name}
+            title={record.test_details.name}
             open={rowRecord}
             onOk={handleOk}
             onCancel={closeGeneratedTestLinkModal}
           >
+            <Divider />
             {record.test_details?.question_details?.map((item, index) => (
               <div key={`collapse-index-${index}`} className="collapse-container">
                 <Collapse defaultActiveKey={['0']} className="custom-collapse">

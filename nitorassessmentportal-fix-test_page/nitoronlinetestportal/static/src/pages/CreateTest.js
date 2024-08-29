@@ -11,6 +11,7 @@ import {
   Space,
   Tooltip,
   Tag,
+  Divider,
 } from 'antd'
 import { ACTION } from '../Utils/constants'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
@@ -535,12 +536,13 @@ const CreateTest = ({ setSelectedKey, history }) => {
       {/* View Test Modal */}
       {state.isViewTestModalOpen && (
         <Modal
-          title={'Test Name: ' + state.rowRecord.name}
+          title={state.rowRecord.name}
           open={state.isViewTestModalOpen}
           onCancel={closeDetailModal}
           footer={null}
           className="custom-modal"
         >
+          <Divider />
           {state.rowRecord?.question_details?.map((item, index) => (
             <div key={`collapse-index-${index}`} className="collapse-container">
               <Collapse defaultActiveKey={['0']} className="custom-collapse">

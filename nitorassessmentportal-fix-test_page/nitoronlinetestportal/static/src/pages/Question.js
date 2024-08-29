@@ -45,12 +45,12 @@ const Question = (props) => {
   const [record, setRecord] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [formEditModal] = Form.useForm()
   const [addModal] = Form.useForm()
 
-  const [form2] = Form.useForm()
+  const [formModalOptions] = Form.useForm()
 
-  const [form3] = Form.useForm()
+  // const [formModalCasesOptions] = Form.useForm()
 
   const [questionDetail, setquestionDetail] = useState(null)
   const [addQuestionDetail, setAddQuestionDetail] = useState(null)
@@ -71,10 +71,11 @@ const Question = (props) => {
   }
 
   const handleEditCancel = () => {
+    addModal.resetFields()
     setRecord(null)
-    form.resetFields()
-    form2.resetFields()
-    form3.resetFields()
+    formEditModal.resetFields()
+    formModalOptions.resetFields()
+    // formModalCasesOptions.resetFields()
     setIsModalOpen(false)
 
     setIsEditModalOpen(false)
@@ -93,16 +94,16 @@ const Question = (props) => {
   }, [])
 
   useEffect(() => {
-    form.setFieldsValue(record)
-  }, [form, record])
+    formEditModal.setFieldsValue(record)
+  }, [formEditModal, record])
 
   useEffect(() => {
-    form2.setFieldsValue(questionDetail)
-  }, [form2, questionDetail])
+    formModalOptions.setFieldsValue(questionDetail)
+  }, [formModalOptions, questionDetail])
 
-  useEffect(() => {
-    form3.setFieldsValue(testDetails)
-  }, [form3, testDetails])
+  // useEffect(() => {
+  //   formModalCasesOptions.setFieldsValue(testDetails)
+  // }, [formModalCasesOptions, testDetails])
 
   useEffect(() => {
     setFetchUrl(
@@ -475,21 +476,21 @@ const Question = (props) => {
   }
 
   const onFinish = async (values) => {
-    var multiple_options = Object.keys(form2.getFieldValue()).length
-      ? form2.getFieldValue()
+    var multiple_options = Object.keys(formModalOptions.getFieldValue()).length
+      ? formModalOptions.getFieldValue()
       : questionDetail
-    var program_test_cases = Object.keys(form3.getFieldValue()).length
-      ? form3.getFieldValue()
-      : testDetails
+    // var program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
+    //   ? formModalCasesOptions.getFieldValue()
+    //   : testDetails
 
     if (multiple_options) {
       delete multiple_options['question_details']
       values['multiple_options'] = multiple_options
     }
-    if (program_test_cases) {
-      delete program_test_cases['question_details']
-      values['program_test_cases'] = program_test_cases
-    }
+    // if (program_test_cases) {
+    //   delete program_test_cases['question_details']
+    //   values['program_test_cases'] = program_test_cases
+    // }
 
     values['difficulty'] = values.difficulty || record.difficulty
 
@@ -544,14 +545,13 @@ const Question = (props) => {
   }
 
   const onAddFinish = async (values) => {
-    let multiple_options = Object.keys(form2.getFieldValue()).length
-      ? form2.getFieldValue()
+    let multiple_options = Object.keys(formModalOptions.getFieldValue()).length
+      ? formModalOptions.getFieldValue()
       : questionDetail
-    let program_test_cases = Object.keys(form3.getFieldValue()).length
-      ? form3.getFieldValue()
-      : testDetails
+    // let program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
+    //   ? formModalCasesOptions.getFieldValue()
+    //   : testDetails
 
-    //
 
     let temp = {
       option1: values.option1,
@@ -721,13 +721,13 @@ const Question = (props) => {
         <Modal
           title="Edit Question"
           open={isEditModalOpen}
-          onOk={form.submit}
+          onOk={formEditModal.submit}
           onCancel={handleEditCancel}
           okText="Update"
         >
           <Divider />
           <Form
-            form={form}
+            form={formEditModal}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: 600 }}
@@ -757,7 +757,7 @@ const Question = (props) => {
                     }
                   >
                     {() => {
-                      const type = form.getFieldValue('type')
+                      const type = formEditModal.getFieldValue('type')
                       return (
                         <Input
                           disabled
@@ -789,12 +789,12 @@ const Question = (props) => {
               <Collapse defaultActiveKey={['0']} key="question-detail-collapse">
                 <Panel header="Option Details" key="0">
                   <Form
-                    form={form2}
+                    form={formModalOptions}
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
                     key="panel_form_question"
-                    initialValues={questionDetail}
+                    // initialValues={questionDetail}
                     onFinish={onFinish}
                     autoComplete="off"
                   >
@@ -815,10 +815,21 @@ const Question = (props) => {
                         ]}
                       >
                         {item.dataIndex === 'correct_value' ? (
-                          <Select placeholder="Select Correct Answer">
+                          <Select
+                            placeholder="Select Correct Answer"
+                            onChange={(value) => {
+                              const selectedOptionText = formModalOptions.getFieldValue(
+                                `option${value}`,
+                              )
+                              formModalOptions.setFieldsValue({
+                                correct_value: selectedOptionText,
+                              })
+                            }}
+                          >
                             {optionList.slice(0, 4).map((_, idx) => (
                               <Select.Option key={idx + 1} value={idx + 1}>
-                                {form.getFieldValue(`option${idx + 1}`)}
+                                {formModalOptions.getFieldValue(`option${idx + 1}`) ||
+                                  `Option ${idx + 1}`}
                               </Select.Option>
                             ))}
                           </Select>
@@ -830,7 +841,7 @@ const Question = (props) => {
                             }
                           >
                             {() => {
-                              const type = form2.getFieldValue('type')
+                              const type = formModalOptions.getFieldValue('type')
                               return (
                                 <Input
                                   disabled
@@ -854,7 +865,7 @@ const Question = (props) => {
               // <Collapse defaultActiveKey={['0']} key="test-detail-collapse">
               //   <Panel header="Test Details" key="0">
               //     <Form
-              //       form={form3}
+              //       form={formModalCasesOptions}
               //       labelCol={{ span: 8 }}
               //       wrapperCol={{ span: 16 }}
               //       style={{ maxWidth: 600 }}
@@ -887,7 +898,7 @@ const Question = (props) => {
               //               }
               //             >
               //               {() => {
-              //                 const type = form3.getFieldValue('type')
+              //                 const type = formModalCasesOptions.getFieldValue('type')
               //                 return (
               //                   <Input
               //                     disabled
@@ -923,8 +934,6 @@ const Question = (props) => {
             form={addModal}
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
-            // style={{ maxWidth: 300 }}
-            // initialValues={record}
             onFinish={onAddFinish}
             onValuesChange={handleValuesChange}
             key="main_form"
@@ -999,7 +1008,7 @@ const Question = (props) => {
 
             {addQuestionDetail && (
               <Collapse key="collapse-question-detail" defaultActiveKey={['0']}>
-                <Panel header="Question Details" key="0">
+                <Panel header="Option Details" key="0">
                   {addQuestionDetail.map((item, index) => (
                     <Form.Item
                       key={`form-item-${index}`}
@@ -1009,15 +1018,34 @@ const Question = (props) => {
                         {
                           required: !(
                             item.dataIndex === 'option3' ||
-                            item.dataIndex === 'option4' ||
-                            item.dataIndex === 'case3' ||
-                            item.dataIndex === 'case4'
+                            item.dataIndex === 'option4'
                           ),
                           message: `Please input your ${item.title}`,
                         },
                       ]}
                     >
-                      <Input style={{ width: '100%' }} />
+                      {item.dataIndex === 'correct_value' ? (
+                        <Select
+                          placeholder="Select Correct Answer"
+                          onChange={(value) => {
+                            const selectedOptionText = addModal.getFieldValue(
+                              `option${value}`,
+                            )
+                            addModal.setFieldsValue({
+                              correct_value: selectedOptionText,
+                            })
+                          }}
+                        >
+                          {[1, 2, 3, 4].map((idx) => (
+                            <Option key={idx} value={idx}>
+                              {addModal.getFieldValue(`option${idx}`) ||
+                                `Option ${idx}`}
+                            </Option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Input style={{ width: '100%' }} />
+                      )}
                     </Form.Item>
                   ))}
                 </Panel>

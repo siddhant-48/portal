@@ -38,3 +38,5 @@ urllib3==2.2.2
 virtualenv==20.23.0
 Jinja2
 fpdf==1.7.2
+matplotlib==3.9.2
+numpy==2.1.0

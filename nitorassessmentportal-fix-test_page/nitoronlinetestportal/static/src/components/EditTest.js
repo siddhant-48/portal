@@ -11,6 +11,7 @@ import {
   Row,
   DatePicker,
   Col,
+  Divider,
 } from 'antd'
 import {
   CreateTestForm_1,
@@ -267,6 +268,7 @@ const EditTest = ({
       width={900}
       okText="Submit"
     >
+      <Divider />
       <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
         <Form
           form={form}
