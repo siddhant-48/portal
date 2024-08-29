@@ -71,7 +71,10 @@ const GenerateLink = (props) => {
 
   if (testList) {
     testList.map((data, index) => {
-      if (!filter_test_data.some((item) => data.name === item.value) && data.is_active) {
+      if (
+        !filter_test_data.some((item) => data.name === item.value) &&
+        data.is_active
+      ) {
         filter_test_data.push({ label: data.name, value: data.id })
       }
     })
@@ -340,7 +343,9 @@ const GenerateLink = (props) => {
         <Table
           className="table-generate"
           columns={list_columns}
-          dataSource={apiData ? apiData.data.filter((item) => item.test_details.is_active) : []}
+          dataSource={
+            apiData ? apiData.data.filter((item) => item.test_details.is_active) : []
+          }
           onChange={onTableChange}
         />
         {/* modal */}
@@ -435,7 +440,7 @@ const GenerateLink = (props) => {
       {rowRecord && (
         <>
           <Modal
-            title={record.test_details.name}
+            title={'Test Name: ' + record.test_details.name}
             open={rowRecord}
             onOk={handleOk}
             onCancel={closeGeneratedTestLinkModal}

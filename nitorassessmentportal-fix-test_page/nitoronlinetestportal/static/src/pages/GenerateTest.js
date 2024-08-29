@@ -669,7 +669,7 @@ const GenerateTest = () => {
           </Typography.Text>
           <Divider dashed style={{ margin: '15px' }} />
           <Typography.Text strong style={{ fontSize: '18px', color: '#fa541c' }}>
-            Are you sure you want to Finish the Test?
+            Are you sure you want to finish the test?
           </Typography.Text>
         </div>
       </Modal>

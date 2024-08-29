@@ -139,8 +139,8 @@ const formatData = (data) => {
                     ),
                   )}
                 </div>
-                <div>{`Candidate Answer: ${question.candidate_answers === null ? 'Not answered' : question.candidate_answers}`}</div>
-                <div>{`Correct Answer: ${question.correct_value}`}</div>
+                {/* <div>{`Candidate Answer: ${question.candidate_answers === null ? 'Not answered' : question.candidate_answers}`}</div>
+                <div>{`Correct Answer: ${question.correct_value}`}</div> */}
               </>
             ),
           })
@@ -179,6 +179,8 @@ const UserTestSummary = (props) => {
       )
     : 0
 
+    console.log(apiData);
+    
   const items = [
     {
       key: '1',
@@ -230,7 +232,10 @@ const UserTestSummary = (props) => {
             <Descriptions.Item label="Test Name">
               {apiData?.data?.test_name}
             </Descriptions.Item>
-            <Descriptions.Item label="Complition Date">
+            <Descriptions.Item label="Completion Date">
+              {/* {apiData?.data?.created_at} */}
+            </Descriptions.Item>
+            <Descriptions.Item label="Allocation Date">
               {apiData?.data?.created_at}
             </Descriptions.Item>
           </Descriptions>

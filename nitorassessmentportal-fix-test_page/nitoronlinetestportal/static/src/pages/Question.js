@@ -639,6 +639,7 @@ const Question = (props) => {
     // setAddQuestionDetail(false)
     handleAddCancel()
   }
+  console.log(questionDetail)
 
   return (
     <>
@@ -849,61 +850,62 @@ const Question = (props) => {
                 </Panel>
               </Collapse>
             ) : (
-              <Collapse defaultActiveKey={['0']} key="test-detail-collapse">
-                <Panel header="Test Details" key="0">
-                  <Form
-                    form={form3}
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 }}
-                    key="panel_form_test"
-                    initialValues={testDetails}
-                    onFinish={onFinish}
-                    autoComplete="off"
-                  >
-                    {caseList?.map((item, index) => (
-                      <Form.Item
-                        style={item.title === 'Action' ? { display: 'none' } : null}
-                        key={`form-item-test-${index}`}
-                        label={item.title}
-                        name={item.dataIndex}
-                        rules={[
-                          {
-                            required: !(
-                              item.dataIndex === 'case3' ||
-                              item.dataIndex === 'case4'
-                            ),
-                            message: `Please input your ${item.title}`,
-                          },
-                        ]}
-                      >
-                        {item.title === 'Question Type' ? (
-                          <Form.Item
-                            noStyle
-                            shouldUpdate={(prevValues, currentValues) =>
-                              prevValues.type !== currentValues.type
-                            }
-                          >
-                            {() => {
-                              const type = form3.getFieldValue('type')
-                              return (
-                                <Input
-                                  disabled
-                                  value={
-                                    type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
-                                  }
-                                />
-                              )
-                            }}
-                          </Form.Item>
-                        ) : (
-                          <Input />
-                        )}
-                      </Form.Item>
-                    ))}
-                  </Form>
-                </Panel>
-              </Collapse>
+              <></>
+              // <Collapse defaultActiveKey={['0']} key="test-detail-collapse">
+              //   <Panel header="Test Details" key="0">
+              //     <Form
+              //       form={form3}
+              //       labelCol={{ span: 8 }}
+              //       wrapperCol={{ span: 16 }}
+              //       style={{ maxWidth: 600 }}
+              //       key="panel_form_test"
+              //       initialValues={testDetails}
+              //       onFinish={onFinish}
+              //       autoComplete="off"
+              //     >
+              //       {caseList?.map((item, index) => (
+              //         <Form.Item
+              //           style={item.title === 'Action' ? { display: 'none' } : null}
+              //           key={`form-item-test-${index}`}
+              //           label={item.title}
+              //           name={item.dataIndex}
+              //           rules={[
+              //             {
+              //               required: !(
+              //                 item.dataIndex === 'case3' ||
+              //                 item.dataIndex === 'case4'
+              //               ),
+              //               message: `Please input your ${item.title}`,
+              //             },
+              //           ]}
+              //         >
+              //           {item.title === 'Question Type' ? (
+              //             <Form.Item
+              //               noStyle
+              //               shouldUpdate={(prevValues, currentValues) =>
+              //                 prevValues.type !== currentValues.type
+              //               }
+              //             >
+              //               {() => {
+              //                 const type = form3.getFieldValue('type')
+              //                 return (
+              //                   <Input
+              //                     disabled
+              //                     value={
+              //                       type === 1 ? 'MCQ' : type === 2 ? 'Program' : ''
+              //                     }
+              //                   />
+              //                 )
+              //               }}
+              //             </Form.Item>
+              //           ) : (
+              //             <Input />
+              //           )}
+              //         </Form.Item>
+              //       ))}
+              //     </Form>
+              //   </Panel>
+              // </Collapse>
             )}
           </Form>
         </Modal>
