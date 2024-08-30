@@ -261,7 +261,7 @@ const EditTest = ({
 
   return (
     <Modal
-      title="Edit Test Modal"
+      title="Edit Test"
       open={isEditTestModalOpen}
       onOk={EditTestModel}
       onCancel={closeEditModal}

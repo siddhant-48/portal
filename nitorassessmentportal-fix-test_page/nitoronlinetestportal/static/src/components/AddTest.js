@@ -286,9 +286,9 @@ const AddTest = ({
   // Function to Calculate Weightage
   const calculateWeightage = (question) => {
     const weights = {
-      easy_program_count: 5,
-      medium_program_count: 10,
-      hard_program_count: 15,
+      // easy_program_count: 5,
+      // medium_program_count: 10,
+      // hard_program_count: 15,
       easy_mcq_count: 5,
       medium_mcq_count: 5,
       hard_mcq_count: 5,
