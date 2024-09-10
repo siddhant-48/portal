@@ -72,28 +72,6 @@ const TestSummary = ({ testRecord, isSummaryModalOpen, closeSummaryModal }) => {
           >
             Reset
           </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              })
-              setSearchText(selectedKeys[0])
-              setSearchedColumn(dataIndex)
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close()
-            }}
-          >
-            close
-          </Button>
         </Space>
       </div>
     ),

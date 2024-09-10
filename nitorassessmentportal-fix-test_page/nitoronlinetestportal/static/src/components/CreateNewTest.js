@@ -292,9 +292,9 @@ const CreateNewTest = ({
           easy_mcq_count: parseInt(easy_mcq_count),
           medium_mcq_count: parseInt(medium_mcq_count),
           hard_mcq_count: parseInt(hard_mcq_count),
-          easy_program_count: 0, // Default to 0
-          medium_program_count: 0, // Default to 0
-          hard_program_count: 0, // Default to 0
+          // easy_program_count: 0, // Default to 0
+          // medium_program_count: 0, // Default to 0
+          // hard_program_count: 0, // Default to 0
         },
       ],
     }
@@ -319,9 +319,9 @@ const CreateNewTest = ({
               easy_mcq_count: parseInt(easy_mcq_count),
               medium_mcq_count: parseInt(medium_mcq_count),
               hard_mcq_count: parseInt(hard_mcq_count),
-              easy_program_count: 0, // Default to 0
-              medium_program_count: 0, // Default to 0
-              hard_program_count: 0, // Default to 0
+              // easy_program_count: 0, // Default to 0
+              // medium_program_count: 0, // Default to 0
+              // hard_program_count: 0, // Default to 0
             },
           ],
           weightage: newWeightage,
@@ -348,9 +348,9 @@ const CreateNewTest = ({
       question_details: tempUpdatedDataList.flatMap((item) => {
         return item.question_details.map((detail) => ({
           ...detail,
-          easy_program_count: detail.easy_program_count || 0, // Default to 0
-          medium_program_count: detail.medium_program_count || 0, // Default to 0
-          hard_program_count: detail.hard_program_count || 0, // Default to 0
+          // easy_program_count: detail.easy_program_count || 0, // Default to 0
+          // medium_program_count: detail.medium_program_count || 0, // Default to 0
+          // hard_program_count: detail.hard_program_count || 0, // Default to 0
         }))
       }),
     }
@@ -491,11 +491,11 @@ const CreateNewTest = ({
       width={900}
       okText="Submit"
       afterClose={() => {
-        // Reset form and state after the modal is closed
         form.resetFields()
         setSelectedSections([]) // Clear selected sections
       }}
     >
+      <Divider />
       <Row>
         <Form
           form={form}

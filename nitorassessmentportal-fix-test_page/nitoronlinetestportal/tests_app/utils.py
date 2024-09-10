@@ -98,18 +98,18 @@ def validate_single_question_details(details):
     easy_mcq_count = details['easy_mcq_count']
     medium_mcq_count = details['medium_mcq_count']
     hard_mcq_count = details['hard_mcq_count']
-    easy_program_count = details['easy_program_count']
-    hard_program_count = details['hard_program_count']
-    medium_program_count = details['medium_program_count']
+    # easy_program_count = details['easy_program_count']
+    # hard_program_count = details['hard_program_count']
+    # medium_program_count = details['medium_program_count']
     
     random_easy_mcq = get_random_mcq_answers(language=language, difficulty=Question.EASY, limit=easy_mcq_count)
     random_medium_mcq = get_random_mcq_answers(language=language, difficulty=Question.MEDIUM, limit=medium_mcq_count)
     random_hard_mcq = get_random_mcq_answers(language=language, difficulty=Question.HARD, limit=hard_mcq_count)
-    random_easy_program = get_random_program_testcases(language=language, difficulty=Question.EASY, limit=easy_program_count)
-    random_medium_program = get_random_program_testcases(language=language, difficulty=Question.MEDIUM, limit=medium_program_count)
-    random_hard_program = get_random_program_testcases(language=language, difficulty=Question.HARD, limit=hard_program_count)
+    # random_easy_program = get_random_program_testcases(language=language, difficulty=Question.EASY, limit=easy_program_count)
+    # random_medium_program = get_random_program_testcases(language=language, difficulty=Question.MEDIUM, limit=medium_program_count)
+    # random_hard_program = get_random_program_testcases(language=language, difficulty=Question.HARD, limit=hard_program_count)
 
-    return random_easy_mcq, random_medium_mcq, random_hard_mcq, random_easy_program, random_medium_program, random_hard_program
+    return random_easy_mcq, random_medium_mcq, random_hard_mcq #random_easy_program, random_medium_program, random_hard_program
 
 
 def calculate_score(candidate_answers, correct_value, q_type, difficulty, data):

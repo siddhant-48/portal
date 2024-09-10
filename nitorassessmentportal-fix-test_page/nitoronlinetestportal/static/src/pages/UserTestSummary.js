@@ -14,7 +14,7 @@ import {
   Descriptions,
   Modal,
   Input,
-  message
+  message,
 } from 'antd'
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import { useParams } from 'react-router-dom'
@@ -94,7 +94,8 @@ const formatData = (data) => {
           formattedData.push({
             key: `${language}-${index}`,
             status: getStatusIcon(
-              question.candidate_answers === question.correct_value
+              question.candidate_answers.toLowerCase ===
+                question.correct_value.toLowerCase
                 ? 'correct'
                 : 'incorrect',
             ),
@@ -179,8 +180,8 @@ const UserTestSummary = (props) => {
       )
     : 0
 
-    console.log(apiData);
-    
+  console.log(apiData)
+
   const items = [
     {
       key: '1',
@@ -232,11 +233,11 @@ const UserTestSummary = (props) => {
             <Descriptions.Item label="Test Name">
               {apiData?.data?.test_name}
             </Descriptions.Item>
-            <Descriptions.Item label="Completion Date">
-              {/* {apiData?.data?.created_at} */}
-            </Descriptions.Item>
             <Descriptions.Item label="Allocation Date">
               {apiData?.data?.created_at}
+            </Descriptions.Item>
+            <Descriptions.Item label="Completion Date">
+              {apiData?.data?.submission_date}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -288,7 +289,7 @@ const UserTestSummary = (props) => {
 
   const submitShareEmail = (payload) => {
     const { data } = triggerFetchData('/share_test_details/', payload)
-    message.success("Report shared successfully!")
+    message.success('Report shared successfully!')
     console.log(data)
   }
 
@@ -300,7 +301,7 @@ const UserTestSummary = (props) => {
       resetFields()
     } else {
       setEmailError(true)
-      message.error("Report not shared")
+      message.error('Report not shared')
       //handle error logic
     }
   }

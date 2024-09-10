@@ -475,14 +475,21 @@ const Question = (props) => {
     }
   }
 
+  //edit functionality
   const onFinish = async (values) => {
     var multiple_options = Object.keys(formModalOptions.getFieldValue()).length
       ? formModalOptions.getFieldValue()
       : questionDetail
+    console.log(multiple_options)
+
     // var program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
     //   ? formModalCasesOptions.getFieldValue()
     //   : testDetails
 
+    const selectedOptionText = formModalOptions.getFieldValue(
+      multiple_options?.correct_value,
+    )
+    multiple_options.correct_value = selectedOptionText
     if (multiple_options) {
       delete multiple_options['question_details']
       values['multiple_options'] = multiple_options
@@ -544,53 +551,47 @@ const Question = (props) => {
     handleEditCancel()
   }
 
+  //add functionality
   const onAddFinish = async (values) => {
-    let multiple_options = Object.keys(formModalOptions.getFieldValue()).length
-      ? formModalOptions.getFieldValue()
-      : questionDetail
-    // let program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
-    //   ? formModalCasesOptions.getFieldValue()
-    //   : testDetails
-
-
-    let temp = {
+    // Create multiple_options as before
+    let multipleOptions = {
       option1: values.option1,
       option2: values.option2,
       option3: values.option3,
       option4: values.option4,
-      correct_value: values.correct_value,
+      correct_value: values[values.correct_value],
     }
+  // let program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
+  //   ? formModalCasesOptions.getFieldValue()
+  //   : testDetails
 
-    values['multiple_options'] = temp
+    values['correct_value'] = multipleOptions[values.correct_value]
 
+    values['multiple_options'] = multipleOptions
     values['difficulty'] = values.difficulty
 
-    // Add the duration field
-    values['duration'] = values['duration'] || 0 // Default to 0 if not provided
+    values['duration'] = values['duration'] || 0
 
-    // Manual date formatting
     const formatDateToISO = (date) => {
       const d = new Date(date)
       return d.toISOString()
     }
 
-    values['created_at'] =
-      record && record.created_at
-        ? formatDateToISO(record.created_at)
-        : formatDateToISO(new Date())
+    // Add created_at and updated_at
+    values['created_at'] = record?.created_at
+      ? formatDateToISO(record.created_at)
+      : formatDateToISO(new Date())
     values['updated_at'] = formatDateToISO(new Date())
 
-    // values['id'] = 1666
-
-    //
     console.log('values-505', values)
+
     const new_values = {
       ...values,
       multiple_options: values['multiple_options'],
       program_test_cases: values['program_test_cases'],
     }
 
-    // Ensure unwanted fields are not in the nested objects
+    // Clean up unwanted fields from nested objects
     if (new_values['multiple_options']) {
       delete new_values['multiple_options']['created_at']
       delete new_values['multiple_options']['updated_at']
@@ -600,6 +601,7 @@ const Question = (props) => {
       delete new_values['program_test_cases']['updated_at']
     }
 
+    // Further cleanup depending on conditions
     if (questionDetail) {
       delete new_values['program_test_cases']
       delete new_values['multiple_options']['candidate_answers']
@@ -609,12 +611,9 @@ const Question = (props) => {
       delete new_values['multiple_options']
       delete new_values['program_test_cases']['candidate_answers']
     }
-    if (new_values['type'] == 2) {
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
+
+    if (new_values['type'] === 2) {
+      delete new_values['multiple_options'] // Ensure correct cleanup
       new_values['program_test_cases'] = {
         case1: values.case1,
         case2: values.case2,
@@ -623,8 +622,9 @@ const Question = (props) => {
       }
     }
 
-    console.log('Payload being sent:', { id: values.id, values: new_values }) // Debugging line
+    console.log('Payload being sent:', { id: values.id, values: new_values })
 
+    // Send payload
     try {
       const data = await triggerFetchData('add_question/', {
         values: new_values,
@@ -636,9 +636,10 @@ const Question = (props) => {
       message.error(reason)
     }
 
-    // setAddQuestionDetail(false)
+    // Handle modal closure
     handleAddCancel()
   }
+
   console.log(questionDetail)
 
   return (
@@ -817,22 +818,13 @@ const Question = (props) => {
                         {item.dataIndex === 'correct_value' ? (
                           <Select
                             placeholder="Select Correct Answer"
-                            onChange={(value) => {
-                              const selectedOptionText = formModalOptions.getFieldValue(
-                                `option${value}`,
-                              )
-                              formModalOptions.setFieldsValue({
-                                correct_value: selectedOptionText,
-                              })
-                            }}
-                          >
-                            {optionList.slice(0, 4).map((_, idx) => (
-                              <Select.Option key={idx + 1} value={idx + 1}>
-                                {formModalOptions.getFieldValue(`option${idx + 1}`) ||
-                                  `Option ${idx + 1}`}
-                              </Select.Option>
-                            ))}
-                          </Select>
+                            options={optionList.slice(0, 4).map((_, idx) => {
+                              return {
+                                value: `option${idx + 1}`,
+                                label: `Option ${idx + 1}`,
+                              }
+                            })}
+                          />
                         ) : item.title === 'Question Type' ? (
                           <Form.Item
                             noStyle
@@ -1027,22 +1019,13 @@ const Question = (props) => {
                       {item.dataIndex === 'correct_value' ? (
                         <Select
                           placeholder="Select Correct Answer"
-                          onChange={(value) => {
-                            const selectedOptionText = addModal.getFieldValue(
-                              `option${value}`,
-                            )
-                            addModal.setFieldsValue({
-                              correct_value: selectedOptionText,
-                            })
-                          }}
-                        >
-                          {[1, 2, 3, 4].map((idx) => (
-                            <Option key={idx} value={idx}>
-                              {addModal.getFieldValue(`option${idx}`) ||
-                                `Option ${idx}`}
-                            </Option>
-                          ))}
-                        </Select>
+                          options={optionList.slice(0, 4).map((_, idx) => {
+                            return {
+                              value: `option${idx + 1}`,
+                              label: `Option ${idx + 1}`,
+                            }
+                          })}
+                        />
                       ) : (
                         <Input style={{ width: '100%' }} />
                       )}

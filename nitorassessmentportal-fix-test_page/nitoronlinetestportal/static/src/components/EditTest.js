@@ -130,71 +130,68 @@ const EditTest = ({
     })
   }
 
+  const [minMCQ, setMinMCQ] = useState('')
+
   // Function to add new test
   const EditTestModel = () => {
     form.validateFields().then((values) => {
       console.log('values', values)
+
+      let invalidLanguages = []
+      Object.values(values).forEach((value) => {
+        const hasValidMCQ =
+          parseInt(value.easy_mcq_count) > 0 ||
+          parseInt(value.medium_mcq_count) > 0 ||
+          parseInt(value.hard_mcq_count) > 0
+
+        if (!hasValidMCQ) {
+          invalidLanguages.push(value.language)
+        }
+      })
+
+      if (invalidLanguages.length > 0) {
+        setMinMCQ(`No valid MCQs found for: ${invalidLanguages.join(', ')}`)
+        console.error(
+          `No valid MCQs found for: ${invalidLanguages.join(', ')}. The entry will not be added to the table.`,
+        )
+        return
+      }
+
+      // Proceed if there are valid MCQs for all languages
       if (testRecord) {
         dataList[0]['id'] = testRecord.id
       }
 
-      if (dataList.length === 0) {
-        dispatch({
-          type: ACTION.SET_ADD_TEST_ERROR,
-          payload: { showAddTestError: true },
-        })
-        return
-      }
       let weightage = 0
       for (let value in values) {
         weightage += calculateWeightage(values[value])
       }
+
       let apiPayload = {
         name: testRecord['name'],
         id: testRecord['id'],
         question_details: Object.values(values),
         weightage: weightage,
       }
+
       triggerFetchData('create_update_test/', apiPayload)
         .then(() => {
           message.success('Test updated!')
           fetchData()
         })
         .catch((reason) => message.error(reason))
+
       closeEditModal()
       form.resetFields()
     })
   }
 
-  // Function to edit existing test
-  const handleEditTest = (values) => {
-    values['language'] = state.selectedLanguage
-      ? state.selectedLanguage
-      : state.activeTab
-    let dList = {}
-    let weightage = calculateWeightage(values)
-
-    dataList.map((item) => {
-      let index = item.question_details.findIndex(
-        (obj) => obj.language === state.activeTab,
-      )
-      item.question_details[index] = values
-      item.weightage = weightage
-      dispatch({
-        type: ACTION.SET_SELECTED_LANGUAGE,
-        payload: { selectedLanguage: '' },
-      })
-      dList = item
-    })
-    setDataList([dList])
-  }
-
   // Function to Calculate Weightage
   const calculateWeightage = (question) => {
     const weights = {
-      easy_program_count: 5,
-      medium_program_count: 10,
-      hard_program_count: 15,
+      // easy_program_count: 5,
+      // medium_program_count: 10,
+      // hard_program_count: 15,
       easy_mcq_count: 5,
       medium_mcq_count: 5,
       hard_mcq_count: 5,
@@ -278,7 +275,6 @@ const EditTest = ({
           style={{ maxWidth: 'none' }}
           layout="inline"
           initialValues={testRecord.question_details}
-          onFinish={handleEditTest}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
@@ -406,7 +402,7 @@ const EditTest = ({
                         ))}
                       </Row>
                     )}
-                    {selectedSections.includes('Add_Programs') && (
+                    {/* {selectedSections.includes('Add_Programs') && (
                       <Row justify="start">
                         <Col span={24}>
                           <h4>Program Count</h4>
@@ -441,10 +437,18 @@ const EditTest = ({
                           </Col>
                         ))}
                       </Row>
+                    )} */}
+                    {minMCQ && (
+                      <p
+                        style={{
+                          color: 'red',
+                          textAlign: 'center',
+                          marginTop: '7px',
+                        }}
+                      >
+                        {minMCQ}
+                      </p>
                     )}
-                    <Button type="primary" ghost onClick={form.submit}>
-                      Update
-                    </Button>
                   </Col>
                 </Panel>
               </Collapse>

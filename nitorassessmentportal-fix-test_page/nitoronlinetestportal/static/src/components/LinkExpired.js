@@ -38,7 +38,7 @@ function LinkExpired({ modalName }) {
             <p className="modal-message">
               The link has expired since you switched tabs frequently!
             </p>
-            <Button className="card-button" onClick={goBack}>
+            <Button style={{ backgroundColor: '#b21d21' }} className="card-button" onClick={goBack}>
               Exit Window
             </Button>
           </>
@@ -52,7 +52,7 @@ function LinkExpired({ modalName }) {
             <p className="modal-message">
               The link has expired due to the time limit set for this activity.
             </p>
-            <Button className="card-button" onClick={goBack}>
+            <Button style={{ backgroundColor: '#b21d21' }} className="card-button" onClick={goBack}>
               Exit Window
             </Button>
           </>

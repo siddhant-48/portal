@@ -652,7 +652,7 @@ const GenerateTest = () => {
   return (
     <>
       <Modal
-        title="Finish Test Confirmation"
+        // title="Finish Test Confirmation"
         open={isModalOpen}
         onOk={() => handleOk(question_details)}
         onCancel={handleFinishCancel}

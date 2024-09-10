@@ -59,7 +59,7 @@
   font-size: 28px;
   font-weight: bold;
   color: #333;
-  padding: 0 8px;
+  /* padding: 0 8px; */
   font-family: 'Courier New', Courier, monospace;
   border-radius: 8px;
   text-align: center;
@@ -196,12 +196,21 @@
   list-style-type: none;
 }
 
+/* Styles for highlighted items */
 .highlighted {
   border: 2px solid red;
   position: relative;
 }
-/* .ant-menu-item-active {
-  border: 2px solid rgb(42, 169, 17);
+
+/* Only apply these styles when .ant-menu-item-active is within .highlighted */
+.highlighted.ant-menu-item-active {
+  border: 2px solid red !important;
   position: relative;
-  color: #b21d21 !important;
-} */
+}
+
+/* Optionally reset the active state when it's not highlighted */
+.ant-menu-item-active:not(.highlighted) {
+  border: unset; /* or another border style */
+  position: unset; /* or another position style */
+}
+

@@ -6,6 +6,7 @@ import { userFormFields } from '../Utils/constants'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
 import { CodeOutlined, ClockCircleOutlined, BlockOutlined } from '@ant-design/icons'
 import LinkExpired from '../components/LinkExpired'
+import test from "../assets/image.png"
 
 /*
   This is a welcome where user will be able to check the test Rule and login page will be open
@@ -90,7 +91,7 @@ const UserDeatils = () => {
           <div className="login-box">
             <div className="illustration-wrapper">
               <img
-                src="https://mixkit.imgix.net/art/preview/mixkit-left-handed-man-sitting-at-a-table-writing-in-a-notebook-27-original-large.png?q=80&auto=format%2Ccompress&h=700"
+                src={test}
                 alt="Login"
               />
             </div>

@@ -279,9 +279,12 @@ def generate_test(request):
             generated_questions[language] = []
             try:
                 (random_easy_mcq, random_medium_mcq, 
-                random_hard_mcq, random_easy_program, 
-                random_medium_program, random_hard_program) = validate_single_question_details(details)
-                generated_questions[language].extend(random_easy_mcq + random_medium_mcq+ random_hard_mcq + random_easy_program + random_medium_program+random_hard_program)
+                random_hard_mcq) = validate_single_question_details(details)
+                generated_questions[language].extend(random_easy_mcq + random_medium_mcq + random_hard_mcq)
+                # (random_easy_mcq, random_medium_mcq, 
+                # random_hard_mcq, random_easy_program, 
+                # random_medium_program, random_hard_program) = validate_single_question_details(details)
+                # generated_questions[language].extend(random_easy_mcq + random_medium_mcq + random_hard_mcq + random_easy_program + random_medium_program + random_hard_program)
             except Exception as e:
                 return standard_json_response(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
 

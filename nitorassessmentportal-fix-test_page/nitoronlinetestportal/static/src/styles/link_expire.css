@@ -21,17 +21,18 @@
 
 /* Style for the button */
 .card-button {
-  background-color: #ff4d4f; /* Red color */
-  color: #fff;
-  border: none;
+  /* background-color: #ff4d4f; */
+  color: white;
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s ease;
 }
-
-/* Hover effect for the button */
-/* .link-expired-modal .card-button:hover {
-    background-color: #d43f3a;
-} */
+.card-button:hover {
+  background-color: #a01919; /* Darker red on hover */
+  color: white; /* Keep text color the same */
+}
+.ant-btn.css-dev-only-do-not-override-1dvsfnq.ant-btn-default.card-button{
+  color: white;
+}

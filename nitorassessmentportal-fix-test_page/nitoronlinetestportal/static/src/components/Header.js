@@ -17,6 +17,8 @@ const Header = (props) => {
       localStorage.removeItem('authdata')
       message.success(res.data.message)
       history.push('/')
+      // Refresh the app
+      window.location.reload();
     } else {
       message.error('Something went wrong!')
     }
