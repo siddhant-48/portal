@@ -204,10 +204,29 @@ const CreateNewTest = ({
   }
 
   const removeDataList = (record) => {
-    console.log('Removing record:', record)
+    // Update dataList
     setDataList((prevDataList) =>
-      prevDataList.filter((item) => item.id !== record.id),
+      prevDataList.filter((item) => !(item.language === record.language)),
     )
+    setTestPayload((prevTestPayload) => {
+      if (!prevTestPayload) {
+        return prevTestPayload
+      }
+
+      const updatedWeightages = prevTestPayload.weightages.filter(
+        (item) => item.language !== record.language,
+      )
+
+      const updatedQuestionDetails = prevTestPayload.question_details.filter(
+        (item) => item.language !== record.language,
+      )
+
+      return {
+        ...prevTestPayload,
+        weightages: updatedWeightages,
+        question_details: updatedQuestionDetails,
+      }
+    })
   }
 
   // Function to Update the Score Weightage dynamically
@@ -254,10 +273,34 @@ const CreateNewTest = ({
       easy_mcq_count,
       medium_mcq_count,
       hard_mcq_count,
+      add_sections,
     } = values
 
     // Calculate new weightage
     let newWeightage = calculateWeightage(values)
+    console.log('values', values)
+
+    // Validation: Ensure no section has more than 20 MCQs
+    const maxMCQLimit = 20
+    if (
+      parseInt(easy_mcq_count) > maxMCQLimit ||
+      parseInt(medium_mcq_count) > maxMCQLimit ||
+      parseInt(hard_mcq_count) > maxMCQLimit
+    ) {
+      console.error('One or more sections have more than 20 MCQs.')
+      dispatch({
+        type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+        payload: {
+          showNotEnoughQuesErrorMessage:
+            'MCQ count cannot exceed 20 for any difficulty level.',
+        },
+      })
+      dispatch({
+        type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+        payload: { showNotEnoughQuesError: true },
+      })
+      return
+    }
 
     // Check if there is at least one valid MCQ count
     const hasValidMCQ =
@@ -288,13 +331,14 @@ const CreateNewTest = ({
       question_details: [
         {
           name: values.name,
-          language: language,
+          language,
           easy_mcq_count: parseInt(easy_mcq_count),
           medium_mcq_count: parseInt(medium_mcq_count),
           hard_mcq_count: parseInt(hard_mcq_count),
+          add_sections,
           // easy_program_count: 0, // Default to 0
           // medium_program_count: 0, // Default to 0
-          // hard_program_count: 0, // Default to 0
+          // hard_program_count: 0,
         },
       ],
     }
@@ -652,6 +696,9 @@ const CreateNewTest = ({
               {state.dynamicScore}
             </p>
           </div>
+          <i style={{ fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>
+            Tip: Multiple languages supported
+          </i>
 
           <Divider />
           {isAddedToList && (

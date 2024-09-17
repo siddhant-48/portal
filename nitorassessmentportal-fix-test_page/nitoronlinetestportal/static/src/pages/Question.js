@@ -341,6 +341,11 @@ const Question = (props) => {
     setIsEditModalOpen(record)
     triggerFetchData(`/question_details/${record.id}/${record.type}/`, [], 'GET')
       .then((response) => {
+        // console.log('response.data', response.data)
+        // const temp = response.data
+        // temp.correct_value = 'options1' 
+        // console.log('temp', temp)
+
         if (record.type == 1) {
           setquestionDetail(response.data)
           setTestDetails(null)
@@ -561,9 +566,9 @@ const Question = (props) => {
       option4: values.option4,
       correct_value: values[values.correct_value],
     }
-  // let program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
-  //   ? formModalCasesOptions.getFieldValue()
-  //   : testDetails
+    // let program_test_cases = Object.keys(formModalCasesOptions.getFieldValue()).length
+    //   ? formModalCasesOptions.getFieldValue()
+    //   : testDetails
 
     values['correct_value'] = multipleOptions[values.correct_value]
 
@@ -732,7 +737,7 @@ const Question = (props) => {
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
             style={{ maxWidth: 600 }}
-            initialValues={record}
+            // initialValues={record}
             onFinish={onFinish}
             key="main_form"
             autoComplete="off"

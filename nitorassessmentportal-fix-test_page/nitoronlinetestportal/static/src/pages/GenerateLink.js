@@ -241,7 +241,6 @@ const GenerateLink = (props) => {
     setInputValue('')
     setTagsError('')
     form.resetFields()
-    form.setFieldValue('test', 'siddhant')
     setIsModalOpen(false)
     setRowRecord(null)
     setTags([])
@@ -338,7 +337,7 @@ const GenerateLink = (props) => {
           }}
         >
           <Button type="primary" onClick={showGeneratedTestLinkModal}>
-            Generate Test
+            Assign Test
           </Button>
         </div>
         <Table
@@ -351,7 +350,7 @@ const GenerateLink = (props) => {
         />
         {/* modal */}
         <Modal
-          title="Generate Test Link"
+          title="Assign Test"
           open={isModalOpen}
           onOk={handleModalOk}
           onCancel={closeGeneratedTestLinkModal}
@@ -372,6 +371,7 @@ const GenerateLink = (props) => {
             style={{ maxWidth: 600 }}
             onFinish={submitGeneratedLinkForm}
             // onFinishFailed={onFinishFailed}
+            onCancel={closeGeneratedTestLinkModal}
             autoComplete="off"
             initialValues={{
               ...(testRecord && {
@@ -405,6 +405,7 @@ const GenerateLink = (props) => {
                         .includes(input.toLowerCase())
                     }
                     options={filter_test_data}
+                    disabled={testRecord.from_edit === true}
                   />
                 ) : item.dataIndex === 'email_list' ? (
                   <div>

@@ -61,7 +61,7 @@ const App = () => {
             <Route path="/questions">
               <Question setSelectedKey={setSelectedKey} />
             </Route>
-            <Route path="/generate-link">
+            <Route path="/assign-test">
               <GenerateLink setSelectedKey={setSelectedKey} />
             </Route>
             <Route path="/user-submissions">

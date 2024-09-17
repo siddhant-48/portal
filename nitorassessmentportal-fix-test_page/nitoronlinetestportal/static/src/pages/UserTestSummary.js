@@ -94,8 +94,8 @@ const formatData = (data) => {
           formattedData.push({
             key: `${language}-${index}`,
             status: getStatusIcon(
-              question.candidate_answers.toLowerCase ===
-                question.correct_value.toLowerCase
+              question.candidate_answers ===
+                question.correct_value
                 ? 'correct'
                 : 'incorrect',
             ),
@@ -179,9 +179,6 @@ const UserTestSummary = (props) => {
         apiData.data.generated_question?.weightage,
       )
     : 0
-
-  console.log(apiData)
-
   const items = [
     {
       key: '1',
@@ -263,7 +260,7 @@ const UserTestSummary = (props) => {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `Test-Report.pdf`) // Set the default filename
+      link.setAttribute('download', `Test-Report-${apiData.data.first_name}-${apiData.data.last_name}.pdf`) // Set the default filename
 
       // Append link to the body
       document.body.appendChild(link)
@@ -324,7 +321,7 @@ const UserTestSummary = (props) => {
 
   return (
     <Layout.Content style={{ height: '100vh', padding: '1rem' }}>
-      <Card title="Candidate Summary">
+      <Card title="<-- Candidate Summary">
         <Row>
           <Col
             style={{

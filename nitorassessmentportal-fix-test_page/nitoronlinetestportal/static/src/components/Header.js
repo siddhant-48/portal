@@ -31,7 +31,7 @@ const Header = (props) => {
     if (path.startsWith('/dashboard')) return 'dashboard'
     if (path.startsWith('/create-test')) return 'create-test'
     if (path.startsWith('/questions')) return 'questions'
-    if (path.startsWith('/generate-link')) return 'generate-link'
+    if (path.startsWith('/assign-test')) return 'assign-test'
     if (path.startsWith('/user-submissions')) return 'user-submissions';
     if (path.startsWith('/use-test-summary')) return 'use-test-summary'
     return 'dashboard'
@@ -66,9 +66,9 @@ const Header = (props) => {
                   <span>Questions</span>
                   <Link to="/questions" />
                 </Menu.Item>
-                <Menu.Item key="generate-link">
-                  <span>Generate Link</span>
-                  <Link to="/generate-link" />
+                <Menu.Item key="assign-test">
+                  <span>Assign Test</span>
+                  <Link to="/assign-test" />
                 </Menu.Item>
                 <Menu.Item key="user-submissions">
                   <span>User Submissions</span>

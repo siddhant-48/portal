@@ -1,23 +1,25 @@
 from fpdf import FPDF
 import io
+import matplotlib
+matplotlib.use('Agg')  # Use the Agg backend for non-interactive plotting
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class PDF(FPDF):
     def add_section_title(self, title):
-        self.set_font("Arial", "B", size=12)
+        self.set_font("Aptos", "B", size=12)
         self.cell(0, 10, title, 0, 1, 'L')
         self.ln(2)
 
     def add_key_value(self, key, value):
-        self.set_font('Arial', '', size=12)
+        self.set_font('Aptos', '', size=12)
         if value:
             line = f"{key} - {value}"
         else:
             line = f"{key} -"
         self.multi_cell(0, 10, line)
         self.ln(1)
-
 
     def add_questions(self, language, question_details):
         if isinstance(question_details, int):
@@ -32,11 +34,15 @@ class PDF(FPDF):
                 
                 if correct_answer == candidate_answer == option_value:
                     line = f"{i}. - {option_value} - "
-                    self.cell(30, 10, line, ln=0)
                     
+                    # Calculate the width of the option_value text
+                    option_width = self.get_string_width(line)
+                    # Print the option_value line
+                    self.cell(option_width, 10, line, ln=0)
                     # Set color for "You chose right Option" and then reset
                     self.set_text_color(0, 0, 255)  # Blue
-                    self.cell(60, 10, "You chose right Option", ln=1)
+                    # Use multi-cell to handle the text properly
+                    self.multi_cell(0, 10, "You chose right Option")
                     self.set_text_color(0, 0, 0)  # Reset to black
                     
                 else:
@@ -44,27 +50,34 @@ class PDF(FPDF):
                     if option_value == correct_answer:
                         # Set color for "Correct Answer" and then reset
                         line = f"{i}. - {option_value} - "                    
-                        self.cell(30, 10, line, ln=0)
+                        # Calculate the width of the option_value text
+                        option_width = self.get_string_width(line)
+                        # Print the option_value line
+                        self.cell(option_width, 10, line, ln=0)
                         self.set_text_color(0, 128, 0)  # Green
-                        self.cell(70, 10, "Correct Answer", ln=1)
+                        # Use multi-cell to handle the text properly
+                        self.multi_cell(0, 10, "Correct Answer")
                         self.set_text_color(0, 0, 0)  # Reset to black
                         
                     elif option_value == candidate_answer:
                         line = f"{i}. - {option_value} - "                    
-                        self.cell(30, 10, line, ln=0)
+                        # Calculate the width of the option_value text
+                        option_width = self.get_string_width(line)
+                        # Print the option_value line
+                        self.cell(option_width, 10, line, ln=0)
                         # Set color for "Candidate Answer" and then reset
                         self.set_text_color(255, 0, 0)  # Red
-                        self.cell(70, 10, "Candidate Answer", ln=1)
+                        self.multi_cell(0, 10, "Candidate Answer")
                         self.set_text_color(0, 0, 0)  # Reset to black
                     else:
                         line = f"{i}. - {option_value}"                    
                         self.cell(30, 10, line, ln=1)
 
 
-def generate_polar_plotgenerate_polar_plot(angle_value):
+def generate_polar_plot(angle_value):
     angle_value = int(angle_value)
-    colors = ["#FF6666", "#FFCC66", "#66B2FF", "#99CC66"]
-    values = [0, 26, 51, 76, 100]  # Full range of values including 100
+    colors = ["#99CC66", "#66B2FF", "#FFCC66", "#FF6666"]
+    values = [100, 76, 51, 26, 0]  # Reversed order of values
     fig = plt.figure(figsize=(15, 10))  # Adjusted figure size for half meter
     ax = fig.add_subplot(projection="polar")
 
@@ -72,12 +85,12 @@ def generate_polar_plotgenerate_polar_plot(angle_value):
     ax.bar([0, 0.8, 1.6, 2.4], width=0.8, height=1.0, bottom=2,
            linewidth=3, edgecolor="white", color=colors, align="edge")
     
-    # Annotate all values including the last one (100)
+    # Annotate all values including the last one (0)
     for loc, val in zip([0, 0.8, 1.6, 2.4, 3.2], values):
         plt.annotate(val, xy=(loc, 2.5), ha="center", fontsize=20)
 
     # Calculate the angle for the arrow based on angle_value for a half meter
-    angle_radians = (angle_value / 100) * np.pi  # Scale to π for a half meter
+    angle_radians = ((100 - angle_value) / 100) * np.pi  # Adjusted for reversed values
 
     plt.annotate("", xytext=(0, 0), xy=(angle_radians, 2.0),
                  arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black", shrinkA=6),
@@ -102,7 +115,7 @@ def generate_polar_plotgenerate_polar_plot(angle_value):
         level_color = "#FF6666"
 
     # Add the title with the determined label and percentage
-    plt.title(f"{level} ({angle_value}%)", loc="center", pad=20, fontsize=65, fontweight="bold",color=level_color)
+    plt.title(f"{level} ({angle_value}%)", loc="center", pad=20, fontsize=65, fontweight="bold", color=level_color)
     ax.set_axis_off()
     plt.savefig("utils/chart.png", format="png")
     plt.close()
@@ -138,25 +151,58 @@ def generate_linear_gauge_plot(percentage):
     plt.close()
 
 def add_candidate_details_to_pdf(pdf, data):
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Aptos", size=12)
     pdf.ln(10)
-    pdf.cell(200, 10, txt=f"Candidate ID: {data['id']}", ln=True)
-    pdf.cell(200, 10, txt=f"Candidate Name: {data['name']}", ln=True)
-    pdf.cell(200, 10, txt=f"Date: {data['created_at']}", ln=True)
-    pdf.cell(200, 10, txt=f"Assessment Name: {data['test_name']}", ln=True)
-    pdf.cell(200, 10, txt=f"Client Name: {data['email']}", ln=True)
+    # Candidate ID: Normal font
+    pdf.cell(50, 10, txt="Candidate ID:", ln=0)
+    
+    # Candidate ID value: Bold font
+    pdf.set_font("Aptos", style='B', size=12)
+    pdf.cell(50, 10, txt=f"{data['id']}", ln=True)
+    
+    # Reset font to normal
+    pdf.set_font("Aptos", size=12)
+    pdf.cell(50, 10, txt="Candidate Name:", ln=0)
+    
+    # Candidate Name value: Bold font
+    pdf.set_font("Aptos", style='B', size=12)
+    pdf.cell(50, 10, txt=f"{data['name']}", ln=True)
+    
+    # Reset font to normal
+    pdf.set_font("Aptos", size=12)
+    pdf.cell(50, 10, txt="Date:", ln=0)
+    
+    # Date value: Bold font
+    pdf.set_font("Aptos", style='B', size=12)
+    pdf.cell(50, 10, txt=f"{data['created_at']}", ln=True)
+    
+    # Reset font to normal
+    pdf.set_font("Aptos", size=12)
+    pdf.cell(50, 10, txt="Assessment Name:", ln=0)
+    
+    # Assessment Name value: Bold font
+    pdf.set_font("Aptos", style='B', size=12)
+    pdf.cell(50, 10, txt=f"{data['test_name']}", ln=True)
+    
+    # Reset font to normal
+    pdf.set_font("Aptos", size=12)
+    pdf.cell(50, 10, txt="Client Name:", ln=0)
+    
+    # Client Name value: Bold font
+    pdf.set_font("Aptos", style='B', size=12)
+    pdf.cell(50, 10, txt=f"{data['email']}", ln=True)
 
-    image_path = 'utils/dummy.jpg'
+    image_path = 'utils/user.png'
     pdf.image(image_path, x=130, y=25, w=50)
 
 def add_images_and_analysis_to_pdf(pdf, data):
     pdf.ln(10)
 
-    pdf.set_font("Arial", "B", size=12)
+    pdf.set_font("Aptos", "B", size=12)
     pdf.cell(0, 10, 'SCORE ANALYSIS', 0, 1, 'L')
     pdf.line(5, pdf.get_y(), 200, pdf.get_y())
 
-    pdf.set_font('Arial', '', size=12)
+    pdf.set_font('Aptos', '', size=12)
     pdf.multi_cell(0, 10, f"Score: {data['score']}/{data['generated_question']['weightage']}")
     # pdf.multi_cell(0, 10, f"Time Taken: {data['generated_question']['duration']/60} Min / {data['generated_question']['duration']/60} Min")
 
@@ -171,7 +217,7 @@ def add_images_and_analysis_to_pdf(pdf, data):
 
     pdf.ln(10)
 
-    pdf.set_font("Arial", "B", size=12)
+    pdf.set_font("Aptos", "B", size=12)
     pdf.cell(0, 10, 'SECTION SCORE ANALYSIS', 0, 1, 'L')
     pdf.line(5, pdf.get_y(), 200, pdf.get_y())
 
@@ -179,9 +225,10 @@ def add_images_and_analysis_to_pdf(pdf, data):
 
     pdf.ln(20)
 
-    pdf.set_font("Arial", "", size=12)
+    pdf.set_font("Aptos", "B", size=12)
     pdf.cell(0, 10, 'Section Percentage', 0, 1, 'L')
-    pdf.multi_cell(0, 10, "Python")
+    lang_value = list(data['generated_question'].keys())
+    pdf.multi_cell(0, 10, f"{lang_value[0]}")
 
     score = data['score']
     weightage = data['generated_question']['weightage']
@@ -200,9 +247,12 @@ def generate_pdf(data):
     pdf = PDF()
     pdf.add_page()
 
+    pdf.add_font('Aptos', '', 'utils/Aptos-Regular.ttf', uni=True)
+    pdf.add_font('Aptos', 'B', 'utils/Aptos-Bold.ttf', uni=True)
+    
     pdf.image('utils/nitor.png', x=6, y=5, w=28)
 
-    pdf.set_font("Arial", "B", size=12)
+    pdf.set_font("Aptos", "B", size=12)
     pdf.cell(0, 10, 'Assessment Report', 0, 1, 'R')
 
     pdf.line(5, pdf.get_y(), 200, pdf.get_y())
@@ -211,7 +261,7 @@ def generate_pdf(data):
     weightage = data['generated_question']['weightage']
     percentage = (score / weightage) * 100
 
-    generate_polar_plotgenerate_polar_plot(percentage)
+    generate_polar_plot(percentage)
     add_candidate_details_to_pdf(pdf, data)
     add_images_and_analysis_to_pdf(pdf, data)
 

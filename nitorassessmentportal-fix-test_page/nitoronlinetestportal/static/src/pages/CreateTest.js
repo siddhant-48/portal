@@ -12,6 +12,7 @@ import {
   Tooltip,
   Tag,
   Divider,
+  Checkbox
 } from 'antd'
 import { ACTION } from '../Utils/constants'
 import { triggerFetchData } from '../Utils/Hooks/useFetchAPI'
@@ -136,7 +137,8 @@ const CreateTest = ({ setSelectedKey, history }) => {
           </p>
         </>
       ),
-    },
+    }
+    ,
     {
       title: 'Total Questions',
       dataIndex: 'total_questions',
@@ -449,9 +451,11 @@ const CreateTest = ({ setSelectedKey, history }) => {
 
   // TODO: Function to go on generate Test link
   const generateTest = (testRecord) => {
+    
     testRecord['test'] = testRecord.name + '_'
+    testRecord['from_edit'] = true
     history.push({
-      pathname: '/generate-link',
+      pathname: '/assign-test',
       state: { testRecord: testRecord, isModalOpen: true },
     })
   }

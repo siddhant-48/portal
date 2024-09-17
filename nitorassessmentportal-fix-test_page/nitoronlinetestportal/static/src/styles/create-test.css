@@ -93,3 +93,7 @@
   margin: 5px 0;
   color: #555;
 }
+
+.ant-table-filter-dropdown-btns .ant-btn-link {
+  color: #b21d21 !important; 
+}

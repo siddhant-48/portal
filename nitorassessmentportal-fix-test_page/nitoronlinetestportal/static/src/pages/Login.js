@@ -110,10 +110,6 @@ const Login = ({ setIsLoggedIn, history }) => {
               <Form.Item
                 name="remember"
                 valuePropName="checked"
-                wrapperCol={{
-                  offset: 12,
-                  span: 12,
-                }}
               >
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>

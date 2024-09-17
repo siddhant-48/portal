@@ -42,7 +42,7 @@ const Dashboard = (props) => {
           </Card>
         </Col>
         <Col span={7} style={{ margin: 16 }}>
-          <Card title="Attempt till date" bordered={false}>
+          <Card title="Attempt Till Date" bordered={false}>
             <Title>{apiData ? apiData.data.total_attempted_test : 0}</Title>
           </Card>
         </Col>

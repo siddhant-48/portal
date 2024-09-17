@@ -333,7 +333,6 @@ const GenerateTest = () => {
   ) => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     let storedAnswers = userDetails.answers || {}
-    console.log('language', question_details?.language)
 
     // Update the candidate_answers in the generated_question
     let language = question_details?.language
@@ -354,6 +353,7 @@ const GenerateTest = () => {
 
     localStorage.setItem('user_details', JSON.stringify(userDetails))
   }
+  
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -640,8 +640,6 @@ const GenerateTest = () => {
           </Menu.SubMenu>
         )
       }
-      console.log(matchedQuestionIds)
-
       return (
         <Menu.Item key={item.key} data-menu-id={item.key}>
           {item.label}

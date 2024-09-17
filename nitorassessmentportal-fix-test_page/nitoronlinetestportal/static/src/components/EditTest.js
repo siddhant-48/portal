@@ -32,6 +32,9 @@ const initialState = {
   selectedLanguage: '',
   activeTab: '',
   showAddTestError: false,
+  showNotEnoughQuesError: false,
+  showNotEnoughQuesErrorMessage: '',
+  showAddTestError: false,
   dynamicScore: 0,
   initialQuestionsValue: constInitialQuestionsValue,
   totalScoreWeightage: 0,
@@ -77,6 +80,16 @@ const reducer = (state, action) => {
       return {
         ...state,
         addedSections: action.payload.addedSections,
+      }
+    case ACTION.SET_NOT_ENOUGH_QUES_ERROR:
+      return {
+        ...state,
+        showNotEnoughQuesError: action.payload.showNotEnoughQuesError,
+      }
+    case ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE:
+      return {
+        ...state,
+        showNotEnoughQuesErrorMessage: action.payload.showNotEnoughQuesErrorMessage,
       }
     default:
       return state
@@ -157,7 +170,6 @@ const EditTest = ({
         return
       }
 
-      // Proceed if there are valid MCQs for all languages
       if (testRecord) {
         dataList[0]['id'] = testRecord.id
       }
@@ -174,15 +186,49 @@ const EditTest = ({
         weightage: weightage,
       }
 
-      triggerFetchData('create_update_test/', apiPayload)
-        .then(() => {
-          message.success('Test updated!')
-          fetchData()
-        })
-        .catch((reason) => message.error(reason))
+      // Call validate_test first
+      triggerFetchData('validate_test/', apiPayload)
+        .then((validateResponse) => {
+          console.log('Validation successful:', validateResponse)
 
-      closeEditModal()
-      form.resetFields()
+          triggerFetchData('create_update_test/', apiPayload)
+            .then(() => {
+              message.success('Test updated!')
+              fetchData()
+              dispatch({
+                type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+                payload: { showNotEnoughQuesErrorMessage: '' },
+              })
+              dispatch({
+                type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+                payload: { showNotEnoughQuesError: false },
+              })
+
+              closeEditModal()
+              form.resetFields()
+            })
+            .catch((reason) => {
+              console.error('Error in create_update_test:', reason)
+
+              message.error(reason?.message || 'Error while updating the test.')
+            })
+        })
+        .catch((validationError) => {
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
+            payload: {
+              showNotEnoughQuesErrorMessage:
+                validationError?.message || 'Unknown error',
+            },
+          })
+
+          dispatch({
+            type: ACTION.SET_NOT_ENOUGH_QUES_ERROR,
+            payload: { showNotEnoughQuesError: !!validationError?.error },
+          })
+          console.error('Validation failed:', validationError)
+          message.error('Validation failed. Please fix errors before proceeding.')
+        })
     })
   }
 
@@ -366,7 +412,7 @@ const EditTest = ({
                       ))}
                     </Row>
                     {selectedSections.includes('Add_MCQs') && (
-                      <Row justify="start">
+                      <Row justify="start" gutter={[16, 16]}>
                         <Col span={24}>
                           <h4>MCQ Count</h4>
                         </Col>
@@ -438,22 +484,29 @@ const EditTest = ({
                         ))}
                       </Row>
                     )} */}
-                    {minMCQ && (
-                      <p
-                        style={{
-                          color: 'red',
-                          textAlign: 'center',
-                          marginTop: '7px',
-                        }}
-                      >
-                        {minMCQ}
-                      </p>
-                    )}
                   </Col>
                 </Panel>
               </Collapse>
             </Col>
           ))}
+          {state.showNotEnoughQuesError && (
+            <p style={{ color: 'red', textAlign: 'center', width: '100%' }}>
+              {state.showNotEnoughQuesErrorMessage}
+            </p>
+          )}
+          {minMCQ && (
+            <p
+              style={{
+                color: 'red',
+                textAlign: 'center',
+                marginBottom: '-2px',
+                width: '100%',
+                display: 'block',
+              }}
+            >
+              {minMCQ}
+            </p>
+          )}
         </Form>
         <br />
       </div>
