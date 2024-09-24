@@ -247,16 +247,37 @@ const GenerateLink = (props) => {
     setTestRecord({})
     setEndDate(null)
   }
+  const getCurrentISTTime = () => {
+    const now = new Date()
+    // IST is UTC+5:30
+    const offset = 5.5 * 60 * 60 * 1000
+    const istDate = new Date(now.getTime() + offset)
+
+    // Format to HH:MM
+    const hours = istDate.getUTCHours()
+    const minutes = istDate.getUTCMinutes()
+    const formattedHours = hours.toString().padStart(2, '0')
+    const formattedMinutes = minutes.toString().padStart(2, '0')
+
+    return `${formattedHours}:${formattedMinutes}`
+  }
 
   // Function to submit the Generate Test Link Form
   const submitGeneratedLinkForm = async (values) => {
-    // fetch the testname
+    const istTime = getCurrentISTTime()
+
+    // Find the selected test
     const selectedTest = filter_test_data.find((test) => test.value === values.test)
     const testName = selectedTest ? selectedTest.label : ''
 
+    // Update values
     values.name = testName + '_' + values.name
-    let end_date = endDate + ' 00:00:00'
+
+    // Append IST time to endDate
+    let end_date = endDate + ' ' + istTime
     values.end_date = end_date
+
+    // Convert tags to string
     values.email_list = tags.toString()
 
     // api call

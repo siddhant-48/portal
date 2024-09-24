@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-
 import LinkExpired from './LinkExpired'
 import '../styles/generate-test.css'
 
-const CountdownTimer = ({ testDuration }) => {
+const CountdownTimer = ({ testDuration, onTimeExpire }) => {
   const [timeLeft, setTimeLeft] = useState(testDuration)
+  const [isExpired, setIsExpired] = useState(false) // Track if time has expired
 
   useEffect(() => {
     const endTime = localStorage.getItem('endTime')
@@ -24,16 +24,23 @@ const CountdownTimer = ({ testDuration }) => {
         if (prevTime <= 1) {
           clearInterval(interval)
           localStorage.removeItem('endTime')
-          return 0
+          onTimeExpire() // Call the function when time expires
+          setIsExpired(true) // Mark the timer as expired
+          return 0 // Ensure timeLeft doesn't go below 0
         }
         return prevTime - 1
       })
     }, 1000)
 
-    return () => clearInterval(interval)
-  }, [testDuration])
+    return () => clearInterval(interval) // Cleanup interval on unmount
+  }, [testDuration, onTimeExpire])
 
-  return timeLeft > 0 ? (
+  // Render LinkExpired if the time has expired
+  if (isExpired || timeLeft <= 0) {
+    return <LinkExpired modalName="timeExpire" />
+  }
+
+  return (
     <div className="timer">
       <div className="clock">
         <h1> Time Left - </h1>
@@ -50,8 +57,6 @@ const CountdownTimer = ({ testDuration }) => {
         </div>
       </div>
     </div>
-  ) : (
-    <LinkExpired modalName="timeExpire" />
   )
 }
 

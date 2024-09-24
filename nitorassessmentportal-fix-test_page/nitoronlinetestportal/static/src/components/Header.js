@@ -33,7 +33,7 @@ const Header = (props) => {
     if (path.startsWith('/questions')) return 'questions'
     if (path.startsWith('/assign-test')) return 'assign-test'
     if (path.startsWith('/user-submissions')) return 'user-submissions';
-    if (path.startsWith('/use-test-summary')) return 'use-test-summary'
+    // if (path.startsWith('/use-test-summary')) return 'use-test-summary'
     return 'dashboard'
   }
 

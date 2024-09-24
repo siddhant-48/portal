@@ -193,7 +193,7 @@ def add_candidate_details_to_pdf(pdf, data):
     pdf.cell(50, 10, txt=f"{data['email']}", ln=True)
 
     image_path = 'utils/user.png'
-    pdf.image(image_path, x=130, y=25, w=50)
+    pdf.image(image_path, x=150, y=25, w=40, h=40)
 
 def add_images_and_analysis_to_pdf(pdf, data):
     pdf.ln(10)

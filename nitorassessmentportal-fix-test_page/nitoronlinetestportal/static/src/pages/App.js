@@ -64,12 +64,17 @@ const App = () => {
             <Route path="/assign-test">
               <GenerateLink setSelectedKey={setSelectedKey} />
             </Route>
-            <Route path="/user-submissions">
-              <UserSubmissions setSelectedKey={setSelectedKey} />
-            </Route>
-            <Route path="/use-test-summary/:id">
+            <Switch>
+              <Route exact path="/user-submissions">
+                <UserSubmissions setSelectedKey={setSelectedKey} />
+              </Route>
+              <Route path="/user-submissions/:id">
+                <UserTestSummary setSelectedKey={setSelectedKey} />
+              </Route>
+            </Switch>
+            {/* <Route path="/use-test-summary/:id">
               <UserTestSummary setSelectedKey={setSelectedKey} />
-            </Route>
+            </Route> */}
           </Protected>
         </Switch>
       </Layout>

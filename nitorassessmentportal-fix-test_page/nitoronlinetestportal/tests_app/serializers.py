@@ -100,7 +100,7 @@ class TestAllocationsSerialiazer(serializers.ModelSerializer):
             raise serializers.ValidationError('End date must be in future.')
         test_end_date = data['test'].end_date
         if test_end_date and data['end_date'] and data['end_date'] >= test_end_date :
-            raise serializers.ValidationError("End date can not be greater then orignal test's end date.")
+            raise serializers.ValidationError("End date can not be greater then original test's end date.")
         data['email_list'] = (",").join([email.strip() for email in data['email_list'].split(",")])
         return super().validate(data)
 

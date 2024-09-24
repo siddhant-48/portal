@@ -28,11 +28,11 @@ const Dashboard = (props) => {
   ]
   return (
     <Layout.Content
-      style={{ height: '100vh', padding: '1rem', textAlign: 'center' }}
+      style={{  padding: '1rem', textAlign: 'center' }}
     >
       <Row justify={'center'}>
         <Col span={7} style={{ margin: 16 }}>
-          <Card title="Total Test" bordered={false}>
+          <Card title="Total Allocated Test" bordered={false}>
             <Title>{apiData ? apiData.data.total_test : 0}</Title>
           </Card>
         </Col>
@@ -51,7 +51,7 @@ const Dashboard = (props) => {
       <Row justify={'center'}>
         <Col span={22} style={{ margin: 16 }}>
           <Card title="Breakdown by Question type" bordered={false}>
-            <ResponsiveContainer width="100%" height={500}>
+            <ResponsiveContainer width="100%" height={250}>
               <Row justify="center">
                 <Col span={12} style={{ textAlign: 'center' }}>
                   MCQs

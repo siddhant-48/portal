@@ -251,11 +251,30 @@ const CreateNewTest = ({
   }
 
   // Handle Date Change
+  var formattedDate = testRecord?.end_date
+    ? moment(testRecord.end_date).format('YYYY-MM-DD')
+    : null
+  const [endDate, setEndDate] = useState(formattedDate)
   const onDateChange = (date, dateString) => {
-    dispatch({
-      type: ACTION.SET_END_DATE,
-      payload: { endDate: dateString },
-    })
+    // dispatch({
+    //   type: ACTION.SET_END_DATE,
+    //   payload: { endDate: dateString },
+    // })
+    setEndDate(dateString)
+  }
+  const getCurrentISTTime = () => {
+    const now = new Date()
+    // IST is UTC+5:30
+    const offset = 5.5 * 60 * 60 * 1000
+    const istDate = new Date(now.getTime() + offset)
+
+    // Format to HH:MM
+    const hours = istDate.getUTCHours()
+    const minutes = istDate.getUTCMinutes()
+    const formattedHours = hours.toString().padStart(2, '0')
+    const formattedMinutes = minutes.toString().padStart(2, '0')
+
+    return `${formattedHours}:${formattedMinutes}`
   }
 
   // Function to add form data to List with Score Weightage
@@ -276,9 +295,18 @@ const CreateNewTest = ({
       add_sections,
     } = values
 
+    const istTime = getCurrentISTTime()
+
+    console.log(endDate, istTime)
+
+    if (endDate != null) {
+      values.end_date = `${endDate} ${istTime}`
+    } else {
+      values.end_date = null
+    }
+
     // Calculate new weightage
     let newWeightage = calculateWeightage(values)
-    console.log('values', values)
 
     // Validation: Ensure no section has more than 20 MCQs
     const maxMCQLimit = 20
@@ -325,7 +353,7 @@ const CreateNewTest = ({
     // Include default program counts set to 0
     let form_data = {
       name: name,
-      end_date: end_date,
+      end_date: values.end_date,
       language: language,
       weightage: newWeightage,
       question_details: [
@@ -387,7 +415,7 @@ const CreateNewTest = ({
     // Create payload
     let payload = {
       name,
-      end_date,
+      end_date: values.end_date,
       weightages: weightageList, // Passing weightages outside question_details
       question_details: tempUpdatedDataList.flatMap((item) => {
         return item.question_details.map((detail) => ({
@@ -404,8 +432,6 @@ const CreateNewTest = ({
     // Submit the payload
     triggerFetchData('validate_test/', payload)
       .then((data) => {
-        console.log('Response:', data)
-
         // Update dataList and use updatedDataList as payload only if the submission is successful
         setDataList(tempUpdatedDataList)
 

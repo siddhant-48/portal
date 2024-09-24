@@ -353,7 +353,7 @@ const GenerateTest = () => {
 
     localStorage.setItem('user_details', JSON.stringify(userDetails))
   }
-  
+
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -466,6 +466,7 @@ const GenerateTest = () => {
       user_question_answer_list: user_question_answer_list,
       completed: finish ? true : false,
     }
+    console.log('saveans', request_data)
 
     triggerFetchData(`save_candidate_answer/`, request_data)
       .then((data) => {
@@ -558,6 +559,8 @@ const GenerateTest = () => {
   }
 
   //final submission
+  const [userQuestionAnswerList, setUserQuestionAnswerList] = useState([])
+
   const handleOk = (question_details) => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     console.log('final', userDetails.answers)
@@ -574,6 +577,7 @@ const GenerateTest = () => {
       }
     })
 
+    // Generate user_question_answer_list
     let user_question_answer_list = Object.values(userDetails.generated_question)
       .filter((value) => Array.isArray(value))
       .flat()
@@ -582,6 +586,9 @@ const GenerateTest = () => {
         candidate_answers: item.candidate_answers,
         correct_value: item.correct_value,
       }))
+
+    // Set the user_question_answer_list in state
+    setUserQuestionAnswerList(user_question_answer_list)
 
     saveAnswer(question_details, user_question_answer_list, true)
     setShowResult(true)
@@ -596,7 +603,7 @@ const GenerateTest = () => {
     // alert('You will be logged out of Exam!!')
   })
 
-  // Disable specific keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+  // // Disable specific keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
   const [devTools, setDevTools] = useState(0)
   document.onkeydown = function (event) {
     if (
@@ -647,6 +654,12 @@ const GenerateTest = () => {
       )
     })
   }
+
+  const handleTimeExpiry = () => {
+    console.log(question_details)
+
+    handleOk(question_details)
+  }
   return (
     <>
       <Modal
@@ -656,7 +669,7 @@ const GenerateTest = () => {
         onCancel={handleFinishCancel}
         okText="Finish"
         cancelText="Cancel"
-        okButtonProps={{ type: 'primary', danger: true }}
+        okButtonProps={{ type: 'primary' }}
         centered
       >
         <div style={{ textAlign: 'center' }}>
@@ -666,7 +679,7 @@ const GenerateTest = () => {
             {modalMessage}
           </Typography.Text>
           <Divider dashed style={{ margin: '15px' }} />
-          <Typography.Text strong style={{ fontSize: '18px', color: '#fa541c' }}>
+          <Typography.Text strong style={{ fontSize: '18px', color: '#b21d21' }}>
             Are you sure you want to finish the test?
           </Typography.Text>
         </div>
@@ -707,6 +720,7 @@ const GenerateTest = () => {
                           'generated_question'
                         ]['duration']
                       }
+                      onTimeExpire={handleTimeExpiry}
                     />
                   </div>
                   <div className="question-tracker">

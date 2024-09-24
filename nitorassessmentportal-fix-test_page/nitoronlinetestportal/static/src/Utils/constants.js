@@ -31,8 +31,8 @@ const templateJSONData = {
 }
 
 const languageOptions = [
-  { id: 1, label: 'C#', name: 'C#', value: 'C#' },
-  { id: 3, label: 'F#', name: 'F#', value: 'F#' },
+  { id: 1, label: 'C#', name: 'C#', value: 'C-sharp' },
+  { id: 3, label: 'F#', name: 'F#', value: 'F-sharp' },
   { id: 4, label: 'Java', name: 'Java', value: 'Java' },
   { id: 5, label: 'Python', name: 'Python', value: 'Python' },
   { id: 6, label: 'C (gcc)', name: 'C (gcc)', value: 'C (gcc)' },

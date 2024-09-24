@@ -6,7 +6,7 @@ import {
   Table,
   Tooltip,
 } from 'antd'
-import { useFetch } from '../Utils/Hooks/useFetchAPI'
+import { LoginAPI, useFetch } from '../Utils/Hooks/useFetchAPI'
 
 const { Search } = Input;
 
@@ -39,12 +39,14 @@ const columns = [
   },
   {
     title: 'Completion Date',
-    dataIndex: 'created_at',
-    key: 'created_at',
+    dataIndex: 'submission_date',
+    key: 'submission_date',
+    render: (text) => text ? text : 'Not Attempted',
   },
   {
     title: 'Action',
     render: (_, record) => (
+      record.submission_date &&
       <Space>
         <Tooltip placement="top" title="Open Link">
           <label className="container">
@@ -54,7 +56,7 @@ const columns = [
               fill="#b21d21"
               className="size-6"
               viewBox="0 0 16 16"
-              onClick={() => goToTestSummary(record)}
+              onClick={() => goToTestSummary(record) }
             >
               <path
                 fillRule="evenodd"
@@ -73,7 +75,7 @@ const columns = [
 ]
 
 const goToTestSummary = (record) => {
-  window.open(`/#/use-test-summary/${record.id}`, '_self')
+  window.open(`/#/user-submissions/${record.id}`, '_self')
 };
 
 const UserSubmissions = (props) => {
@@ -104,6 +106,8 @@ const UserSubmissions = (props) => {
       setFilteredData(apiData ? apiData.data : []);
     }
   }, [searchTxt, apiData])
+  console.log(filteredData);
+  
 
   useEffect(() => {
     fetchData();
@@ -129,7 +133,7 @@ const UserSubmissions = (props) => {
       <Table
         columns={columns}
         // Show completed test only
-        dataSource={filteredData.filter((item) => item.completed === true)}
+        dataSource={filteredData}
         loading={isLoading}
         rowKey="id"
       />

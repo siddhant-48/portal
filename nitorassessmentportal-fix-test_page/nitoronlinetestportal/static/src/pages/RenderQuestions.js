@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Typography } from 'antd'
-import "../styles/render-questions.css"
+import '../styles/render-questions.css'
 
 const RenderQuestions = ({ text }) => {
   const [rows, setRows] = useState(2)

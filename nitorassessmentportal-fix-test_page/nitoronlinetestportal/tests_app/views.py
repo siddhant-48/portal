@@ -681,7 +681,7 @@ def share_test_details(request):
     template_path = "templates/report.html"
     send_email(
         recipient=share_email_id,
-        subject=f'{user_test_id}- User Test Report',
+        subject='User Test Report',
         template_path = template_path,
         data = {},
         attachments=[pdf_file],

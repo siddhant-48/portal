@@ -4,6 +4,7 @@ import {
   Row,
   Col,
   Layout,
+  Button,
   Card,
   Tabs,
   Collapse,
@@ -16,8 +17,10 @@ import {
   Input,
   message,
 } from 'antd'
+
 import { useFetch, triggerFetchData } from '../Utils/Hooks/useFetchAPI'
-import { useParams } from 'react-router-dom'
+import { useParams, withRouter } from 'react-router-dom'
+import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
 
 const getStatusIcon = (correct) => {
   return correct === 'correct' ? (
@@ -94,8 +97,7 @@ const formatData = (data) => {
           formattedData.push({
             key: `${language}-${index}`,
             status: getStatusIcon(
-              question.candidate_answers ===
-                question.correct_value
+              question.candidate_answers === question.correct_value
                 ? 'correct'
                 : 'incorrect',
             ),
@@ -260,7 +262,10 @@ const UserTestSummary = (props) => {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `Test-Report-${apiData.data.first_name}-${apiData.data.last_name}.pdf`) // Set the default filename
+      link.setAttribute(
+        'download',
+        `Test-Report-${apiData.data.first_name}-${apiData.data.last_name}.pdf`,
+      ) // Set the default filename
 
       // Append link to the body
       document.body.appendChild(link)
@@ -319,9 +324,35 @@ const UserTestSummary = (props) => {
     return emailRegex.test(email)
   }
 
+  //back button
+  const history = useHistory()
+  const goToBackButton = () => {
+    history.goBack()
+  }
   return (
-    <Layout.Content style={{ height: '100vh', padding: '1rem' }}>
-      <Card title="<-- Candidate Summary">
+    <Layout.Content style={{ padding: '1rem' }}>
+      <Card
+        title={
+          <div
+            style={{
+              // display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              type="link"
+              onClick={goToBackButton}
+              style={{ fontSize: '24px', color: 'black' }}
+            >
+              &#8592;
+            </Button>
+            <span style={{ fontWeight: 'bold', fontSize: '24px' }}>
+              Candidate Summary
+            </span>
+          </div>
+        }
+      >
         <Row>
           <Col
             style={{
@@ -337,10 +368,9 @@ const UserTestSummary = (props) => {
             />
           </Col>
           <Col style={{ marginLeft: 16 }}>
-            <p style={{ fontWeight: 'bold', fontSize: '28px' }}>
+            <p style={{ fontWeight: 'bold', fontSize: '24px' }}>
               {apiData?.data?.name || 'Loading...'}
             </p>
-            {/* <p>Senior Level</p> */}
           </Col>
 
           <Col
@@ -363,7 +393,7 @@ const UserTestSummary = (props) => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="#b21d21"
-                  class="bi bi-download"
+                  className="bi bi-download"
                   viewBox="0 0 16 16"
                 >
                   <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
@@ -415,4 +445,4 @@ const UserTestSummary = (props) => {
   )
 }
 
-export default UserTestSummary
+export default withRouter(UserTestSummary)
