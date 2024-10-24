@@ -31,8 +31,8 @@ const templateJSONData = {
 }
 
 const languageOptions = [
-  { id: 1, label: 'C#', name: 'C#', value: 'C-sharp' },
-  { id: 3, label: 'F#', name: 'F#', value: 'F-sharp' },
+  { id: 1, label: 'C#', name: 'C#', value: 'C#' },
+  { id: 3, label: 'F#', name: 'F#', value: 'F#' },
   { id: 4, label: 'Java', name: 'Java', value: 'Java' },
   { id: 5, label: 'Python', name: 'Python', value: 'Python' },
   { id: 6, label: 'C (gcc)', name: 'C (gcc)', value: 'C (gcc)' },
@@ -74,6 +74,22 @@ const languageOptions = [
   { id: 59, label: 'Raku', name: 'Raku', value: 'Raku' },
   { id: 60, label: 'TypeScript', name: 'TypeScript', value: 'TypeScript' },
 ]
+
+//subtypes
+const languageSubTypes = {
+  Python: [
+    { id: 1, label: 'Web Development', value: 'web_dev' },
+    { id: 2, label: 'Data Science', value: 'data_science' },
+  ],
+  Java: [
+    { id: 1, label: 'Enterprise Applications', value: 'enterprise_apps' },
+    { id: 2, label: 'Mobile Applications', value: 'mobile_apps' },
+  ],
+  'C#': [
+    { id: 1, label: 'Desktop Applications', value: 'desktop_apps' },
+    { id: 2, label: 'Game Development', value: 'game_dev' },
+  ],
+}
 
 const optionList = [
   {
@@ -243,6 +259,11 @@ const CreateTestForm_1 = [
     // sorter: (a, b) => a.language - b.language,
   },
   {
+    title: 'Sub Type',
+    dataIndex: 'sub_type',
+    key: 'sub_type',
+  },
+  {
     title: 'End Date',
     dataIndex: 'end_date',
     key: 'end_date',
@@ -296,7 +317,7 @@ const testSectionOption = [
 ]
 
 const initialNewTestValues = {
-  add_sections: ["Add_MCQs"],
+  add_sections: ['Add_MCQs'],
   easy_mcq_count: '0',
   easy_program_count: '0',
   end_date: null,
@@ -334,6 +355,7 @@ const ACTION = {
   SET_SELECTED_LANGUAGE: 'SET_SELECTED_LANGUAGE',
   SET_ADD_TEST_MODEL_OPEN: 'SET_ADD_TEST_MODEL_OPEN',
   SET_EDIT_TEST_MODEL_OPEN: 'SET_EDIT_TEST_MODEL_OPEN',
+  SET_DUP_TEST_MODEL_OPEN: 'SET_DUP_TEST_MODEL_OPEN',
   SET_DELETE_MODEL_OPEN: 'SET_DELETE_MODEL_OPEN',
   SET_SUMMARY_MODEL_OPEN: 'SET_SUMMARY_MODEL_OPEN',
   SET_VIEW_TEST_MODEL_OPEN: 'SET_VIEW_TEST_MODEL_OPEN',
@@ -347,6 +369,7 @@ const ACTION = {
 export {
   baseURL,
   languageOptions,
+  languageSubTypes,
   templateJSONData,
   optionList,
   caseList,

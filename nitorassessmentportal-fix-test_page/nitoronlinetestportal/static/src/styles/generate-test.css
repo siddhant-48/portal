@@ -3,6 +3,12 @@
 .quiz-questions-box {
   background: #ffffff;
   padding: 20px;
+  height: 100vh; /* Adjust height based on your layout */
+  overflow: hidden; /* Disable scroll */
+}
+.menu-container {
+  max-height: 100vh; /* Set a maximum height */
+  overflow-y: auto; /* Enable scrolling */
 }
 
 .row {
@@ -136,7 +142,6 @@
   border: 3px solid #202327;
 }
 
-
 .selected-answer:hover {
   background: #c8d3de;
 }
@@ -207,5 +212,3 @@
   border: 2px solid red !important;
   position: relative;
 } */
-
-

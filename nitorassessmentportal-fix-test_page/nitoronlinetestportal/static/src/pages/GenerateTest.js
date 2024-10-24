@@ -333,6 +333,7 @@ const GenerateTest = () => {
   ) => {
     let userDetails = JSON.parse(localStorage.getItem('user_details')) || {}
     let storedAnswers = userDetails.answers || {}
+    console.log('language', question_details?.language)
 
     // Update the candidate_answers in the generated_question
     let language = question_details?.language
@@ -353,7 +354,6 @@ const GenerateTest = () => {
 
     localStorage.setItem('user_details', JSON.stringify(userDetails))
   }
-
   // Function to handle Next button Click
   const goToNextQuestion = (question_details) => {
     // Save the selected answer for the current question
@@ -466,7 +466,6 @@ const GenerateTest = () => {
       user_question_answer_list: user_question_answer_list,
       completed: finish ? true : false,
     }
-    console.log('saveans', request_data)
 
     triggerFetchData(`save_candidate_answer/`, request_data)
       .then((data) => {
@@ -577,7 +576,6 @@ const GenerateTest = () => {
       }
     })
 
-    // Generate user_question_answer_list
     let user_question_answer_list = Object.values(userDetails.generated_question)
       .filter((value) => Array.isArray(value))
       .flat()
@@ -603,7 +601,7 @@ const GenerateTest = () => {
     // alert('You will be logged out of Exam!!')
   })
 
-  // // Disable specific keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+  // Disable specific keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
   const [devTools, setDevTools] = useState(0)
   document.onkeydown = function (event) {
     if (
@@ -647,6 +645,8 @@ const GenerateTest = () => {
           </Menu.SubMenu>
         )
       }
+      console.log(matchedQuestionIds)
+
       return (
         <Menu.Item key={item.key} data-menu-id={item.key}>
           {item.label}
@@ -699,16 +699,18 @@ const GenerateTest = () => {
               }}
             >
               <div className="left-menu-bar">
-                <Menu
-                  defaultSelectedKeys={[defaultMenuKey]}
-                  defaultOpenKeys={languages}
-                  selectedKeys={defaultMenuKey}
-                  mode="inline"
-                  theme="dark"
-                  onClick={onMenuClick}
-                >
-                  {renderMenuItems(items)}
-                </Menu>
+                <div className="menu-container">
+                  <Menu
+                    defaultSelectedKeys={[defaultMenuKey]}
+                    defaultOpenKeys={languages}
+                    selectedKeys={defaultMenuKey}
+                    mode="inline"
+                    theme="dark"
+                    onClick={onMenuClick}
+                  >
+                    {renderMenuItems(items)}
+                  </Menu>
+                </div>
               </div>
               <div className="quiz-questions-box" style={{ width: '100%' }}>
                 <div className="row">

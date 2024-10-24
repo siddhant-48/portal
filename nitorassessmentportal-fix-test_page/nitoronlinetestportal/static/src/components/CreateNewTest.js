@@ -22,6 +22,7 @@ import {
   initialNewTestValues,
   testSectionOption,
   languageOptions,
+  languageSubTypes,
   constInitialQuestionsValue,
   ACTION,
 } from '../Utils/constants'
@@ -128,15 +129,15 @@ const CreateNewTest = ({
   // Table in Add New Test Modal
   const columns = [
     {
-      title: 'Language Name', // Updated title
-      dataIndex: 'language', // Updated dataIndex to match the field name for language
-      key: 'language', // Updated key
+      title: 'Language Name',
+      dataIndex: 'language',
+      key: 'language',
       width: '400px',
       render: (text, testRecord) => (
         <>
           <a
             onClick={() => {
-              openDetailModal(testRecord) // Preserve the same functionality
+              openDetailModal(testRecord)
             }}
           >
             {text}
@@ -153,7 +154,7 @@ const CreateNewTest = ({
         <>
           <a
             onClick={() => {
-              openDetailModal(testRecord) // Preserve the same functionality
+              openDetailModal(testRecord)
             }}
           >
             {text}
@@ -282,6 +283,13 @@ const CreateNewTest = ({
   const [testPayload, setTestPayload] = useState(null) //for payloadn
   const [fieldDisable, setFieldDisable] = useState(false)
 
+  //30 days
+  function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
   //add to list function
   const handleAddToList = (param) => {
     let values = { ...initialNewTestValues, ...param }
@@ -296,13 +304,15 @@ const CreateNewTest = ({
     } = values
 
     const istTime = getCurrentISTTime()
+    const currentDate = addDays(new Date(), 30);
 
-    console.log(endDate, istTime)
+    console.log(currentDate, istTime)
 
     if (endDate != null) {
       values.end_date = `${endDate} ${istTime}`
     } else {
-      values.end_date = null
+      const formattedDate = currentDate.toISOString().split('T')[0]
+      values.end_date = `${formattedDate} ${istTime}`
     }
 
     // Calculate new weightage
@@ -522,19 +532,28 @@ const CreateNewTest = ({
     })
     setSelectedSections(value)
   }
-  const handleLanguageChange = () => {
+
+  //language change
+  const [subTypeOptions, setSubTypeOptions] = useState([])
+
+  const handleLanguageChange = (selectedLanguage) => {
+    // Set subTypeOptions based on the selected language
+    setSubTypeOptions(languageSubTypes[selectedLanguage] || [])
+
+    // Reset specific form fields
     form.resetFields([
       'add_sections',
       'easy_mcq_count',
       'medium_mcq_count',
       'hard_mcq_count',
+      'sub_type',
     ])
+    // Reset dynamic score
     dispatch({
       type: ACTION.SET_DYNAMIC_SCORE,
       payload: { dynamicScore: 0 },
     })
-    // setSelectedSections([]) // Clear the sections to hide "Add MCQ"
-    //validation
+
     dispatch({
       type: ACTION.SET_NOT_ENOUGH_QUES_ERROR_MESSAGE,
       payload: { showNotEnoughQuesErrorMessage: '' },
@@ -594,7 +613,9 @@ const CreateNewTest = ({
                     name={item.dataIndex}
                     rules={[
                       {
-                        required: item.dataIndex !== 'end_date',
+                        required:
+                          item.dataIndex !== 'end_date' &&
+                          item.dataIndex !== 'sub_type',
                         message: `Please input your ${item.title}`,
                       },
                     ]}
@@ -605,6 +626,13 @@ const CreateNewTest = ({
                         options={languageOptions}
                         onChange={(value) => handleLanguageChange(value)}
                         allowClear
+                      />
+                    ) : item.dataIndex === 'sub_type' ? (
+                      <Select
+                        placeholder="Select a subtype"
+                        options={subTypeOptions}
+                        allowClear
+                        mode="multiple"
                       />
                     ) : item.dataIndex === 'add_sections' ? (
                       <Select
@@ -624,7 +652,7 @@ const CreateNewTest = ({
                         disabled={fieldDisable}
                       />
                     ) : item.dataIndex === 'name' ? (
-                      <Input disabled={fieldDisable} />
+                      <Input placeholder="Enter test name" disabled={fieldDisable} />
                     ) : null}
                   </Form.Item>
                   <br />

@@ -177,11 +177,11 @@ const Question = (props) => {
       title: 'Language Name',
       dataIndex: 'language',
       key: 'language',
-      // width: 200,
       filters: languageOptions.map((language) => ({
         text: language.label,
         value: language.value,
       })),
+      onFilter: (value, record) => record.language === value,
       filterSearch: true,
       sorter: (a, b) => a.language.localeCompare(b.language),
       sortDirections: ['descend', 'ascend'],
@@ -598,10 +598,7 @@ const Question = (props) => {
     }
     if (new_values['type'] == 2) {
       delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
-      delete new_values['multiple_options']
+
       new_values['program_test_cases'] = {
         case1: values.case1,
         case2: values.case2,
@@ -648,7 +645,7 @@ const Question = (props) => {
     <>
       {/* <Layout.Content style={{ height: '100vh', padding: '1rem' }}> */}
       <Layout.Content
-        style={{ height: '100vh', padding: '1rem', textAlign: 'center' }}
+        style={{  padding: '1rem', textAlign: 'center' }}
       >
         {/* download excel */}
         <div

@@ -20,8 +20,8 @@ def get_total_duration(question_details):
 
     time_mapping = {
         EASY_MCQ_COUNT: timedelta(minutes=1),
-        MEDIUM_MCQ_COUNT: timedelta(minutes=3),
-        HARD_MCQ_COUNT: timedelta(minutes=5)
+        MEDIUM_MCQ_COUNT: timedelta(minutes=2),
+        HARD_MCQ_COUNT: timedelta(minutes=3)
     }
 
     program_mapping = {

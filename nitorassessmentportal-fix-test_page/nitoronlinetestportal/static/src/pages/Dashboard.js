@@ -51,7 +51,7 @@ const Dashboard = (props) => {
       <Row justify={'center'}>
         <Col span={22} style={{ margin: 16 }}>
           <Card title="Breakdown by Question type" bordered={false}>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <Row justify="center">
                 <Col span={12} style={{ textAlign: 'center' }}>
                   MCQs

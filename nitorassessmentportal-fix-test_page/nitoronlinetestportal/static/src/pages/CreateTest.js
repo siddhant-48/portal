@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import {
   Input,
@@ -30,6 +30,7 @@ const { Panel } = Collapse
 const initialState = {
   isAddTestModalOpen: false,
   isEditTestModalOpen: false,
+  isDupTestModalOpen: false,
   isDeleteModalOpen: false,
   isViewTestModalOpen: false,
   isSummaryModalOpen: false,
@@ -44,6 +45,8 @@ const reducer = (state, action) => {
       return { ...state, isAddTestModalOpen: action.payload.isAddTestModalOpen }
     case ACTION.SET_EDIT_TEST_MODEL_OPEN:
       return { ...state, isEditTestModalOpen: action.payload.isEditTestModalOpen }
+    case ACTION.SET_DUP_TEST_MODEL_OPEN:
+      return { ...state, isDupTestModalOpen: action.payload.isDupTestModalOpen }
     case ACTION.SET_DELETE_MODEL_OPEN:
       return { ...state, isDeleteModalOpen: action.payload.isDeleteModalOpen }
     case ACTION.SET_SUMMARY_MODEL_OPEN:
@@ -67,6 +70,7 @@ const reducer = (state, action) => {
 const CreateTest = ({ setSelectedKey, history }) => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const { isLoading, serverError, apiData, fetchData } = useFetch('get_test_list')
+  const [duplicatedRecords, setDuplicatedRecords] = useState([])
   function setDataList(dataList) {
     dispatch({
       type: ACTION.SET_DATA_LIST,
@@ -230,6 +234,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                   viewBox="0 0 16 16"
                   onClick={() => {
                     openDetailModal(testRecord)
+                    console.log(testRecord)
                   }}
                 >
                   <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
@@ -255,6 +260,7 @@ const CreateTest = ({ setSelectedKey, history }) => {
                   onClick={() => {
                     if (testRecord.is_active) {
                       openEditModal(testRecord)
+                      console.log(testRecord)
                     }
                   }}
                   style={{
@@ -290,12 +296,34 @@ const CreateTest = ({ setSelectedKey, history }) => {
                 </svg>
               </label>
             </Tooltip>
+            <Tooltip placement="top" title="Duplicate Test">
+              <label className="container">
+                <input checked="checked" type="checkbox" readOnly />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="#b21d21"
+                  className="size-6"
+                  viewBox="0 0 16 16"
+                  onClick={() => {
+                    if (testRecord.is_active) {
+                      const duplicatedRecord = { ...testRecord, copied: true }
+                      openDupicateEditModal(duplicatedRecord)
+                    }
+                  }}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
+                  />
+                </svg>
+              </label>
+            </Tooltip>
           </Space>
         </>
       ),
     },
   ]
-
+  const combinedData = [...(apiData ? apiData.data : []), ...duplicatedRecords]
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('params', pagination, filters, sorter, extra)
   }
@@ -409,6 +437,10 @@ const CreateTest = ({ setSelectedKey, history }) => {
       payload: { isEditTestModalOpen: false },
     })
     dispatch({
+      type: ACTION.SET_DUP_TEST_MODEL_OPEN,
+      payload: { isDupTestModalOpen: false },
+    })
+    dispatch({
       type: ACTION.SET_TEST_RECORD,
       payload: { testRecord: null },
     })
@@ -417,6 +449,8 @@ const CreateTest = ({ setSelectedKey, history }) => {
 
   // Function to open Edit existing Test Model
   const openEditModal = (testRecord) => {
+    console.log(testRecord)
+
     let form_val = {
       ...testRecord,
     }
@@ -435,11 +469,45 @@ const CreateTest = ({ setSelectedKey, history }) => {
     setDataList(listOfData(state.dataList))
   }
 
+  //duplicate record
+  const openDupicateEditModal = (testRecord) => {
+    console.log('dup', testRecord)
+
+    let form_val = {
+      ...testRecord,
+    }
+    dispatch({
+      type: ACTION.SET_TEST_RECORD,
+      payload: { testRecord: form_val },
+    })
+    dispatch({
+      type: ACTION.SET_DUP_TEST_MODEL_OPEN,
+      payload: { isDupTestModalOpen: true },
+    })
+    let listOfData = (oldArray) => [
+      ...oldArray,
+      { name: testRecord.name, question_details: testRecord.question_details },
+    ]
+    setDataList(listOfData(state.dataList))
+  }
+
   // Function to open Edit existing Test Model
   const closeEditModal = () => {
     dispatch({
       type: ACTION.SET_EDIT_TEST_MODEL_OPEN,
       payload: { isEditModalOpen: true },
+    })
+    dispatch({
+      type: ACTION.SET_ROW_RECORD,
+      payload: { rowRecord: null },
+    })
+    resetDataList([])
+  }
+  // Function to open Edit existing Test Model
+  const closeDupEditModal = () => {
+    dispatch({
+      type: ACTION.SET_DUP_TEST_MODEL_OPEN,
+      payload: { isDupModalOpen: true },
     })
     dispatch({
       type: ACTION.SET_ROW_RECORD,
@@ -488,8 +556,8 @@ const CreateTest = ({ setSelectedKey, history }) => {
         <Table
           loading={isLoading}
           columns={columns}
-          dataSource={apiData ? apiData.data : []}
-          onChange={onChange}
+          dataSource={combinedData}
+          onChange={null}
         />
 
         {/* Deactivate and Activate Confirmation Pop-up */}
@@ -533,6 +601,17 @@ const CreateTest = ({ setSelectedKey, history }) => {
             setDataList={setDataList}
             isEditTestModalOpen={state.isEditTestModalOpen}
             closeEditModal={closeEditModal}
+            openDetailModal={openDetailModal}
+          />
+        )}
+        {state.isDupTestModalOpen && (
+          <EditTest
+            fetchData={fetchData}
+            testRecord={state.testRecord}
+            dataList={state.dataList}
+            setDataList={setDataList}
+            isDupTestModalOpen={state.isDupTestModalOpen}
+            closeEditModal={closeDupEditModal}
             openDetailModal={openDetailModal}
           />
         )}

@@ -128,7 +128,7 @@ def create_update_test(request):
     return standard_json_response(data=tds.data, status_code=status.HTTP_201_CREATED)
 
 @api_view(('POST',))
-@permission_classes((IsAuthenticated, ))
+@permission_classes((IsAuthenticated,))
 def validate_test(request):
     """
     Request JSON:
@@ -165,6 +165,7 @@ def validate_test(request):
         ]
     }
     """
+    end_date = timezone.now()
     test = None
     if "id" in request.data:
         try:
@@ -172,6 +173,7 @@ def validate_test(request):
         except TestsDetails.DoesNotExist as e:
             return standard_json_response(message='Test does not exist', status_code=status.HTTP_404_NOT_FOUND)
 
+    request.data["end_date"] = end_date
     request.data["duration"] = get_total_duration(request.data["question_details"])
     tds = TestDetailSerializer(data=request.data, instance=test)
 
@@ -192,7 +194,6 @@ def validate_test(request):
             return standard_json_response(message=str(e), status_code=status.HTTP_400_BAD_REQUEST)
 
     return standard_json_response(data=[], status_code=status.HTTP_201_CREATED)
-
 
 @api_view(('GET',))
 @permission_classes((IsAuthenticated, ))
